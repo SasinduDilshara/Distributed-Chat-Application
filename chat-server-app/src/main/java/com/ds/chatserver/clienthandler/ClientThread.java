@@ -8,6 +8,10 @@ public class ClientThread implements Runnable {
     private String id;
     private Socket socket;
 
+    public void validate() {
+        // Get approval from leader
+    }
+
     public Socket getSocket() {
         return socket;
     }
@@ -22,10 +26,6 @@ public class ClientThread implements Runnable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public void validate() {
-
     }
 
     @Override

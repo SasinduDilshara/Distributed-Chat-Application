@@ -10,10 +10,4 @@ public class ServerHandler {
         //add user
         //validate again and get the min
     }
-
-    public void validateUser(String userid) {
-        //validate with servers
-        //add user
-        //validate again and get the min
-    }
 }
