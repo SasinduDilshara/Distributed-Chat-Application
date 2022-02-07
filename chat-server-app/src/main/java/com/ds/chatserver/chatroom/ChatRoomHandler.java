@@ -10,6 +10,10 @@ public class ChatRoomHandler {
         return new ChatRoomHandler();
     }
 
+    public void getChatroomfromClientId(String clientId) {
+
+    }
+
     public ArrayList<ChatRoom> getChatrooms() {
         return chatrooms;
     }

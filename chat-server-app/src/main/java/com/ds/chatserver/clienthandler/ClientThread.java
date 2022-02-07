@@ -16,6 +16,10 @@ public class ClientThread implements Runnable {
         return socket;
     }
 
+    public void sendMessage() {
+        //Class the chatroom send message method
+    }
+
     public void setSocket(Socket socket) {
         this.socket = socket;
     }
