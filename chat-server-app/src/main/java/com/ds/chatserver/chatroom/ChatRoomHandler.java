@@ -34,7 +34,7 @@ public class ChatRoomHandler {
         } else if (!(validateChatroomName(name))) {
             throw new InvalidChatroomException(name);
         } else {
-            getChatrooms().add(new ChatRoom(name, clientThread.getId()));
+            getChatrooms().add(new ChatRoom(name, clientThread));
             return true;
         }
     }
