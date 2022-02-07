@@ -2,6 +2,7 @@ package com.ds.chatserver.chatroom;
 
 import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.exceptions.*;
+import com.ds.chatserver.jsonparser.ServerMessage;
 import com.ds.chatserver.serverhandler.Server;
 
 import java.util.ArrayList;
@@ -39,32 +40,32 @@ public class ChatRoomHandler {
         }
     }
 
-    public void joinRoom(String name, ClientThread clientThread)
+    public void joinRoom(String name, ClientThread clientThread, String prevRoomName)
             throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getRoomId().equals(name)) {
-                chatRoom.addClient(clientThread);
+                chatRoom.addClient(clientThread, prevRoomName);
                 return;
             }
         }
         throw new ChatroomDoesntExistsException(name);
     }
 
-    public Boolean removeFromPreviousRoom(String name, ClientThread clientThread) throws ClientNotOwnerException {
-        Boolean isFirstJoin = true;
+    public String removeFromPreviousRoom(String name, ClientThread clientThread) throws ClientNotOwnerException {
+        String prevRoomName = "";
         ChatRoom prevChatroom = getChatroomfromClientId(clientThread.getId());
         if (prevChatroom != null) {
             prevChatroom.delete(clientThread.getId());
-            isFirstJoin = false;
+            prevRoomName = prevChatroom.getRoomId();
         }
-        return isFirstJoin;
+        return prevRoomName;
     }
 
     public void changeRoom(String name, ClientThread clientThread)
             throws ChatroomDoesntExistsException, ClientNotOwnerException, ClientAlreadyInChatRoomException {
-        removeFromPreviousRoom(name, clientThread);
-        joinRoom(name, clientThread);
-
+        String prevRoomName = removeFromPreviousRoom(name, clientThread);
+        joinRoom(name, clientThread, prevRoomName);
+//        clientThread.generateResponse(ServerMessage.getMoveJoinRequest(clientThread.getId(), prevRoomName, name));
     }
 
     public void deleteRoom(String name, ClientThread clientThread)
