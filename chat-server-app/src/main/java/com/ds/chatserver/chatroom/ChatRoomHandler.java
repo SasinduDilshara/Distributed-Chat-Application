@@ -11,7 +11,9 @@ public class ChatRoomHandler {
     }
 
     public void getChatroomfromClientId(String clientId) {
-
+        for (ChatRoom chatRoom: chatrooms) {
+            if (chatRoom)
+        }
     }
 
     public ArrayList<ChatRoom> getChatrooms() {
