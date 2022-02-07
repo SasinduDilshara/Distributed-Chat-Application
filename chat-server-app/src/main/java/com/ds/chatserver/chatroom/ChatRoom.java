@@ -12,11 +12,15 @@ public class ChatRoom {
     private final String roomId;
     private final ClientThread owner;
 
-    public ChatRoom(String roomId, ClientThread owner) {
+    private ChatRoom(String roomId, ClientThread owner) {
         this.roomId = roomId;
         this.owner = owner;
         clients = new ArrayList<>();
         clients.add(owner);
+    }
+
+    public static ChatRoom createChatRoom(String roomId, ClientThread owner) {
+        return new ChatRoom(roomId, owner);
     }
 
     private boolean isAClient(String clientId) {
