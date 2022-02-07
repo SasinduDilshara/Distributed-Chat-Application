@@ -10,12 +10,13 @@ import java.util.ArrayList;
 public class ChatRoom {
     private final ArrayList<ClientThread> clients;
     private final String roomId;
-    private final String owner;
+    private final ClientThread owner;
 
-    public ChatRoom(String roomId, String owner) {
+    public ChatRoom(String roomId, ClientThread owner) {
         this.roomId = roomId;
         this.owner = owner;
         clients = new ArrayList<>();
+        clients.add(owner);
     }
 
     private boolean isAClient(String clientId) {
@@ -35,7 +36,7 @@ public class ChatRoom {
         return roomId;
     }
 
-    public String getOwner() {
+    public ClientThread getOwner() {
         return owner;
     }
 
@@ -46,7 +47,8 @@ public class ChatRoom {
             throw new ClientAlreadyInChatRoomException(errorMsg);
         }
         this.clients.add(client);
-        // TODO: Inform clients about the new client
+        // notify all clients in the chat
+        // notify the joinee
     }
 
     public void removeClient(ClientThread client) throws ClientNotInChatRoomException {
@@ -66,7 +68,7 @@ public class ChatRoom {
             throw new ClientNotInChatRoomException(errorMsg);
         }
         for(ClientThread client: clients) {
-            if(client.getId().equals(owner)) {
+            if(client.getId().equals(owner.getId())) {
                 continue;
             }
             // client receives the message.
@@ -76,7 +78,7 @@ public class ChatRoom {
 
     // delete room
     public void delete(String clientId) throws ClientNotOwnerException {
-        if(!clientId.equals(this.getOwner())) {
+        if(!clientId.equals(this.owner.getId())) {
             String errorMsg = ClientNotOwnerException.generateClientNotOwnerMessage(clientId, roomId);
             throw new ClientNotOwnerException(errorMsg);
         }
