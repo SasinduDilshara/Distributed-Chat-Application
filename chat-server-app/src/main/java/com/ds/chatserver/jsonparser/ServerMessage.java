@@ -2,7 +2,7 @@ package com.ds.chatserver.jsonparser;
 
 import org.json.simple.JSONObject;
 
-public class ClientMessages {
+public class ServerMessage {
     @SuppressWarnings("unchecked")
     public static JSONObject getJoinRoomRequest(String roomid) {
         JSONObject join = new JSONObject();
