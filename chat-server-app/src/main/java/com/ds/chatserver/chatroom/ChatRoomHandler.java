@@ -48,31 +48,42 @@ public class ChatRoomHandler {
                 return;
             }
         }
-        throw new ChatroomDoesntExistsException(name);
     }
 
-    public String removeFromPreviousRoom(String name, ClientThread clientThread) throws ClientNotOwnerException {
+    public String removeFromPreviousRoom(String name, ClientThread clientThread)
+            throws ClientNotInChatRoomException {
         String prevRoomName = "";
         ChatRoom prevChatroom = getChatroomfromClientId(clientThread.getId());
         if (prevChatroom != null) {
-            prevChatroom.delete(clientThread.getId());
-            prevRoomName = prevChatroom.getRoomId();
-        }
+            if (prevChatroom.getOwner().equals(clientThread.getId())) {
+            } else {
+                    prevChatroom.removeClient(clientThread);
+                    prevRoomName = prevChatroom.getRoomId();
+                }
+            }
         return prevRoomName;
     }
 
     public void changeRoom(String name, ClientThread clientThread)
-            throws ChatroomDoesntExistsException, ClientNotOwnerException, ClientAlreadyInChatRoomException {
+            throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException,
+                   ClientNotOwnerException, ClientNotInChatRoomException {
+        changeRoom(name, clientThread, false);
+    }
+
+    public void changeRoom(String name, ClientThread clientThread, Boolean quit)
+            throws ChatroomDoesntExistsException, ClientNotOwnerException,
+            ClientAlreadyInChatRoomException, ClientNotInChatRoomException {
         String prevRoomName = removeFromPreviousRoom(name, clientThread);
-        joinRoom(name, clientThread, prevRoomName);
-//        clientThread.generateResponse(ServerMessage.getMoveJoinRequest(clientThread.getId(), prevRoomName, name));
+        if (!quit){
+            joinRoom(name, clientThread, prevRoomName);
+        }
     }
 
     public void deleteRoom(String name, ClientThread clientThread)
-            throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException {
+            throws ChatroomDoesntExistsException, ClientNotOwnerException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getOwner().equals(clientThread.getId())) {
-                chatRoom.addClient(clientThread);
+                chatRoom.delete(clientThread.getId());
                 return;
             }
         }
@@ -86,11 +97,6 @@ public class ChatRoomHandler {
             }
         }
         throw new ChatroomDoesntExistsException(name);
-    }
-
-    public void deleteChatroom(String name, String clientId)
-            throws ChatroomDoesntExistsException, ClientNotOwnerException {
-        getChatroomFromName(name).delete(clientId);
     }
 
     public ChatRoom getChatroomfromClientId(String clientId) {
@@ -112,14 +118,24 @@ public class ChatRoomHandler {
         throw new ChatroomDoesntExistsException(chatroomName);
     }
 
-    public void quit(String chatroomName, ClientThread clientThread)
-            throws ChatroomDoesntExistsException, ClientNotInChatRoomException {
+    public void removeClient(String chatroomName, ClientThread clientThread)
+            throws ChatroomDoesntExistsException, ClientNotInChatRoomException, ClientNotOwnerException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getRoomId().equals(chatroomName)) {
-                chatRoom.removeClient(clientThread);
+                if (chatRoom.getOwner().equals(clientThread.getId())) {
+                    deleteRoom(chatroomName, clientThread);
+                } else {
+                    chatRoom.removeClient(clientThread);
+                }
             }
         }
         throw new ChatroomDoesntExistsException(chatroomName);
+    }
+
+    public void quit(ClientThread clientThread)
+            throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException,
+                   ClientNotOwnerException, ClientNotInChatRoomException {
+        changeRoom(getChatroomfromClientId(clientThread.getId()).getRoomId(), clientThread, true);
     }
 
     public ArrayList<ChatRoom> getChatrooms() {
