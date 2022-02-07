@@ -83,7 +83,7 @@ public class ChatRoomHandler {
             throws ChatroomDoesntExistsException, ClientNotOwnerException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getOwner().equals(clientThread.getId())) {
-                chatRoom.delete(clientThread.getId());
+                chatRoom.deleteRoom(clientThread.getId());
                 return;
             }
         }

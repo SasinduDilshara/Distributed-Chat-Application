@@ -20,11 +20,6 @@ public class ChatRoom {
         clients.add(owner);
     }
 
-    public static ChatRoom createChatRoom(String roomId, ClientThread owner) {
-        owner.generateResponse(ServerMessage.getCreateRoomResponse(roomId, true));
-        return new ChatRoom(roomId, owner);
-    }
-
     private boolean isAClient(String clientId) {
         for(ClientThread existingClient: clients) {
             if(existingClient.getId().equals(clientId)) {
@@ -32,6 +27,14 @@ public class ChatRoom {
             }
         }
         return false;
+    }
+
+    private ArrayList<String> getClientNames() {
+        ArrayList<String> clientNames = new ArrayList<>();
+        for(ClientThread client: clients) {
+            clientNames.add(client.getId());
+        }
+        return clientNames;
     }
 
     public ArrayList<ClientThread> getClients() {
@@ -44,6 +47,17 @@ public class ChatRoom {
 
     public ClientThread getOwner() {
         return owner;
+    }
+
+    public void listClients(ClientThread client) {
+        client.generateResponse(ServerMessage.getWhoResponse(roomId, getClientNames(), owner.getId()));
+    }
+
+
+    public static ChatRoom createChatRoom(String roomId, ClientThread owner) {
+        // TODO: if roomId already exists send user approved: false.
+        owner.generateResponse(ServerMessage.getCreateRoomResponse(roomId, true));
+        return new ChatRoom(roomId, owner);
     }
 
     public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
@@ -83,7 +97,7 @@ public class ChatRoom {
     }
 
     // delete room
-    public void delete(String ownerId, String mainHallId) throws ClientNotOwnerException {
+    public void deleteRoom(String ownerId, String mainHallId) throws ClientNotOwnerException {
         if(!ownerId.equals(this.owner.getId())) {
             String errorMsg = ClientNotOwnerException.generateClientNotOwnerMessage(ownerId, roomId);
             throw new ClientNotOwnerException(errorMsg);
