@@ -40,11 +40,11 @@ public class ChatRoomHandler {
         }
     }
 
-    public void joinRoom(String name, ClientThread clientThread)
+    public void joinRoom(String name, ClientThread clientThread, String prevRoomName)
             throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getRoomId().equals(name)) {
-                chatRoom.addClient(clientThread);
+                chatRoom.addClient(clientThread, prevRoomName);
                 return;
             }
         }
@@ -64,8 +64,8 @@ public class ChatRoomHandler {
     public void changeRoom(String name, ClientThread clientThread)
             throws ChatroomDoesntExistsException, ClientNotOwnerException, ClientAlreadyInChatRoomException {
         String prevRoomName = removeFromPreviousRoom(name, clientThread);
-        joinRoom(name, clientThread);
-        clientThread.generateResponse(ServerMessage.getMoveJoinRequest(clientThread.getId(), prevRoomName, name));
+        joinRoom(name, clientThread, prevRoomName);
+//        clientThread.generateResponse(ServerMessage.getMoveJoinRequest(clientThread.getId(), prevRoomName, name));
     }
 
     public void deleteRoom(String name, ClientThread clientThread)
