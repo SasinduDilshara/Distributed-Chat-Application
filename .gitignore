@@ -23,3 +23,5 @@
 hs_err_pid*
 /.idea
 /chat-server-app/.idea
+/chat-server-app/chat-server-app.iml
+/.vscode
