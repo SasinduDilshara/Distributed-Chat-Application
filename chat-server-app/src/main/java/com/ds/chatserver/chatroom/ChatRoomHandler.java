@@ -8,6 +8,7 @@ import com.ds.chatserver.serverhandler.Server;
 import java.util.ArrayList;
 
 public class ChatRoomHandler {
+    private ChatRoom mainChatRoom;
     private ArrayList<ChatRoom> chatrooms;
     private static ChatRoomHandler chatRoomHandler = getInstance();
 
@@ -148,5 +149,9 @@ public class ChatRoomHandler {
 
     public static ChatRoomHandler getChatRoomHandler() {
         return chatRoomHandler;
+    }
+
+    public ChatRoom getMainChatRoom() {
+        return null;
     }
 }
