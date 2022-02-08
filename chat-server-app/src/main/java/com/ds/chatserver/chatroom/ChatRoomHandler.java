@@ -35,7 +35,7 @@ public class ChatRoomHandler {
         } else if (!(validateChatroomName(name))) {
             throw new InvalidChatroomException(name);
         } else {
-            getChatrooms().add(new ChatRoom(name, clientThread));
+            getChatrooms().add(ChatRoom.createChatRoom(name, clientThread));
             return true;
         }
     }
@@ -83,7 +83,7 @@ public class ChatRoomHandler {
             throws ChatroomDoesntExistsException, ClientNotOwnerException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getOwner().equals(clientThread.getId())) {
-                chatRoom.delete(clientThread.getId());
+                chatRoom.deleteRoom(clientThread.getId());
                 return;
             }
         }
