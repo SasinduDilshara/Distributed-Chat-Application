@@ -2,8 +2,8 @@ package com.ds.chatserver.clienthandler;
 
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+//import javax.annotation.PostConstruct;
+//import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -18,6 +18,8 @@ public class ClientRequestHandler {
         this.chatRoomHandler = chatRoomHandler;
         this.socketPort = 6666;
         serverSocket = new ServerSocket(socketPort);
+//        serverSocket.setSoTimeout(500);
+        this.start();
     }
 
     public void setSocketPort(Integer socketPort) {
@@ -28,18 +30,19 @@ public class ClientRequestHandler {
         return this.serverSocket;
     }
 
-    @PostConstruct
     public void start() {
         while(true) {
             try {
-                new ClientThread(serverSocket.accept(), chatRoomHandler);
+                System.out.println("Waiting for new Client Connection... ");
+                Thread thread = new Thread(new ClientThread(serverSocket.accept(), chatRoomHandler));
+                thread.start();
+                System.out.println("Found New Connection");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    @PreDestroy
     public void destroy() {
         // Destroy all the resources
     }
