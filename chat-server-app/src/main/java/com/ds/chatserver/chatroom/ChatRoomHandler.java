@@ -108,14 +108,14 @@ public class ChatRoomHandler {
         return null;
     }
 
-    public void sendMessage(String message, String clientId, String chatroomName) // Remove ChatroomName
+    public void sendMessage(String message, String clientId) // Remove ChatroomName
             throws ChatroomDoesntExistsException, ClientNotInChatRoomException {
         for (ChatRoom chatRoom: chatrooms) {
             if (chatRoom.getRoomId().equals(getChatroomfromClientId(clientId).getRoomId())) {
                 chatRoom.sendMessage(message, clientId);
             }
         }
-        throw new ChatroomDoesntExistsException(chatroomName);
+        throw new ChatroomDoesntExistsException(getChatroomfromClientId(clientId).getRoomId()));
     }
 
     public void removeClient(String chatroomName, ClientThread clientThread)
