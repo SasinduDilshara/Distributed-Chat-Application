@@ -1,9 +1,10 @@
 package com.ds.chatserver.chatroom;
 
 import com.ds.chatserver.clienthandler.ClientThread;
-import com.ds.chatserver.exceptions.*;
-import com.ds.chatserver.jsonparser.ServerMessage;
-import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.exceptions.ChatroomAlreadyExistsException;
+import com.ds.chatserver.exceptions.ChatroomDoesntExistsException;
+import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
+import com.ds.chatserver.exceptions.InvalidChatroomException;
 
 import java.util.ArrayList;
 
@@ -17,6 +18,8 @@ public class ChatRoomHandler {
     }
 
     private ChatRoomHandler() {
+        //TODO: servername
+        this.mainChatRoom = ChatRoom.createMainHall();
         this.chatrooms = new ArrayList<>();
     }
 
@@ -25,9 +28,10 @@ public class ChatRoomHandler {
         return true;
     }
 
-//    public Boolean validateChatRoom(String name) {
+    public Boolean validateChatRoom(String name) {
 //        return (Server.validateChatroom(name));
-//    }
+        return true;
+    }
 //
 //    public Boolean createChatRoom(String name, ClientThread clientThread)
 //            throws ChatroomAlreadyExistsException, InvalidChatroomException {
@@ -41,15 +45,17 @@ public class ChatRoomHandler {
 //        }
 //    }
 //
-//    public void joinRoom(String name, ClientThread clientThread, String prevRoomName)
-//            throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException {
+    public void joinRoom(String name, ClientThread clientThread)
+            throws ChatroomDoesntExistsException, ClientAlreadyInChatRoomException {
 //        for (ChatRoom chatRoom: chatrooms) {
 //            if (chatRoom.getRoomId().equals(name)) {
 //                chatRoom.addClient(clientThread, prevRoomName);
 //                return;
 //            }
 //        }
-//    }
+        this.mainChatRoom.addClient(clientThread, "");
+        return;
+    }
 //
 //    public String removeFromPreviousRoom(String name, ClientThread clientThread)
 //            throws ClientNotInChatRoomException {
@@ -139,9 +145,9 @@ public class ChatRoomHandler {
 //        changeRoom(getChatroomfromClientId(clientThread.getId()).getRoomId(), clientThread, true);
 //    }
 //
-//    public ArrayList<ChatRoom> getChatrooms() {
-//        return chatrooms;
-//    }
+    public ArrayList<ChatRoom> getChatrooms() {
+        return chatrooms;
+    }
 //
 //    public void setChatrooms(ArrayList<ChatRoom> chatrooms) {
 //        this.chatrooms = chatrooms;

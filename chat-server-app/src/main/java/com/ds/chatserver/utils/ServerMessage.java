@@ -1,4 +1,4 @@
-package com.ds.chatserver.jsonparser;
+package com.ds.chatserver.utils;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

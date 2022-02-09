@@ -2,16 +2,14 @@ package com.ds.chatserver.chatroom;
 
 import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
-import com.ds.chatserver.exceptions.ClientNotInChatRoomException;
-import com.ds.chatserver.exceptions.ClientNotOwnerException;
-import com.ds.chatserver.jsonparser.ServerMessage;
+import com.ds.chatserver.utils.ServerMessage;
 
 import java.util.ArrayList;
 
 public class ChatRoom {
     private final ArrayList<ClientThread> clients;
     private final String roomId;
-    private final ClientThread owner;
+    private ClientThread owner;
 
     private ChatRoom(String roomId, ClientThread owner) {
         this.roomId = roomId;
@@ -20,14 +18,19 @@ public class ChatRoom {
         clients.add(owner);
     }
 
-//    private boolean isAClient(String clientId) {
-//        for(ClientThread existingClient: clients) {
-//            if(existingClient.getId().equals(clientId)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+    private ChatRoom(String roomId ) {
+        this.roomId = roomId;
+        clients = new ArrayList<>();
+    }
+
+    private boolean isAClient(String clientId) {
+        for(ClientThread existingClient: clients) {
+            if(existingClient.getId().equals(clientId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 //
 //    private ArrayList<String> getClientNames() {
 //        ArrayList<String> clientNames = new ArrayList<>();
@@ -41,9 +44,9 @@ public class ChatRoom {
 //        return clients;
 //    }
 //
-//    public String getRoomId() {
-//        return roomId;
-//    }
+    public String getRoomId() {
+        return roomId;
+    }
 //
 //    public ClientThread getOwner() {
 //        return owner;
@@ -60,17 +63,21 @@ public class ChatRoom {
 //        return new ChatRoom(roomId, owner);
 //    }
 //
-//    public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
+    public static ChatRoom createMainHall() {
+        return new ChatRoom("mainHall");
+    }
+
+    public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
 //        if(isAClient(client.getId())) {
 //            String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
 //                    this.roomId, client.getId());
 //            throw new ClientAlreadyInChatRoomException(errorMsg);
 //        }
-//        this.clients.add(client);
-//        for(ClientThread existingClient: clients) {
-//            existingClient.generateResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
-//        }
-//    }
+        this.clients.add(client);
+        for(ClientThread existingClient: clients) {
+            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+        }
+    }
 //
 //    public void removeClient(ClientThread client, String nextRoomName) throws ClientNotInChatRoomException {
 //        if(!isAClient(client.getId())) {
