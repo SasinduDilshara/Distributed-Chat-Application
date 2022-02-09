@@ -56,6 +56,9 @@ public class ChatRoomHandler {
         this.mainChatRoom.addClient(clientThread, "");
         return;
     }
+
+
+
 //
 //    public String removeFromPreviousRoom(String name, ClientThread clientThread)
 //            throws ClientNotInChatRoomException {

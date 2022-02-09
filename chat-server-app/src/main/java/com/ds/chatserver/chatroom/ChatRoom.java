@@ -77,6 +77,7 @@ public class ChatRoom {
         for(ClientThread existingClient: clients) {
             existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
         }
+
     }
 //
 //    public void removeClient(ClientThread client, String nextRoomName) throws ClientNotInChatRoomException {

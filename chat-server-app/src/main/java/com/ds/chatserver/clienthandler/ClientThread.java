@@ -4,7 +4,9 @@ import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.ChatroomDoesntExistsException;
 import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
+import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.JsonParser;
+import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Validation;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -69,6 +71,7 @@ public class ClientThread implements Runnable {
                 System.out.println(identity);
                 if (Validation.validateClientID(identity)) {
                     try {
+                        this.sendResponse(ServerMessage.getNewIdentityResponse(true));
                         chatRoomHandler.joinRoom(identity, this);
                     } catch (ChatroomDoesntExistsException e) {
                         e.printStackTrace();
@@ -154,8 +157,10 @@ public class ClientThread implements Runnable {
     public void sendResponse(JSONObject returnMessage) {
 //        this.printWriter.print(returnMessage.toJSONString());
         try {
+            System.out.println("sending");
+            System.out.println(returnMessage);
             DataOutputStream dout =new DataOutputStream(this.socket.getOutputStream());
-            dout.writeUTF(returnMessage.toJSONString());
+            dout.write((returnMessage.toJSONString() + "\n").getBytes("UTF-8"));
             dout.flush();
         } catch (IOException e) {
             e.printStackTrace();
