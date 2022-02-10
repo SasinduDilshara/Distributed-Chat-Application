@@ -72,7 +72,8 @@ public class ClientThread implements Runnable {
                 if (Validation.validateClientID(identity)) {
                     try {
                         this.sendResponse(ServerMessage.getNewIdentityResponse(true));
-                        chatRoomHandler.joinRoom(identity, this);
+                        chatRoomHandler.joinRoom(
+                                chatRoomHandler.getMainHall().getRoomId(), this, "");
                     } catch (ChatroomDoesntExistsException e) {
                         e.printStackTrace();
                     } catch (ClientAlreadyInChatRoomException e) {
