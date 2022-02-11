@@ -2,22 +2,23 @@ package com.ds.chatserver.clienthandler;
 
 import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
+import com.ds.chatserver.exceptions.ChatroomDoesntExistsException;
+import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
+import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.utils.JsonParser;
+import com.ds.chatserver.utils.ServerMessage;
+import com.ds.chatserver.utils.Validation;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.PortUnreachableException;
+import java.io.*;
 import java.net.Socket;
 
 public class ClientThread implements Runnable {
     private String id;
-    private Socket socket;
+    private final Socket socket;
+    private final ChatRoomHandler chatRoomHandler;
     private ChatRoom currentChatRoom;
-    private ChatRoomHandler chatRoomHandler;
     private PrintWriter printWriter;
     private BufferedReader bufferedReader;
 
@@ -59,26 +60,35 @@ public class ClientThread implements Runnable {
 
     @Override
     public void run() {
-        JSONParser parser = new JSONParser();
         String jsonString = null;
         try {
             jsonString = bufferedReader.readLine();
-            JSONObject jsonObject = (JSONObject)parser.parse(jsonString);
+            JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
             String type = (String)jsonObject.get("type");
             if ( type.equals("newidentity")) {
                 String identity = (String) jsonObject.get("identity");
+                this.id = identity;
                 System.out.println(identity);
-//                if(ClientHandler.validateClientID(identity)){
-//                    // chatRoomHandler.registerNewUser(this, identity);
-//                    // Add to main hall
-//                }
+                if (Validation.validateClientID(identity)) {
+                    try {
+                        this.sendResponse(ServerMessage.getNewIdentityResponse(true));
+                        chatRoomHandler.joinRoom(
+                                chatRoomHandler.getMainHall().getRoomId(), this, "");
+                    } catch (ChatroomDoesntExistsException e) {
+                        e.printStackTrace();
+                    } catch (ClientAlreadyInChatRoomException e) {
+                        e.printStackTrace();
+                    }
+                }
 //                else{
 //                    this.stop();
 //                }
+            } else if  (type.equals("movejoin")) {
+                //TODO: complete
             } else {
                 this.stop();
             }
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -88,11 +98,11 @@ public class ClientThread implements Runnable {
                     this.stop();
                     break;
                 } else {
-                    JSONObject jsonObject = (JSONObject)parser.parse(jsonString);
+                    JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);;
                     System.out.println(jsonString);
 //                    messageReceive(jsonObject);
                 }
-            } catch (IOException | ParseException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -145,5 +155,17 @@ public class ClientThread implements Runnable {
         }
     }
 
+    public void sendResponse(JSONObject returnMessage) {
+//        this.printWriter.print(returnMessage.toJSONString());
+        try {
+            System.out.println("sending");
+            System.out.println(returnMessage);
+            DataOutputStream dout =new DataOutputStream(this.socket.getOutputStream());
+            dout.write((returnMessage.toJSONString() + "\n").getBytes("UTF-8"));
+            dout.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
