@@ -4,15 +4,17 @@ import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.ChatroomDoesntExistsException;
 import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
-import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Validation;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+
 
 public class ClientThread implements Runnable {
     private String id;
@@ -21,15 +23,16 @@ public class ClientThread implements Runnable {
     private ChatRoom currentChatRoom;
     private PrintWriter printWriter;
     private BufferedReader bufferedReader;
-
     private Boolean exit;
+
+    private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
     public ClientThread(Socket socket, ChatRoomHandler chatRoomHandler) throws IOException {
         this.socket = socket;
         this.printWriter = new PrintWriter(socket.getOutputStream(), true);
         this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.chatRoomHandler = chatRoomHandler;
-//        this.currentChatRoom = chatRoomHandler.getMainChatRoom();
+        this.currentChatRoom = chatRoomHandler.getMainHall();
         this.exit = false;
     }
 
@@ -71,6 +74,7 @@ public class ClientThread implements Runnable {
                 System.out.println(identity);
                 if (Validation.validateClientID(identity)) {
                     try {
+                        logger.info("New Client with id {} joined", identity);
                         this.sendResponse(ServerMessage.getNewIdentityResponse(true));
                         chatRoomHandler.joinRoom(
                                 chatRoomHandler.getMainHall().getRoomId(), this, "");
@@ -80,9 +84,9 @@ public class ClientThread implements Runnable {
                         e.printStackTrace();
                     }
                 }
-//                else{
-//                    this.stop();
-//                }
+                else{
+                    this.stop();
+                }
             } else if  (type.equals("movejoin")) {
                 //TODO: complete
             } else {
@@ -158,8 +162,6 @@ public class ClientThread implements Runnable {
     public void sendResponse(JSONObject returnMessage) {
 //        this.printWriter.print(returnMessage.toJSONString());
         try {
-            System.out.println("sending");
-            System.out.println(returnMessage);
             DataOutputStream dout =new DataOutputStream(this.socket.getOutputStream());
             dout.write((returnMessage.toJSONString() + "\n").getBytes("UTF-8"));
             dout.flush();
