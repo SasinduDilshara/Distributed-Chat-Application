@@ -2,18 +2,17 @@ package com.ds.chatserver.clienthandler;
 
 import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
-import com.ds.chatserver.exceptions.ChatroomDoesntExistsException;
-import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
+import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Validation;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 
 
 public class ClientThread implements Runnable {
@@ -47,6 +46,9 @@ public class ClientThread implements Runnable {
     public String getId() {
         return id;
     }
+    public ChatRoom getCurrentChatRoom() {
+        return this.currentChatRoom;
+    }
 
     public void setId(String id) {
         this.id = id;
@@ -71,16 +73,15 @@ public class ClientThread implements Runnable {
             if ( type.equals("newidentity")) {
                 String identity = (String) jsonObject.get("identity");
                 this.id = identity;
-                System.out.println(identity);
                 if (Validation.validateClientID(identity)) {
                     try {
                         logger.info("New Client with id {} joined", identity);
                         this.sendResponse(ServerMessage.getNewIdentityResponse(true));
                         chatRoomHandler.joinRoom(
-                                chatRoomHandler.getMainHall().getRoomId(), this, "");
+                                chatRoomHandler.getMainHall().getRoomId(), this, null);
                     } catch (ChatroomDoesntExistsException e) {
                         e.printStackTrace();
-                    } catch (ClientAlreadyInChatRoomException e) {
+                    } catch (ClientAlreadyInChatRoomException | ClientNotInChatRoomException e) {
                         e.printStackTrace();
                     }
                 }
@@ -89,6 +90,16 @@ public class ClientThread implements Runnable {
                 }
             } else if  (type.equals("movejoin")) {
                 //TODO: complete
+                String former = (String) jsonObject.get("former");
+                String roomId = (String) jsonObject.get("roomid");
+                String identity = (String) jsonObject.get("identity");
+                this.id = identity;
+                //TODO:
+//                chatRoomHandler.joinRoom(
+//                        roomId, this, former);
+                //TODO: serverId
+                sendResponse(ServerMessage.getServerChangeResponse("serverId"));
+                logger.info("Successfully Send List of ChatRooms to {}", id);
             } else {
                 this.stop();
             }
@@ -103,8 +114,7 @@ public class ClientThread implements Runnable {
                     break;
                 } else {
                     JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);;
-                    System.out.println(jsonString);
-//                    messageReceive(jsonObject);
+                    handleClientRequest(jsonObject);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -112,43 +122,79 @@ public class ClientThread implements Runnable {
         }
     }
 
-    public void messageReceive(JSONObject message) throws ParseException{
+    public void handleClientRequest(JSONObject message) {
         String type = (String) message.get("type");
 
-        // list
         if(type.equals("list")){
-//            chatRoomHandler.sendChatRoomList(this);
+            JSONObject response = ServerMessage.
+                    getRoomListResponse(
+                            getRoomIdFromChatRooms());
+            sendResponse(response);
+            logger.info("Successfully Send List of ChatRooms to {}", id);
         }
-        // who
+
         else if(type.equals("who")){
-//            chatRoomHandler.sendChatRoomParticipants(this);
+            JSONObject response = ServerMessage.getWhoResponse(
+                    currentChatRoom.getRoomId(),
+                    currentChatRoom.getClientIds(),
+                    currentChatRoom.getOwner().getId());
+            sendResponse(response);
+            logger.info("Successfully Send List of Clients to {} of {}", id, currentChatRoom.getRoomId());
         }
-        // createroom
+
         else if(type.equals("createroom")){
-            String roomid = (String) message.get("roomid");
-//            chatRoomHandler.createChatRoom(roomid, this);
+            String roomId = (String) message.get("roomid");
+            try {
+                chatRoomHandler.createChatRoom(roomId, this);
+            } catch (ChatroomAlreadyExistsException e) {
+                e.printStackTrace();
+            } catch (InvalidChatroomException | ClientNotInChatRoomException e) {
+                e.printStackTrace();
+            }
+//            sendResponse(ServerMessage.getCreateRoomResponse(roomId, true));
+            logger.info("Successfully created chat room {}", roomId);
         }
+
         // joinroom
         else if(type.equals("joinroom")){
-            String roomid = (String) message.get("roomid");
-//            chatRoomHandler.joinRoom(roomid, this);
+            String roomId = (String) message.get("roomid");
+            try {
+                chatRoomHandler.joinRoom(roomId, this, currentChatRoom);
+            } catch (ChatroomDoesntExistsException e) {
+                e.printStackTrace();
+            } catch (ClientAlreadyInChatRoomException
+                    | ClientNotInChatRoomException e) {
+                e.printStackTrace();
+            }
         }
+
         // movejoin
-        else if(type.equals("movejoin")){
-            String former = (String) message.get("former");
-            String roomid = (String) message.get("roomid");
-            String identity = (String) message.get("identity");
-//            chatRoomHandler.moveJoinUser(this, former, roomid, identity);
-        }
-        // deleteroom
+//        else if(type.equals("movejoin")){
+//
+////            chatRoomHandler.moveJoinUser(this, former, roomId, identity);
+//        }
+
         else if(type.equals("deleteroom")){
-            String roomid = (String) message.get("roomid");
-//            chatRoomHandler.deleteRoom(roomid, this);
+            String roomId = (String) message.get("roomid");
+            try {
+                Boolean success = chatRoomHandler.deleteRoom(roomId, this);
+                sendResponse(ServerMessage.getDeleteRoomResponse(roomId, success));
+
+            } catch (ChatroomDoesntExistsException e) {
+                e.printStackTrace();
+            } catch (ClientNotOwnerException e) {
+                e.printStackTrace();
+            }
         }
-        // message
+
         else if(type.equals("message")){
             String content = (String) message.get("content");
-//            chatRoomHandler.sendMessage(this, content);
+            try {
+                currentChatRoom.sendMessage(content, this.id);
+            } catch (ClientNotInChatRoomException e) {
+                e.printStackTrace();
+            }
+            logger.info("{} send the message : {} to the chat room {}", id, content, currentChatRoom);
         }
         // quit
         else if(type.equals("quit")){
@@ -168,6 +214,14 @@ public class ClientThread implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private ArrayList<String> getRoomIdFromChatRooms() {
+        ArrayList<String> chatRoomIds = new ArrayList<>();
+        for (ChatRoom chatRoom: chatRoomHandler.getChatRooms()) {
+            chatRoomIds.add(chatRoom.getRoomId());
+        }
+        return chatRoomIds;
     }
 
 }

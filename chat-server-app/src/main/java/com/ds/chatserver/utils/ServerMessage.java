@@ -15,7 +15,7 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getListResponse(ArrayList<String> roomNames) {
+    public static JSONObject getRoomListResponse(ArrayList<String> roomNames) {
         JSONObject list = new JSONObject();
         JSONArray rooms = new JSONArray();
         list.put("type", "roomlist");
@@ -56,10 +56,10 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getRouteResponse(String roomid, String host, String port) {
+    public static JSONObject getRouteResponse(String roomId, String host, String port) {
         JSONObject route = new JSONObject();
         route.put("type", "route");
-        route.put("roomid", roomid);
+        route.put("roomid", roomId);
         route.put("host", host);
         route.put("port", port);
         return route;
@@ -75,10 +75,10 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getDeleteRoomResponse(String roomid, Boolean approved) {
+    public static JSONObject getDeleteRoomResponse(String roomId, Boolean approved) {
         JSONObject delete = new JSONObject();
         delete.put("type", "deleteroom");
-        delete.put("roomid", roomid);
+        delete.put("roomid", roomId);
         delete.put("approved", approved.toString());
         return delete;
     }

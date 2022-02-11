@@ -28,37 +28,6 @@ public class ChatRoom {
         clients = new ArrayList<>();
     }
 
-    // check if given id belongs to a client in the room
-    private boolean isAClient(String clientId) {
-        for(ClientThread existingClient: clients) {
-            if(existingClient.getId().equals(clientId)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // return the arraylist of names of the clients in the room
-    private ArrayList<String> getClientNames() {
-        ArrayList<String> clientNames = new ArrayList<>();
-        for(ClientThread client: clients) {
-            clientNames.add(client.getId());
-        }
-        return clientNames;
-    }
-
-    public ArrayList<ClientThread> getClients() {
-        return clients;
-    }
-
-    public String getRoomId() {
-        return roomId;
-    }
-
-    public ClientThread getOwner() {
-        return owner;
-    }
-
     // create chatroom by a user
     public static ChatRoom createChatRoom(String roomId, ClientThread owner) {
         // TODO: if roomId already exists send user approved: false.
@@ -72,10 +41,28 @@ public class ChatRoom {
         return new ChatRoom("MainHall-s1");
     }
 
+    // check if given id belongs to a client in the room
+    private boolean isAClient(String clientId) {
+        for(ClientThread existingClient: clients) {
+            if(existingClient.getId().equals(clientId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // return the arraylist of names of the clients in the room
+    public ArrayList<String> getClientIds() {
+        ArrayList<String> clientNames = new ArrayList<>();
+        for(ClientThread client: clients) {
+            clientNames.add(client.getId());
+        }
+        return clientNames;
+    }
 
     // inform the client of all the clients in the room
     public void listClients(ClientThread client) {
-        client.sendResponse(ServerMessage.getWhoResponse(roomId, getClientNames(), owner.getId()));
+//        client.sendResponse(ServerMessage.getWhoResponse(roomId, getClientNames(), owner.getId()));
     }
 
     // add a new client to the room
@@ -125,11 +112,19 @@ public class ChatRoom {
             throw new ClientNotOwnerException(errorMsg);
         }
         for(ClientThread client: clients) {
-            if(client.getId().equals(clientId)) {
-                client.sendResponse(ServerMessage.getDeleteRoomResponse(roomId, true));
-            } else {
-                client.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
-            }
+            client.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
         }
+    }
+
+    public ArrayList<ClientThread> getClients() {
+        return clients;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public ClientThread getOwner() {
+        return owner;
     }
 }
