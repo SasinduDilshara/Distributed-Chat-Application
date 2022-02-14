@@ -31,7 +31,6 @@ public class ChatRoom {
     // create chatroom by a user
     public static ChatRoom createChatRoom(String roomId, ClientThread owner) {
         // TODO: if roomId already exists send user approved: false.
-        owner.sendResponse(ServerMessage.getCreateRoomResponse(roomId, true));
         return new ChatRoom(roomId, owner);
     }
 
@@ -60,11 +59,6 @@ public class ChatRoom {
         return clientNames;
     }
 
-    // inform the client of all the clients in the room
-    public void listClients(ClientThread client) {
-//        client.sendResponse(ServerMessage.getWhoResponse(roomId, getClientNames(), owner.getId()));
-    }
-
     // add a new client to the room
     public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
         if(isAClient(client.getId())) {
@@ -76,6 +70,22 @@ public class ChatRoom {
         for(ClientThread existingClient: clients) {
             existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
         }
+
+    }
+
+    // add a set of new clients to the room
+    public void addClients(ArrayList<ClientThread> newClients, String prevRoomName) throws ClientAlreadyInChatRoomException {
+        for(ClientThread client: newClients) {
+            if(isAClient(client.getId())) {
+                String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
+                        this.roomId, client.getId());
+                throw new ClientAlreadyInChatRoomException(errorMsg);
+            }
+            for(ClientThread existingClient: clients) {
+                existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+            }
+        }
+        this.clients.addAll(newClients);
 
     }
 
@@ -112,7 +122,9 @@ public class ChatRoom {
             throw new ClientNotOwnerException(errorMsg);
         }
         for(ClientThread client: clients) {
-            client.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
+            if(!clientId.equals(this.owner.getId())) {
+                client.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
+            }
         }
     }
 

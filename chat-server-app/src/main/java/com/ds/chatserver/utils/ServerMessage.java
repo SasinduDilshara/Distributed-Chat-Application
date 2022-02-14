@@ -29,8 +29,8 @@ public class ServerMessage {
         JSONObject who = new JSONObject();
         JSONArray identities = new JSONArray();
         identities.addAll(clientNames);
-        who.put("type", "who");
-        who.put("room", roomId);
+        who.put("type", "roomcontents");
+        who.put("roomid", roomId);
         who.put("identities", identities);
         who.put("owner", owner);
         return who;
