@@ -32,9 +32,4 @@ public class Server implements Runnable {
     public void faultTolerance() {
 
     }
-
-    public static Boolean validateChatroom(String name) {
-        //TODO Implement
-        return true;
-    }
 }
