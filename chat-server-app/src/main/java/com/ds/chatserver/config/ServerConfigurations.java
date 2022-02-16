@@ -1,0 +1,24 @@
+package com.ds.chatserver.config;
+
+import com.ds.chatserver.serverhandler.ServerDetails;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class ServerConfigurations {
+    private static ArrayList<ServerDetails> serverDetails;
+
+    public ArrayList<ServerDetails> getServerDetails() {
+        return serverDetails;
+    }
+
+    public void setServerDetails(ArrayList<ServerDetails> serverDetails) {
+        this.serverDetails = serverDetails;
+    }
+
+    public static ArrayList<ServerDetails> loadServerDetails() {
+        //TODO: read file and append each server details as ServerDetails object to this.serverDetails arraylist
+        serverDetails = null;
+        return serverDetails;
+    }
+}
