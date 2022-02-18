@@ -8,11 +8,11 @@ import java.util.HashMap;
 public class ServerConfigurations {
     private static HashMap<String, ServerDetails> serverDetails;
 
-    public ArrayList<ServerDetails> getServerDetails() {
+    public HashMap<String, ServerDetails> getServerDetails() {
         return serverDetails;
     }
 
-    public void setServerDetails(ArrayList<ServerDetails> serverDetails) {
+    public void setServerDetails(HashMap<String, ServerDetails> serverDetails) {
         this.serverDetails = serverDetails;
     }
 
