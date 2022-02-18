@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ServerConfigurations {
-    private static ArrayList<ServerDetails> serverDetails;
+    private static HashMap<String, ServerDetails> serverDetails;
 
     public ArrayList<ServerDetails> getServerDetails() {
         return serverDetails;
@@ -16,7 +16,7 @@ public class ServerConfigurations {
         this.serverDetails = serverDetails;
     }
 
-    public static ArrayList<ServerDetails> loadServerDetails() {
+    public static HashMap<String, ServerDetails> loadServerDetails() {
         //TODO: read file and append each server details as ServerDetails object to this.serverDetails arraylist
         serverDetails = null;
         return serverDetails;

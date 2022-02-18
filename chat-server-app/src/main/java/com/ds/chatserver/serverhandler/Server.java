@@ -9,6 +9,7 @@ import com.ds.chatserver.serverresponse.RequestVoteResult;
 import com.ds.chatserver.statehandler.ServerState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Server implements Runnable {
     private ServerState state;
@@ -18,7 +19,7 @@ public class Server implements Runnable {
     private ArrayList<Log> logs;
     private ArrayList<Integer> nestIndexes;
     private ArrayList<Integer> matchIndexes;
-    private ArrayList<ServerDetails> serverDetails = ServerConfigurations.loadServerDetails();
+    private HashMap<String, ServerDetails> serverDetails = ServerConfigurations.loadServerDetails();
 
     public ServerState getState() {
         return state;
