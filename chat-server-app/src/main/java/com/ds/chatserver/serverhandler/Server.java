@@ -77,12 +77,12 @@ public class Server implements Runnable {
         this.matchIndexes = matchIndexes;
     }
 
-    public AppendEntriesResult appendEntriesRPC(int term, int leaderId, int prevLogIndex, int prevLogTerm,
+    public AppendEntriesResult appendEntries(int term, int leaderId, int prevLogIndex, int prevLogTerm,
             Log logEntries, int leaderCommit) {
         return null;
     }
 
-    public RequestVoteResult requestVoteRPC(int term, int candidateID, int lastLogIndex, int lastLogTerm) {
+    public RequestVoteResult requestVote(int term, int candidateID, int lastLogIndex, int lastLogTerm) {
         return null;
     }
 
