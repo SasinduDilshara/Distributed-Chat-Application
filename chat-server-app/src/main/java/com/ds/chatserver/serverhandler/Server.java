@@ -19,7 +19,7 @@ public class Server implements Runnable {
     private ArrayList<Log> logs;
     private ArrayList<Integer> nestIndexes;
     private ArrayList<Integer> matchIndexes;
-    private HashMap<String, ServerDetails> serverDetails = ServerConfigurations.loadServerDetails();
+//    private HashMap<String, ServerDetails> serverDetails = ServerConfigurations.loadServerDetails();
 
     public ServerState getState() {
         return state;
