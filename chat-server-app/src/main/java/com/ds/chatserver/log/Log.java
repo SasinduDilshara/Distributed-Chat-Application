@@ -65,6 +65,7 @@ public class Log {
                 newEntries.add(event);
             }
         }
+        return entries.get(entries.size() - 1).getLogIndex();
     }
 
     public int deleteEntriesFromIndex(int logIndex) {
