@@ -4,6 +4,11 @@ public class RequestVoteResult {
     private int term;
     private Boolean voteGranted;
 
+    public RequestVoteResult(int term, Boolean voteGranted) {
+        this.term = term;
+        this.voteGranted = voteGranted;
+    }
+
     public int getTerm() {
         return term;
     }
@@ -18,5 +23,9 @@ public class RequestVoteResult {
 
     public void setVoteGranted(Boolean voteGranted) {
         this.voteGranted = voteGranted;
+    }
+
+    public static RequestVoteResult generateResponse(int term, Boolean success) {
+        return new RequestVoteResult(term, success);
     }
 }
