@@ -101,7 +101,19 @@ public class Server implements Runnable {
     }
 
     public RequestVoteResult requestVote(int term, int candidateID, int lastLogIndex, int lastLogTerm) {
-        return null;
+        Boolean voteGrantedFor = false;
+        int[] resultLogStatus;
+        if (!(term < currentTerm)) {
+            if (votedFor != null) {
+                resultLogStatus = logs.checkLogIndexWithTerm(lastLogIndex, lastLogTerm);
+                //TODO is this logic correct?? is it only found or do we need to consider CONFLICT situations
+                if (resultLogStatus[0] == LogEntryStatus.FOUND) {
+                    voteGrantedFor = true;
+                }
+            }
+        }
+        // TODO do we need to update the current Term if term < currentTerm
+        return RequestVoteResult.generateResponse(currentTerm, voteGrantedFor);
     }
 
     public void informLeaderWhenRestart() {
