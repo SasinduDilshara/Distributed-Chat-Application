@@ -92,11 +92,19 @@ public class Server implements Runnable {
                 logs.appendLogEntries(logEntries);
                 if (leaderCommit < logs.getCommitIndex()) {
                     logs.setCommitIndex(Math.min(leaderCommit, logs.getIndexFromLastEntry()));
+                    if (logs.getCommitIndex() > logs.getLastApplied()) {
+                        //TODO Increment??
+                        logs.setLastApplied(logs.getCommitIndex());
+                        //TODO Apply log[lastApplied to state machine
+                    }
                 }
                 success = true;
             }
         }
-        // TODO do we need to update the current Term if term < currentTerm
+        if (term > currentTerm) {
+            currentTerm = term;
+            //TODO Update the state to follower if its the leader
+        }
         return AppendEntriesResult.generateResponse(currentTerm, success);
     }
 
@@ -112,7 +120,10 @@ public class Server implements Runnable {
                 }
             }
         }
-        // TODO do we need to update the current Term if term < currentTerm
+        if (term > currentTerm) {
+            currentTerm = term;
+            //TODO Update the state to follower if its the leader
+        }
         return RequestVoteResult.generateResponse(currentTerm, voteGrantedFor);
     }
 
