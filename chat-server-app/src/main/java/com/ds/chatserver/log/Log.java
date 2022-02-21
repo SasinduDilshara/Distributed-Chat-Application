@@ -65,6 +65,7 @@ public class Log {
                 newEntries.add(event);
             }
         }
+        logEntries.addAll(newEntries);
         return entries.get(entries.size() - 1).getLogIndex();
     }
 
