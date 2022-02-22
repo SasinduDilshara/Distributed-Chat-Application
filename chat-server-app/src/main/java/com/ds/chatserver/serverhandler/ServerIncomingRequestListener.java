@@ -17,9 +17,10 @@ public class ServerIncomingRequestListener implements Runnable{
     }
     @Override
     public void run() {
+        logger.info("Running on port : {}", this.socketPort);
         while(true) {
             try {
-//                logger.info("Waiting for new Server Connection ... ");
+                logger.info("Waiting for new Server Connection ... ");
                 Thread thread = new Thread(new ServerIncomingRequestHandler(serverSocket.accept()));
                 thread.start();
             } catch (IOException e) {

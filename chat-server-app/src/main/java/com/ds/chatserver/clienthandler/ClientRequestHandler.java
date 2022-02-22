@@ -1,11 +1,15 @@
 package com.ds.chatserver.clienthandler;
 
 import com.ds.chatserver.chatroom.ChatRoomHandler;
+import com.ds.chatserver.config.Configuration;
+import com.ds.chatserver.config.ServerConfigurations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+
+import static com.ds.chatserver.ChatServerApplication.myServerId;
 
 
 public class ClientRequestHandler {
@@ -18,7 +22,7 @@ public class ClientRequestHandler {
     public ClientRequestHandler (ChatRoomHandler chatRoomHandler) throws IOException {
         logger.info("Initialize the Client Request Handler...");
         this.chatRoomHandler = chatRoomHandler;
-        this.socketPort = 6666;
+        this.socketPort = ServerConfigurations.getServerDetails(myServerId).getClientPort();
         serverSocket = new ServerSocket(socketPort);
         this.start();
     }
