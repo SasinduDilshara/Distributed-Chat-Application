@@ -1,7 +1,5 @@
 package com.ds.chatserver.serverhandler;
 
-import com.ds.chatserver.chatroom.ChatRoom;
-import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.Log;
@@ -137,6 +135,10 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
+
+    }
+
+    public void init() {
 
     }
 }
