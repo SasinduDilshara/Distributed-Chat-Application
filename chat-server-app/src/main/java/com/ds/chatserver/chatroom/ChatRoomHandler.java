@@ -3,7 +3,7 @@ package com.ds.chatserver.chatroom;
 import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.utils.Validation;
-import com.ds.chatserver.utils.ServerMessage;
+import com.ds.chatserver.utils.ClientServerMessage;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -63,14 +63,14 @@ public class ChatRoomHandler {
         String prevRoomName = (prevRoom!=null)? prevRoom.getRoomId(): "";
         if(prevRoom != null && prevRoom.getOwner().equals(clientThread)) {
             // owner of prev group joining another group - failed joinroom request
-            clientThread.sendResponse(ServerMessage.getRoomChangeResponse(
+            clientThread.sendResponse(ClientServerMessage.getRoomChangeResponse(
                     clientThread.getId(), prevRoomName, prevRoomName));
         } else if(Objects.equals(newRoomName, "")) {
             // quit request
             if (prevRoom != null) {
                 prevRoom.removeClient(clientThread, newRoomName);
             }
-            clientThread.sendResponse(ServerMessage.getRoomChangeResponse(
+            clientThread.sendResponse(ClientServerMessage.getRoomChangeResponse(
                     clientThread.getId(), prevRoomName, newRoomName));
         } else if(isChatroomInServer(newRoomName)) {
             // if chat room is in this server
@@ -86,11 +86,11 @@ public class ChatRoomHandler {
             if (prevRoom != null) {
                 prevRoom.removeClient(clientThread, newRoomName);
             }
-            clientThread.sendResponse(ServerMessage.getRouteResponse(
+            clientThread.sendResponse(ClientServerMessage.getRouteResponse(
                     clientThread.getId(), "122.134.2.4", "4445"));
         } else {
             // failed joinroom request
-            clientThread.sendResponse(ServerMessage.getRoomChangeResponse(
+            clientThread.sendResponse(ClientServerMessage.getRoomChangeResponse(
                     clientThread.getId(), prevRoomName, prevRoomName));
         }
     }
@@ -157,7 +157,7 @@ public class ChatRoomHandler {
 
             for(ClientThread client: chatRoom.getClients()) {
 //                chatRoom.getClients().remove(client);
-                client.sendResponse(ServerMessage.getRoomChangeResponse(
+                client.sendResponse(ClientServerMessage.getRoomChangeResponse(
                         client.getId(), chatRoom.getRoomId(), mainHall.getRoomId()));
                 client.setCurrentChatRoom(mainHall);
             }

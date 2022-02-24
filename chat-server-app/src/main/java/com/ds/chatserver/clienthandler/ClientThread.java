@@ -4,7 +4,7 @@ import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.utils.JsonParser;
-import com.ds.chatserver.utils.ServerMessage;
+import com.ds.chatserver.utils.ClientServerMessage;
 import com.ds.chatserver.utils.Validation;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -81,7 +81,7 @@ public class ClientThread implements Runnable {
                     this.id = identity;
                     if (Validation.validateClientID(identity)) {
                         try {
-                            this.sendResponse(ServerMessage.getNewIdentityResponse(true));
+                            this.sendResponse(ClientServerMessage.getNewIdentityResponse(true));
                             chatRoomHandler.joinRoom(
                                     chatRoomHandler.getMainHall().getRoomId(), this, null);
                             logger.info("New Client with id {} joined", identity);
@@ -90,7 +90,7 @@ public class ClientThread implements Runnable {
                             e.printStackTrace();
                         }
                     } else {
-                        this.sendResponse(ServerMessage.getNewIdentityResponse(false));
+                        this.sendResponse(ClientServerMessage.getNewIdentityResponse(false));
                         logger.info("New Client join request with id {} failed", identity);
                         // TODO: check if directly stopping the thread is okay
                         this.stop();
@@ -102,7 +102,7 @@ public class ClientThread implements Runnable {
                     this.id = (String) jsonObject.get("identity");
                     chatRoomHandler.moveJoinRoom(roomId, this, former);
                     //TODO: serverId
-                    sendResponse(ServerMessage.getServerChangeResponse("serverId"));
+                    sendResponse(ClientServerMessage.getServerChangeResponse("serverId"));
                     logger.info("Successfully changed server of {}", id);
                 }
                 default -> this.stop();
@@ -131,14 +131,14 @@ public class ClientThread implements Runnable {
 
         switch (type) {
             case "list" -> {
-                JSONObject response = ServerMessage.getRoomListResponse(getRoomIdFromChatRooms());
+                JSONObject response = ClientServerMessage.getRoomListResponse(getRoomIdFromChatRooms());
                 sendResponse(response);
                 logger.info("Successfully Send List of ChatRooms to {}", id);
             }
             case "who" -> {
                 ClientThread owner = currentChatRoom.getOwner();
                 String ownerName = owner!=null?owner.getId(): "";
-                JSONObject response = ServerMessage.getWhoResponse(
+                JSONObject response = ClientServerMessage.getWhoResponse(
                         currentChatRoom.getRoomId(),
                         currentChatRoom.getClientIds(),
                         ownerName);
@@ -152,15 +152,15 @@ public class ClientThread implements Runnable {
                     // check if the client is not the owner of the room
                     try {
                         chatRoomHandler.createChatRoom(roomId, this);
-                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, true));
+                        sendResponse(ClientServerMessage.getCreateRoomResponse(roomId, true));
                         logger.info("Successfully created chat room {}", roomId);
                     } catch (ChatroomAlreadyExistsException | InvalidChatroomException |
                             ClientNotInChatRoomException e) {
-                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
+                        sendResponse(ClientServerMessage.getCreateRoomResponse(roomId, false));
                         logger.info("Failed creating chat room {}", roomId);
                     }
                 } else {
-                    sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
+                    sendResponse(ClientServerMessage.getCreateRoomResponse(roomId, false));
                     logger.info("Failed creating chat room {}", roomId);
                 }
             }
@@ -177,11 +177,11 @@ public class ClientThread implements Runnable {
                 String roomId = (String) message.get("roomid");
                 try {
                     Boolean success = chatRoomHandler.deleteRoom(this);
-                    sendResponse(ServerMessage.getDeleteRoomResponse(roomId, success));
+                    sendResponse(ClientServerMessage.getDeleteRoomResponse(roomId, success));
                     logger.info("Successfully deleted the room {}", currentChatRoom);
                 } catch (ChatroomDoesntExistsException | ClientNotOwnerException |
                         ClientAlreadyInChatRoomException | ClientNotInChatRoomException e) {
-                    sendResponse(ServerMessage.getDeleteRoomResponse(roomId, false));
+                    sendResponse(ClientServerMessage.getDeleteRoomResponse(roomId, false));
                     logger.info("Failed to delete the room {}", currentChatRoom);
                 }
             }

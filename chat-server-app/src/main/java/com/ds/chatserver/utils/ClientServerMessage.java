@@ -4,7 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.util.ArrayList;
 
-public class ServerMessage {
+public class ClientServerMessage {
 
     @SuppressWarnings("unchecked")
     public static JSONObject getNewIdentityResponse(Boolean approved) {

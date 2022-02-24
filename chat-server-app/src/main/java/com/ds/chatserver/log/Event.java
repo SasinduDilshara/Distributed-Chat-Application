@@ -5,7 +5,7 @@ public class Event {
     private int term;
     private int logIndex;
     private String clientId;
-    private String serverId;
+    private String serverId = null;
     private String chatroomName;
 
     public Event(int term, int logIndex, EventTypeName type, String clientId) {
