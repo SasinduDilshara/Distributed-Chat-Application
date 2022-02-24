@@ -7,8 +7,16 @@ import java.util.HashMap;
 
 public class ServerDetails {
     private String serverName;
-    private int port;
+    private int serverPort;
+    private int clientPort;
     private String ipAddress;
+
+    public ServerDetails(String serverName, String ipAddress, int clientPort, int serverPort){
+        this.serverName = serverName;
+        this.serverPort = serverPort;
+        this.clientPort = clientPort;
+        this.ipAddress = ipAddress;
+    }
 
     public String getServerName() {
         return serverName;
@@ -18,13 +26,17 @@ public class ServerDetails {
         this.serverName = serverName;
     }
 
-    public int getPort() {
-        return port;
+    public int getServerPort() {
+        return serverPort;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setServerPort(int serverPort) {
+        this.serverPort = serverPort;
     }
+
+    public int getClientPort(){ return clientPort; }
+
+    public void setClientPort(int clientPort){ this.clientPort = clientPort; }
 
     public String getIpAddress() {
         return ipAddress;

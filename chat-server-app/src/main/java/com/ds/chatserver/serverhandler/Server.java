@@ -1,7 +1,5 @@
 package com.ds.chatserver.serverhandler;
 
-import com.ds.chatserver.chatroom.ChatRoom;
-import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.Log;
@@ -21,7 +19,7 @@ public class Server implements Runnable {
     private Log logs;
     private ArrayList<Integer> nestIndexes;
     private ArrayList<Integer> matchIndexes;
-    private HashMap<String, ServerDetails> serverDetails = ServerConfigurations.loadServerDetails();
+//    private HashMap<String, ServerDetails> serverDetails = ServerConfigurations.loadServerDetails();
 
     public ServerState getState() {
         return state;
@@ -137,6 +135,10 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
+
+    }
+
+    public void init() {
 
     }
 }
