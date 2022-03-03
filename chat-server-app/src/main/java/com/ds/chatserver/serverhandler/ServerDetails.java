@@ -1,36 +1,17 @@
 package com.ds.chatserver.serverhandler;
 
-import com.ds.chatserver.clienthandler.ClientThread;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.net.Socket;
-import java.util.HashMap;
-
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
 public class ServerDetails {
-    private String serverName;
-    private int port;
+    private String serverId;
+    private int serverPort;
+    private int clientPort;
     private String ipAddress;
-
-    public String getServerName() {
-        return serverName;
-    }
-
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
 }
