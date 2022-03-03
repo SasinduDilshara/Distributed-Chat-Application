@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+
 @Slf4j
 public class LeaderState extends ServerState {
 
@@ -50,10 +52,10 @@ public class LeaderState extends ServerState {
             for (int i = 0; i < serverCount-1; i++) {
                 try {
                     JSONObject response =  queue.take();
-                    if((Boolean) response.get("error")) {
+                    if((Boolean) response.get(ERROR)) {
                         log.info("Append Entries False");
                     } else {
-                        log.info("Append Entries Success: {}", response.get("success"));
+                        log.info("Append Entries Success: {}", response.get(SUCCESS));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -74,7 +76,7 @@ public class LeaderState extends ServerState {
 
     @Override
     public JSONObject handleRequestVote(JSONObject request) {
-        if (this.server.getCurrentTerm() < Integer.parseInt((String)request.get("term"))) {
+        if (this.server.getCurrentTerm() < Integer.parseInt((String)request.get(TERM))) {
             this.server.setState(new FollowerState(this.server));
             return this.server.getState().handleRequestVote(request);
         }

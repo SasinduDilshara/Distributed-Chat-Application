@@ -5,6 +5,8 @@ import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+
 @Slf4j
 public class FollowerState extends ServerState {
 
@@ -24,7 +26,7 @@ public class FollowerState extends ServerState {
     @Override
     public JSONObject handleRequestVote(JSONObject jsonObject) {
         boolean voteGranted;
-        int requestVoteTerm = Integer.parseInt((String) jsonObject.get("term"));
+        int requestVoteTerm = Integer.parseInt((String) jsonObject.get(TERM));
 
         if (requestVoteTerm <= this.server.getCurrentTerm()) {
             voteGranted = false;
@@ -34,10 +36,10 @@ public class FollowerState extends ServerState {
          * */
         else if (this.server.getLastVotedTerm() < this.server.getCurrentTerm()) {
             //TODO: recheck condition
-            if ((this.server.getLastLogIndex() <= (Integer.parseInt((String) jsonObject.get("lastLogIndex"))))
-                    && (this.server.getLastLogTerm() <= Integer.parseInt((String) jsonObject.get("lastLogTerm")))) {
+            if ((this.server.getLastLogIndex() <= (Integer.parseInt((String) jsonObject.get(LAST_LOG_INDEX))))
+                    && (this.server.getLastLogTerm() <= Integer.parseInt((String) jsonObject.get(LAST_LOG_TERM)))) {
                 voteGranted = true;
-                this.server.setLastVotedServerId((String) jsonObject.get("candidateId"));
+                this.server.setLastVotedServerId((String) jsonObject.get(CANDIDATE_ID));
                 this.server.setLastVotedTerm(requestVoteTerm);
             } else {
                 voteGranted = false;
