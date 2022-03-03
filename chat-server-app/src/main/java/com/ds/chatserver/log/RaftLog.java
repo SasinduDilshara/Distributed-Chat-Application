@@ -12,6 +12,22 @@ public class RaftLog {
     private int commitIndex;
     private int lastApplied;
 
+    public int getLastLogIndex() {
+        if (!logEntries.isEmpty()) {
+            return logEntries.get(logEntries.size()-1).getLogIndex();
+        }
+        //TODO: recheck the default value
+        return 0;
+    }
+
+    public int getLastLogTerm() {
+        if (!logEntries.isEmpty()) {
+            return logEntries.get(logEntries.size()-1).getLogTerm();
+        }
+        //TODO: recheck the default value
+        return 0;
+    }
+
     public void insert(EventType eventType) {
 
     }

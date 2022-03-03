@@ -1,13 +1,12 @@
 package com.ds.chatserver.log;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class EventType {
     private EventTypeName type;
-
-    public EventTypeName getType() {
-        return type;
-    }
-
-    public void setType(EventTypeName type) {
-        this.type = type;
-    }
+    private int logIndex;
+    private int logTerm;
 }

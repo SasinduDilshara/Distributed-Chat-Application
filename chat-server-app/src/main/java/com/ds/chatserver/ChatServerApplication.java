@@ -4,6 +4,7 @@ import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.clienthandler.ClientRequestHandler;
 import com.ds.chatserver.config.Configuration;
 import com.ds.chatserver.config.ServerConfigurations;
+import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.serverhandler.ServerIncomingRequestHandler;
 import com.ds.chatserver.serverhandler.ServerIncomingRequestListener;
 import com.ds.chatserver.serverhandler.ServerSenderHandler;
@@ -31,34 +32,47 @@ public class ChatServerApplication {
 
         new Configuration();
         ServerConfigurations.loadServerDetails(configFilePath);
-        try {
-            Thread serverIncomingRequestListenerThread = new Thread(new ServerIncomingRequestListener(ServerConfigurations.getServerDetails(serverId).getServerPort()));
-            serverIncomingRequestListenerThread.start();
-            ServerSenderHandler serverSenderHandler = new ServerSenderHandler();
-            logger.info(serverId);
-//            try {
-//                if (serverId.equals("s1")){
-//                    Thread.sleep(5000);
-//                }
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
 
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("sender", serverId);
-            jsonObject.put("type", "test");
-            jsonObject.put("message", "Hello World");
-            if (serverId.equals("s1")) {
-                for (int i = 0; i < 10; i++) {
-                    jsonObject.put("count",i);
-                    serverSenderHandler.sendRequest("s2", jsonObject);
-                    logger.info("S1 send message {}", i);
-                }
+        Server server = new Server(serverId);
+        server.init(serverId);
 
+        while(true) {
+            try {
+                server.getState().heartBeatAndLeaderElect();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+
+//        try {
+//            Thread serverIncomingRequestListenerThread = new Thread(new ServerIncomingRequestListener(ServerConfigurations.getServerDetails(serverId).getServerPort()));
+//            serverIncomingRequestListenerThread.start();
+//            ServerSenderHandler serverSenderHandler = new ServerSenderHandler();
+//            logger.info(serverId);
+////            try {
+////                if (serverId.equals("s1")){
+////                    Thread.sleep(5000);
+////                }
+////            } catch (InterruptedException e) {
+////                e.printStackTrace();
+////            }
+//
+//            JSONObject jsonObject = new JSONObject();
+//            jsonObject.put("sender", serverId);
+//            jsonObject.put("type", "test");
+//            jsonObject.put("message", "Hello World");
+//            if (serverId.equals("s1")) {
+//                for (int i = 0; i < 10; i++) {
+//                    jsonObject.put("count",i);
+//                    serverSenderHandler.sendRequest("s2", jsonObject);
+//                    logger.info("S1 send message {}", i);
+//                }
+//
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 //        logger.info("Configuration file loaded");
 //        ChatRoomHandler chatRoomHandler = ChatRoomHandler.getInstance();
 //        try {
