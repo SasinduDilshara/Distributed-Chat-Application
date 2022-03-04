@@ -43,12 +43,10 @@ public abstract class ServerState {
         String leaderId = (String) jsonObject.get("leaderId");
         log.info("Append Entry {} from {}", requestTerm, leaderId);
         boolean success = false;
-        if (requestTerm > this.server.getCurrentTerm()) {
+        if (requestTerm >= this.server.getCurrentTerm()) {
             log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setLeaderId(leaderId);
-            log.info("Leader updated to {}", leaderId);
-            this.server.setCurrentTerm(requestTerm);
             this.server.setState(new FollowerState(this.server));
             success = true;
         }

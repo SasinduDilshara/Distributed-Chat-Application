@@ -22,7 +22,7 @@ public class ServerRequestSender implements Runnable {
     private JSONParser parser;
     private String serverId;
     private ArrayBlockingQueue<JSONObject> responseQueue;
-    private static final Logger logger = LoggerFactory.getLogger(ServerIncomingRequestListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerRequestSender.class);
 
     public ServerRequestSender(String serverId, JSONObject jsonMessage, ArrayBlockingQueue<JSONObject> responseQueue) throws IOException {
         this.jsonMessage = jsonMessage;

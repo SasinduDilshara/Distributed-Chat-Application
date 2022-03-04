@@ -31,8 +31,8 @@ public class CandidateState extends ServerState {
 
     @Override
     public void heartBeatAndLeaderElect() throws IOException {
-        log.info("Initialize a Vote for the term {}", this.server.getCurrentTerm());
         this.server.incrementTerm();
+        log.info("Initialize a Vote for the term {}", this.server.getCurrentTerm());
         this.server.setLastVotedTerm(this.server.getCurrentTerm());
         int serverCount = ServerConfigurations.getNumberOfServers();
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(serverCount);
@@ -60,9 +60,18 @@ public class CandidateState extends ServerState {
                     voteCount++;
                     log.info("Vote True");
                 } else {
+                    if(!(Boolean) response.get("error")){
+                        int responseTerm = Integer.parseInt((String) response.get("term"));
+                        if(responseTerm > this.server.getCurrentTerm()){
+                            this.server.setCurrentTerm(responseTerm);
+                            this.server.setState(new FollowerState(this.server));
+                            return;
+                        }
+                    }
+
                     log.info("Vote False");
                     rejectCount ++;
-                    if (rejectCount > (serverCount/2)) {
+                    if (rejectCount >= (serverCount - serverCount/2)) {
                         int electionTimeOut = 150 + (int)(Math.random()*150);
                         Thread.sleep(electionTimeOut);
                         break;

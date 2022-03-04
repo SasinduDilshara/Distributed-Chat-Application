@@ -17,14 +17,12 @@ public class ServerIncomingRequestHandler implements Runnable{
     private final PrintWriter printWriter;
     private final BufferedReader bufferedReader;
     private Server server;
-    private Boolean exit;
 
     public ServerIncomingRequestHandler(Socket socket, Server server) throws IOException {
         this.server = server;
         this.socket = socket;
         this.printWriter = new PrintWriter(socket.getOutputStream(), true);
         this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.exit = false;
     }
 
     @Override
@@ -36,29 +34,29 @@ public class ServerIncomingRequestHandler implements Runnable{
             dout = new DataOutputStream(this.socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
+            this.stop();
         }
-        while(!exit) {
-            try {
-                if ((jsonString = bufferedReader.readLine()) == null) {
-                    this.stop();
-                    break;
-                } else {
-                    JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
-                    log.info(jsonString);
+
+        try {
+            if ((jsonString = bufferedReader.readLine()) == null) {
+                this.stop();
+            } else {
+                JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
+                log.info(jsonString);
 //                    String type = (String)jsonObject.get("type");
 //                    JSONObject response = new JSONObject();
 //                    response.put("type", type);
 //                    response.put("reply", "Hello There!");
 //                    dout.write((response.toJSONString() + "\n").getBytes("UTF-8"));
 //                    dout.flush();
-                    JSONObject response = this.server.handleServerRequest(jsonObject);
-                    dout.write((response.toJSONString() + "\n").getBytes(StandardCharsets.UTF_8));
-                    dout.flush();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+                JSONObject response = this.server.handleServerRequest(jsonObject);
+                dout.write((response.toJSONString() + "\n").getBytes(StandardCharsets.UTF_8));
+                dout.flush();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        this.stop();
     }
 
     public void stop() {
@@ -67,6 +65,5 @@ public class ServerIncomingRequestHandler implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.exit = true;
     }
 }

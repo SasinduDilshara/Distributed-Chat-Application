@@ -16,7 +16,7 @@ public class ServerServerMessage {
     ) {
         JSONObject requestVote = new JSONObject();
         requestVote.put("type", "requestVote");
-        requestVote.put("term", Integer.toString(term) );
+        requestVote.put("term", Integer.toString(term));
         requestVote.put("candidateId", candidateId);
         requestVote.put("lastLogIndex", Integer.toString(lastLogIndex));
         requestVote.put("lastLogTerm", Integer.toString(lastLogTerm));

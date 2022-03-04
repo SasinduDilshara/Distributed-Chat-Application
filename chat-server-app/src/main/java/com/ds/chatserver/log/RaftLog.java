@@ -9,8 +9,8 @@ import java.util.ArrayList;
 @Getter
 public class RaftLog {
     private ArrayList<EventType> logEntries;
-    private int commitIndex;
-    private int lastApplied;
+    private int commitIndex = 0;
+    private int lastApplied = 0;
 
     public int getLastLogIndex() {
         if (!logEntries.isEmpty()) {

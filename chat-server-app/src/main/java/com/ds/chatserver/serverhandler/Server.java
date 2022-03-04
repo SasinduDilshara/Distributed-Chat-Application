@@ -21,9 +21,9 @@ import java.util.ArrayList;
 public class Server {
     private ServerState state;
     private String serverId;
-    private int currentTerm;
-    private int lastLogIndex;
-    private int lastLogTerm;
+    private int currentTerm = 0;
+    private int lastLogIndex = 0;
+    private int lastLogTerm = 0;
     private int lastVotedTerm = -1;
     private String leaderId = null;
     private String lastVotedServerId = null;

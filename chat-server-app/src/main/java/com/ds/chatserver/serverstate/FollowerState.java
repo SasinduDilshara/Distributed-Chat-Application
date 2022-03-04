@@ -15,7 +15,14 @@ public class FollowerState extends ServerState {
 
     @Override
     public void heartBeatAndLeaderElect() {
-
+        while(true){
+            log.info("Follower State: Term:{} leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
