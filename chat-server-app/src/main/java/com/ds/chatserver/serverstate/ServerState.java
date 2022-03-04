@@ -10,8 +10,7 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 
-import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.LEADER_ID;
-import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.TERM;
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 import static com.ds.chatserver.constants.RequestTypeConstants.APPEND_ENTRIES;
 import static com.ds.chatserver.constants.RequestTypeConstants.REQUEST_VOTE;
 
@@ -25,7 +24,7 @@ public abstract class ServerState {
     void changeState(Server server) {}
 
     public JSONObject respondToServerRequest(JSONObject request) {
-        switch ((String) request.get(TERM)) {
+        switch ((String) request.get(TYPE)) {
             case REQUEST_VOTE:
                 return handleRequestVote(request);
 
@@ -33,6 +32,7 @@ public abstract class ServerState {
                 return handleRequestAppendEntries(request);
         }
 
+        //TODO: return null cause and error
         return null;
     }
 
