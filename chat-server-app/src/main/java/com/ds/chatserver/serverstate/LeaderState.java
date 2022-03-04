@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+
 @Slf4j
 public class LeaderState extends ServerState {
     private HashMap<String, Integer> nextIndex;
@@ -92,7 +94,7 @@ public class LeaderState extends ServerState {
 
     @Override
     public JSONObject handleRequestVote(JSONObject request) {
-        if (this.server.getCurrentTerm() < Integer.parseInt((String)request.get("term"))) {
+        if (this.server.getCurrentTerm() < Integer.parseInt((String)request.get(TERM))) {
             this.server.setState(new FollowerState(this.server));
             return this.server.getState().handleRequestVote(request);
         }
