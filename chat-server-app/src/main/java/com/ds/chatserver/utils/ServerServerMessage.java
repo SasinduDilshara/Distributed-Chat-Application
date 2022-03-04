@@ -36,7 +36,7 @@ public class ServerServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject requestAppendEntries (
+    public static JSONObject requestAppendEntries(
             int term,
             String leaderId,
             int prevLogIndex,
@@ -56,7 +56,7 @@ public class ServerServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject responseAppendEntries (
+    public static JSONObject responseAppendEntries(
             int term,
             boolean success
     ) {
