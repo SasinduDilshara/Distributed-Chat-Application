@@ -10,6 +10,11 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.LEADER_ID;
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.TERM;
+import static com.ds.chatserver.constants.RequestTypeConstants.APPEND_ENTRIES;
+import static com.ds.chatserver.constants.RequestTypeConstants.REQUEST_VOTE;
+
 @Setter
 @Getter
 @AllArgsConstructor
@@ -20,11 +25,11 @@ public abstract class ServerState {
     void changeState(Server server) {}
 
     public JSONObject respondToServerRequest(JSONObject request) {
-        switch ((String) request.get("type")) {
-            case "requestVote":
+        switch ((String) request.get(TERM)) {
+            case REQUEST_VOTE:
                 return handleRequestVote(request);
 
-            case "appendEntries":
+            case APPEND_ENTRIES:
                 return handleRequestAppendEntries(request);
         }
 
@@ -39,8 +44,8 @@ public abstract class ServerState {
 
     public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
 
-        int requestTerm = Integer.parseInt((String)jsonObject.get("term"));
-        String leaderId = (String) jsonObject.get("leaderId");
+        int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
+        String leaderId = (String) jsonObject.get(LEADER_ID);
         log.info("Append Entry {} from {}", requestTerm, leaderId);
         boolean success = false;
         if (requestTerm > this.server.getCurrentTerm()) {

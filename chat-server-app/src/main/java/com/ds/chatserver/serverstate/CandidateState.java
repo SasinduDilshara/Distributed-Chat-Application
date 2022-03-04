@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+
 @Slf4j
 public class CandidateState extends ServerState {
 
@@ -56,7 +58,7 @@ public class CandidateState extends ServerState {
         while(true) {
             try {
                 JSONObject response = queue.take();
-                if ((!(Boolean) response.get("error")) && (Boolean) response.get("voteGranted")) {
+                if ((!(Boolean) response.get(ERROR)) && (Boolean) response.get(VOTE_GRANTED)) {
                     voteCount++;
                     log.info("Vote True");
                 } else {
@@ -83,7 +85,7 @@ public class CandidateState extends ServerState {
     public JSONObject handleRequestVote(JSONObject request) {
         //TODO: recheck the conditions
 
-        int requestTerm = Integer.parseInt((String)request.get("term"));
+        int requestTerm = Integer.parseInt((String)request.get(TERM));
         if (this.server.getCurrentTerm() < requestTerm) {
             this.server.setState(new FollowerState(this.server));
             return this.server.getState().handleRequestVote(request);
