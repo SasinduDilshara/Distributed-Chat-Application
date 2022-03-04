@@ -4,7 +4,7 @@ import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
 import com.ds.chatserver.exceptions.ClientNotInChatRoomException;
 import com.ds.chatserver.exceptions.ClientNotOwnerException;
-import com.ds.chatserver.utils.ServerMessage;
+import com.ds.chatserver.utils.ClientServerMessage;
 
 import java.util.ArrayList;
 
@@ -68,7 +68,7 @@ public class ChatRoom {
         }
         this.clients.add(client);
         for(ClientThread existingClient: clients) {
-            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+            existingClient.sendResponse(ClientServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
         }
 
     }
@@ -82,7 +82,7 @@ public class ChatRoom {
                 throw new ClientAlreadyInChatRoomException(errorMsg);
             }
             for(ClientThread existingClient: clients) {
-                existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+                existingClient.sendResponse(ClientServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
             }
         }
         this.clients.addAll(newClients);
@@ -98,7 +98,7 @@ public class ChatRoom {
         }
         this.clients.remove(client);
         for(ClientThread existingClient: clients) {
-            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, nextRoomName));
+            existingClient.sendResponse(ClientServerMessage.getRoomChangeResponse(client.getId(), roomId, nextRoomName));
         }
     }
 
@@ -110,7 +110,7 @@ public class ChatRoom {
         }
         for(ClientThread client: clients) {
             if(!client.getId().equals(senderId)) {
-                client.sendResponse(ServerMessage.getMessageResponse(senderId, message));
+                client.sendResponse(ClientServerMessage.getMessageResponse(senderId, message));
             }
         }
     }
@@ -123,7 +123,7 @@ public class ChatRoom {
         }
         for(ClientThread client: clients) {
             if(!clientId.equals(this.owner.getId())) {
-                client.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
+                client.sendResponse(ClientServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
             }
         }
     }
