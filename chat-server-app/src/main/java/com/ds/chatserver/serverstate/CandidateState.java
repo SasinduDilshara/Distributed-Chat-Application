@@ -18,12 +18,8 @@ public class CandidateState extends ServerState {
 
     public CandidateState(Server server) {
         super(server);
+        this.server.setLeaderId(null);
         log.info("Candidate State : {}", this.server.getCurrentTerm());
-    }
-
-    @Override
-    public void changeState(Server server) {
-
     }
 
     @Override
@@ -51,7 +47,7 @@ public class CandidateState extends ServerState {
             if (id.equals(this.server.getServerId())) {
                 continue;
             }
-            Thread thread = new Thread(new ServerRequestSender( id, jsonMessage,queue));
+            Thread thread = new Thread(new ServerRequestSender( id, jsonMessage, queue));
             thread.start();
         }
 
@@ -62,11 +58,11 @@ public class CandidateState extends ServerState {
                     voteCount++;
                     log.info("Vote True");
                 } else {
-                    if(!(Boolean) response.get("error")){
-                        int responseTerm = Integer.parseInt((String) response.get("term"));
+                    if(!(Boolean) response.get(ERROR)){
+                        int responseTerm = Integer.parseInt((String) response.get(TERM));
                         if(responseTerm > this.server.getCurrentTerm()){
                             this.server.setCurrentTerm(responseTerm);
-                            this.server.setState(new FollowerState(this.server));
+                            this.server.setState(new FollowerState(this.server, null));
                             return;
                         }
                     }
@@ -75,6 +71,7 @@ public class CandidateState extends ServerState {
                     rejectCount ++;
                     if (rejectCount >= (serverCount - serverCount/2)) {
                         int electionTimeOut = 150 + (int)(Math.random()*150);
+                        log.info("Election Timeoout - {}", electionTimeOut);
                         Thread.sleep(electionTimeOut);
                         break;
                     }
@@ -96,12 +93,35 @@ public class CandidateState extends ServerState {
 
         int requestTerm = Integer.parseInt((String)request.get(TERM));
         if (this.server.getCurrentTerm() < requestTerm) {
-            this.server.setState(new FollowerState(this.server));
+            this.server.setState(new FollowerState(this.server, null));
             return this.server.getState().handleRequestVote(request);
         }
         return ServerServerMessage.responseVote(this.server.getCurrentTerm(), false);
     }
 
+    public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
+
+        int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
+        String leaderId = (String) jsonObject.get(LEADER_ID);
+        log.info("Append Entry {} from {}", requestTerm, leaderId);
+        boolean success = false;
+        if (requestTerm >= this.server.getCurrentTerm()) {
+            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
+            this.server.setCurrentTerm(requestTerm);
+            this.server.setState(new FollowerState(this.server, leaderId));
+            success = true;
+        }
+        JSONObject response = ServerServerMessage.responseAppendEntries(
+                this.server.getCurrentTerm(),
+                success
+        );
+        return response;
+    }
+
+    @Override
+    public String printState(){
+        return "Candidate State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+    }
 }
 
 

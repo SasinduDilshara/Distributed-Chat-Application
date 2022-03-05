@@ -40,7 +40,7 @@ public class Server {
     }
 
     public Boolean init(String serverId) {
-//        this.state = new FollowerState(this);
+        this.state = new FollowerState(this, null);
 
         Integer serverPort = ServerConfigurations.getServerDetails(serverId).getServerPort();
         try {
@@ -51,12 +51,15 @@ public class Server {
             e.printStackTrace();
         }
 
-        this.state = new CandidateState(this);
-
         return true;
     }
 
     public JSONObject handleServerRequest(JSONObject jsonObject) {
         return this.getState().respondToServerRequest(jsonObject);
+    }
+
+    public void setState(ServerState state){
+        this.state.stop();
+        this.state = state;
     }
 }

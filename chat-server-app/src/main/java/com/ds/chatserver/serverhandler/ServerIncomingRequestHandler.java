@@ -42,7 +42,7 @@ public class ServerIncomingRequestHandler implements Runnable{
                 this.stop();
             } else {
                 JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
-                log.info(jsonString);
+//                log.info(jsonString);
 //                    String type = (String)jsonObject.get("type");
 //                    JSONObject response = new JSONObject();
 //                    response.put("type", type);
