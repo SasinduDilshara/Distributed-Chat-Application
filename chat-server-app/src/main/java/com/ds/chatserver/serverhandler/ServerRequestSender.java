@@ -22,6 +22,7 @@ public class ServerRequestSender implements Runnable {
     private JSONParser parser;
     private String serverId;
     private ArrayBlockingQueue<JSONObject> responseQueue;
+    private int maxRetries;
     private static final Logger logger = LoggerFactory.getLogger(ServerRequestSender.class);
 
     public ServerRequestSender(String serverId, JSONObject jsonMessage, ArrayBlockingQueue<JSONObject> responseQueue) throws IOException {
@@ -29,6 +30,15 @@ public class ServerRequestSender implements Runnable {
         this.serverId = serverId;
         this.responseQueue = responseQueue;
         this.parser = new JSONParser();
+        this.maxRetries = 3;
+    }
+
+    public ServerRequestSender(String serverId, JSONObject jsonMessage, ArrayBlockingQueue<JSONObject> responseQueue, int maxRetries) throws IOException {
+        this.jsonMessage = jsonMessage;
+        this.serverId = serverId;
+        this.responseQueue = responseQueue;
+        this.parser = new JSONParser();
+        this.maxRetries = maxRetries;
     }
 
     @Override
@@ -43,7 +53,7 @@ public class ServerRequestSender implements Runnable {
         String host = ServerConfigurations.getServerDetails(serverId).getIpAddress();
         Socket socket = null;
 
-        while(socket == null && numberOfReTrys < 5) {
+        while(socket == null && numberOfReTrys < this.maxRetries) {
             try {
                 socket = new Socket(host, port);
 
