@@ -17,7 +17,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 
 
-public class ServerRequestSender implements Runnable {
+public class ServerRequestSender extends Thread {
     private JSONObject jsonMessage;
     private JSONParser parser;
     private String serverId;

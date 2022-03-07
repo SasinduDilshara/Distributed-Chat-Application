@@ -10,7 +10,6 @@ import java.util.ArrayList;
 public class RaftLog {
     private ArrayList<Event> logEntries;
     private int commitIndex = 0;
-    private int lastApplied = 0;
 
     public int getLastLogIndex() {
         if (!logEntries.isEmpty()) {

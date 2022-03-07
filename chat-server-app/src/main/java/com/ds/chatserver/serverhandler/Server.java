@@ -28,8 +28,6 @@ public class Server {
     private String leaderId = null;
     private String lastVotedServerId = null;
     private RaftLog raftLog;
-    private ArrayList<Integer> nestIndexes;
-    private ArrayList<Integer> matchIndexes;
 
     public Server(String serverId) {
         this.serverId = serverId;
@@ -61,5 +59,10 @@ public class Server {
     public void setState(ServerState state){
         this.state.stop();
         this.state = state;
+    }
+
+    public int incrementLogIndex() {
+        setLastLogIndex(getLastLogIndex() + 1);
+        return getLastLogIndex();
     }
 }

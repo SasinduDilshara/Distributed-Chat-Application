@@ -1,9 +1,13 @@
 package com.ds.chatserver.serverstate;
 
 import com.ds.chatserver.config.ServerConfigurations;
+import com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants;
+import com.ds.chatserver.log.Event;
+import com.ds.chatserver.log.EventType;
 import com.ds.chatserver.serverhandler.Server;
-import com.ds.chatserver.serverhandler.ServerRequestSender;
+import com.ds.chatserver.serverhandler.ServerSenderHandler;
 import com.ds.chatserver.serverhandler.heartbeatcomponent.HeartBeatSenderThread;
+import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -15,8 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+import static com.ds.chatserver.constants.ServerConfigurationConstants.SERVER_ID;
 
 @Slf4j
 public class LeaderState extends ServerState {
@@ -104,6 +111,28 @@ public class LeaderState extends ServerState {
                 success
         );
         return response;
+    }
+
+    @Override
+    public JSONObject handleCreateClientRequest(JSONObject request) {
+        /*
+            Request contains client name, server id
+         */
+        String clientId = request.get(CLIENT_ID).toString();
+        if (!(SystemState.isClientAvailable(clientId))) {
+            ArrayBlockingQueue<JSONObject> arrayBlockingQueue =  new ArrayBlockingQueue<>();
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(clientId)
+                    .serverId(request.get(SERVER_ID).toString())
+                    .type(EventType.NEW_IDENTITY)
+                    .logIndex(server.incrementLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .build());
+            //TODO: Handle race conditions if any
+            //TODO: Create the JSon object using next indexes and match indexes
+            ServerSenderHandler.broadCastMessage(server.getServerId(), , arrayBlockingQueue);
+        }
+        return null;
     }
 
     @Override
