@@ -1,12 +1,11 @@
 package com.ds.chatserver.log;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class EventType {
-    private EventTypeName type;
-    private int logIndex;
-    private int logTerm;
+public enum EventType {
+    NEWIDENTITY,
+    CREATEROOM,
+    ROOMCHANGE,
+    DELETEROOM,
+    QUIT,
+    //TODO: Cannot store in room change
+    SERVERCHANGE
 }

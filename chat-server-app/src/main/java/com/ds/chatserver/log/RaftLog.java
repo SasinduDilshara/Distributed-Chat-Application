@@ -8,7 +8,7 @@ import java.util.ArrayList;
 @Setter
 @Getter
 public class RaftLog {
-    private ArrayList<EventType> logEntries;
+    private ArrayList<Event> logEntries;
     private int commitIndex = 0;
     private int lastApplied = 0;
 
@@ -28,11 +28,11 @@ public class RaftLog {
         return 0;
     }
 
-    public void insert(EventType eventType) {
+    public void insert(Event event) {
 
     }
 
-    public void overwrite(EventType eventType) {
+    public void overwrite(Event event) {
 
     }
 
@@ -40,7 +40,7 @@ public class RaftLog {
 
     }
 
-    public void update(EventType eventType) {
+    public void update(Event event) {
 
     }
 

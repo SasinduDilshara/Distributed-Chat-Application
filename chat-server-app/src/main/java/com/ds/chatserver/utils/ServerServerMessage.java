@@ -1,6 +1,6 @@
 package com.ds.chatserver.utils;
 
-import com.ds.chatserver.log.EventTypeName;
+import com.ds.chatserver.log.EventType;
 import org.json.simple.JSONObject;
 
 import java.util.List;
@@ -41,7 +41,7 @@ public class ServerServerMessage {
             String leaderId,
             int prevLogIndex,
             int prevLogTerm,
-            List<EventTypeName> entries,
+            List<EventType> entries,
             int leaderCommit
     ) {
         JSONObject responseVote = new JSONObject();
