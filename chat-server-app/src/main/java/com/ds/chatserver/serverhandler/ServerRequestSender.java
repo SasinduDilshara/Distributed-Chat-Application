@@ -63,14 +63,16 @@ public class ServerRequestSender implements Runnable {
 //                        serverId,
 //                        numberOfReTrys);
             }
-            if (socket == null) {
+
+            numberOfReTrys++;
+            if (socket == null && numberOfReTrys < this.maxRetries) {
                 try {
                     Thread.sleep(timeout);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            numberOfReTrys++;
+
             timeout = timeout*2;
         }
         if (socket == null) {
@@ -88,9 +90,14 @@ public class ServerRequestSender implements Runnable {
                 dataOutputStream.flush();
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                 response = (JSONObject) this.parser.parse(bufferedReader.readLine());
-                response.put("error",false);
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
+            }
+            finally{
+                if(response == null){
+                    response = new JSONObject();
+                }
+                response.put("error",false);
             }
             try {
                 responseQueue.put(response);
