@@ -11,8 +11,7 @@ import org.json.simple.JSONObject;
 import java.io.IOException;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
-import static com.ds.chatserver.constants.RequestTypeConstants.APPEND_ENTRIES;
-import static com.ds.chatserver.constants.RequestTypeConstants.REQUEST_VOTE;
+import static com.ds.chatserver.constants.RequestTypeConstants.*;
 
 @Setter
 @Getter
@@ -25,9 +24,10 @@ public abstract class ServerState {
         switch ((String) request.get(TYPE)) {
             case REQUEST_VOTE:
                 return handleRequestVote(request);
-
             case APPEND_ENTRIES:
                 return handleRequestAppendEntries(request);
+            case CREATE_CLIENT:
+                return handleCreateClientRequest(request);
         }
 
         //TODO: return null cause and error
@@ -44,8 +44,12 @@ public abstract class ServerState {
 
     public abstract void heartBeatAndLeaderElect() throws IOException;
 
-    public abstract JSONObject handleRequestVote(JSONObject jsonObject);
+    public abstract JSONObject handleRequestVote(JSONObject request);
 
-    public abstract JSONObject handleRequestAppendEntries(JSONObject jsonObject);
+    public abstract JSONObject handleRequestAppendEntries(JSONObject request);
 
+    public JSONObject handleCreateClientRequest(JSONObject request) throws IOException {
+        //TODO: Return Error
+        return null;
+    }
 }

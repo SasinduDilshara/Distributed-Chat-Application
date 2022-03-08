@@ -1,11 +1,11 @@
 package com.ds.chatserver.log;
 
 public enum EventType {
-    NEWIDENTITY,
-    CREATEROOM,
-    ROOMCHANGE,
-    DELETEROOM,
+    NEW_IDENTITY,
+    CREATE_ROOM,
+    ROOM_CHANGE,
+    DELETE_ROOM,
     QUIT,
     //TODO: Cannot store in room change
-    SERVERCHANGE
+    SERVER_CHANGE
 }

@@ -4,13 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
 public class RaftLog {
     private ArrayList<Event> logEntries;
     private int commitIndex = 0;
-    private int lastApplied = 0;
 
     public int getLastLogIndex() {
         if (!logEntries.isEmpty()) {
@@ -26,6 +26,14 @@ public class RaftLog {
         }
         //TODO: recheck the default value
         return 0;
+    }
+
+    public int getTermFromIndex(int index) {
+        return logEntries.get(index).getLogTerm();
+    }
+
+    public ArrayList<Event> getLogEntriesFromIndex(int index) {
+        return (ArrayList<Event>) logEntries.subList(index, logEntries.size());
     }
 
     public void insert(Event event) {

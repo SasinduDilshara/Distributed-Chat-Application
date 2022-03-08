@@ -3,46 +3,52 @@ package com.ds.chatserver.systemstate;
 import java.util.HashMap;
 
 public class SystemState {
-    private HashMap<String, ClientLog> clientLists;
-    private HashMap<String, ChatroomLog> chatroomLists;
+    private static HashMap<String, ClientLog> clientLists;
+    private static HashMap<String, ChatroomLog> chatroomLists;
+    private static HashMap<String, ClientLog> draftClientLists;
+    private static HashMap<String, ChatroomLog> draftChatroomLists;
 
     public HashMap<String, ClientLog> getClientLists() {
         return clientLists;
     }
 
-    public void setClientLists(HashMap<String, ClientLog> clientLists) {
+    public static void setClientLists(HashMap<String, ClientLog> clientLists) {
         this.clientLists = clientLists;
     }
 
-    public HashMap<String, ChatroomLog> getChatroomLists() {
+    public static HashMap<String, ChatroomLog> getChatroomLists() {
         return chatroomLists;
     }
 
-    public void setChatroomLists(HashMap<String, ChatroomLog> chatroomLists) {
-        this.chatroomLists = chatroomLists;
+    public static void setChatroomLists(HashMap<String, ChatroomLog> chatroomLists) {
+        chatroomLists = chatroomLists;
     }
 
-    public void addClient(ClientLog clientLog) {
-
-    }
-
-    public void removeClient(ClientLog clientLog) {
+    public static void addClient(ClientLog clientLog) {
 
     }
 
-    public void addChatroom(ChatroomLog chatroomLog) {
+    public static void removeClient(ClientLog clientLog) {
 
     }
 
-    public void removeChatroom(ChatroomLog chatroomLog) {
+    public static void addChatroom(ChatroomLog chatroomLog) {
 
     }
 
-    public void isClientAvailable(String clientId) {
+    public static void removeChatroom(ChatroomLog chatroomLog) {
 
     }
 
-    public void getChatroom(String chatroomId) {
+    public static Boolean isClientCommitted(String clientId) {
+        return clientLists.containsKey(clientId);
+    }
+
+    public static Boolean isClientAvailableInDraft(String clientId) {
+        return draftClientLists.containsKey(clientId);
+    }
+
+    public static void getChatroom(String chatroomId) {
 
     }
 }

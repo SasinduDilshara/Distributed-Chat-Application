@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -39,30 +40,22 @@ public class ServerSenderHandler {
 //        return null;
 //    }
 
-//    public List<JSONObject> broadCastMessage(String myServerId,JSONObject message) throws ExecutionException, InterruptedException {
-//        List<JSONObject> responses = new ArrayList<>();
-//        List<Future> responseFutures = new ArrayList<>();
-//        Set<String> serverIds = ServerConfigurations.getServerIds();
-//
-//        for (String id: serverIds) {
-//            if (id.equals(myServerId)) {
-//                continue;
-//            }
-//            try {
-//                responseFutures.add(executorService.submit(new ServerRequestSender(id, message)));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        for (Future future: responseFutures) {
-//            responses.add((JSONObject) future.get());
-//        }
-//
-//
-//        return responses;
-//    }
-//
+    public static void broadCastMessage(String myServerId, JSONObject message,
+         ArrayBlockingQueue<JSONObject> blockingQueue) throws ExecutionException, InterruptedException, IOException {
+        Set<String> serverIds = ServerConfigurations.getServerIds();
+        List<ServerRequestSender> senderThreads =  new ArrayList<>();
+        ServerRequestSender serverRequestSender;
+
+        for (String id : serverIds) {
+            if (id.equals(myServerId)) {
+                continue;
+            }
+            serverRequestSender = new ServerRequestSender(id, message, blockingQueue);
+            senderThreads.add(serverRequestSender);
+            serverRequestSender.start();
+        }
+    }
+
 //    public static void broadCastMessage(ArrayBlockingQueue<JSONObject> queue, JSONObject message) {
 //
 //    }
