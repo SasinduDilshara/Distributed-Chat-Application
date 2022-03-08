@@ -5,6 +5,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 import static com.ds.chatserver.constants.RequestTypeConstants.*;
@@ -12,7 +13,7 @@ import static com.ds.chatserver.constants.RequestTypeConstants.*;
 public class ServerServerMessage {
 
     @SuppressWarnings("unchecked")
-    private static JSONArray convertEntriesToJson(ArrayList<Event> entries) {
+    private static JSONArray convertEntriesToJson(List<Event> entries) {
         JSONArray jsonEntries = new JSONArray();
         for(Event entry: entries) {
             JSONObject jsonEntry = new JSONObject();
@@ -52,7 +53,7 @@ public class ServerServerMessage {
 
     @SuppressWarnings("unchecked")
     public static JSONObject getAppendEntriesRequest(int term, String leaderId, int prevLogIndex,
-                                                     int prevLogTerm, ArrayList<Event> entries, int leaderCommit) {
+                                                     int prevLogTerm, List<Event> entries, int leaderCommit) {
         JSONObject appendEntries = new JSONObject();
         appendEntries.put(TYPE, APPEND_ENTRIES);
         appendEntries.put(TERM, String.valueOf(term));

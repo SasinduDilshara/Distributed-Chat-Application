@@ -264,4 +264,6 @@ public class LeaderState extends ServerState {
     public String printState(){
         return "Leader State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
     }
+
+
 }

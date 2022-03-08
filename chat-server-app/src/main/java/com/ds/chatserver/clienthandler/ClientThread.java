@@ -3,6 +3,7 @@ package com.ds.chatserver.clienthandler;
 import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.*;
+import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Validation;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 public class ClientThread implements Runnable {
     private String id;
     private final Socket socket;
+    private Server server;
     private final ChatRoomHandler chatRoomHandler;
     private ChatRoom currentChatRoom;
     private final PrintWriter printWriter;
@@ -26,8 +28,9 @@ public class ClientThread implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
-    public ClientThread(Socket socket, ChatRoomHandler chatRoomHandler) throws IOException {
+    public ClientThread(Socket socket, ChatRoomHandler chatRoomHandler, Server server) throws IOException {
         this.socket = socket;
+        this.server = server;
         this.printWriter = new PrintWriter(socket.getOutputStream(), true);
         this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.chatRoomHandler = chatRoomHandler;
@@ -79,6 +82,7 @@ public class ClientThread implements Runnable {
                 case "newidentity" -> {
                     String identity = (String) jsonObject.get("identity");
                     this.id = identity;
+                    JSONObject serverResponse = this.server.handleClientRequest(jsonObject);
                     if (Validation.validateClientID(identity)) {
                         try {
                             this.sendResponse(ServerMessage.getNewIdentityResponse(true));
