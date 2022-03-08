@@ -1,70 +1,190 @@
 package com.ds.chatserver.utils;
 
-import com.ds.chatserver.log.EventType;
+import com.ds.chatserver.log.Event;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.util.List;
+import java.util.ArrayList;
+
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+import static com.ds.chatserver.constants.RequestTypeConstants.*;
 
 public class ServerServerMessage {
 
     @SuppressWarnings("unchecked")
-    public static JSONObject requestVote(
-            int term,
-            String candidateId,
-            int lastLogIndex,
-            int lastLogTerm
-    ) {
+    private static JSONArray convertEntriesToJson(ArrayList<Event> entries) {
+        JSONArray jsonEntries = new JSONArray();
+        for(Event entry: entries) {
+            JSONObject jsonEntry = new JSONObject();
+            jsonEntry.put(TERM, entry.getLogTerm());
+            jsonEntry.put(LOG_INDEX, entry.getLogIndex());
+            jsonEntry.put(TYPE, entry.getType());
+            jsonEntry.put(CLIENT_ID, entry.getClientId());
+            jsonEntry.put(SERVER_ID, entry.getServerId());
+
+            jsonEntries.add(jsonEntry);
+        }
+        return jsonEntries;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getRequestVoteRequest(int term, String candidateId, int lastLogIndex,
+                                                   int lastLogTerm) {
         JSONObject requestVote = new JSONObject();
-        requestVote.put("type", "requestVote");
-        requestVote.put("term", Integer.toString(term));
-        requestVote.put("candidateId", candidateId);
-        requestVote.put("lastLogIndex", Integer.toString(lastLogIndex));
-        requestVote.put("lastLogTerm", Integer.toString(lastLogTerm));
+        requestVote.put(TYPE, REQUEST_VOTE);
+        requestVote.put(TERM, term);
+        requestVote.put(CANDIDATE_ID, candidateId);
+        requestVote.put(LAST_LOG_INDEX, lastLogIndex);
+        requestVote.put(LAST_LOG_TERM, lastLogTerm);
         return requestVote;
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject responseVote(
-            int term,
-            boolean voteGranted
-    ) {
-        JSONObject responseVote = new JSONObject();
-        responseVote.put("type", "requestVote");
-        responseVote.put("term", Integer.toString(term));
-        responseVote.put("voteGranted", voteGranted);
-        return responseVote;
+    public static JSONObject getRequestVoteResponse(int term, boolean voteGranted) {
+        JSONObject requestVote = new JSONObject();
+        requestVote.put(TYPE, REQUEST_VOTE);
+        requestVote.put(TERM, term);
+        requestVote.put(VOTE_GRANTED, voteGranted);
+        return requestVote;
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject requestAppendEntries (
-            int term,
-            String leaderId,
-            int prevLogIndex,
-            int prevLogTerm,
-            List<EventType> entries,
-            int leaderCommit
-    ) {
-        JSONObject responseVote = new JSONObject();
-        responseVote.put("type", "appendEntries");
-        responseVote.put("term", Integer.toString(term));
-        responseVote.put("leaderId", leaderId);
-        responseVote.put("prevLogIndex", Integer.toString(prevLogIndex));
-        responseVote.put("prevLogTerm", Integer.toString(prevLogTerm));
-        responseVote.put("entries", entries);
-        responseVote.put("leaderCommit", Integer.toString(leaderCommit));
-        return responseVote;
+    public static JSONObject getAppendEntriesRequest(int term, String leaderId, int prevLogIndex,
+                                                     int prevLogTerm, ArrayList<Event> entries, int leaderCommit) {
+        JSONObject appendEntries = new JSONObject();
+        appendEntries.put(TYPE, APPEND_ENTRIES);
+        appendEntries.put(TERM, term);
+        appendEntries.put(LEADER_ID, leaderId);
+        appendEntries.put(PREVIOUS_LOG_INDEX, prevLogIndex);
+        appendEntries.put(PREVIOUS_LOG_TERM, prevLogTerm);
+        appendEntries.put(ENTRIES, convertEntriesToJson(entries));
+        appendEntries.put(LEADER_COMMIT, leaderCommit);
+        return appendEntries;
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject responseAppendEntries (
-            int term,
-            boolean success
-    ) {
-        JSONObject responseVote = new JSONObject();
-        responseVote.put("type", "appendEntries");
-        responseVote.put("term", Integer.toString(term));
-        responseVote.put("success", success);
-        return responseVote;
+    public static JSONObject getAppendEntriesResponse(int term, boolean success) {
+        JSONObject appendEntries = new JSONObject();
+        appendEntries.put(TYPE, APPEND_ENTRIES);
+        appendEntries.put(TERM, term);
+        appendEntries.put(SUCCESS, success);
+        return appendEntries;
     }
 
+    @SuppressWarnings("unchecked")
+    public static JSONObject getCreateClientRequest(int term, String clientId, String senderId) {
+        JSONObject createClient = new JSONObject();
+        createClient.put(TYPE, CREATE_CLIENT);
+        createClient.put(TERM, term);
+        createClient.put(CLIENT_ID, clientId);
+        createClient.put(SENDER_ID, senderId);
+        return createClient;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getCreateClientResponse(int term, boolean success) {
+        JSONObject createClient = new JSONObject();
+        createClient.put(TYPE, CREATE_CLIENT);
+        createClient.put(TERM, term);
+        createClient.put(SUCCESS, success);
+        return createClient;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getDeleteClientRequest(int term, String clientId, String senderId) {
+        JSONObject deleteClient = new JSONObject();
+        deleteClient.put(TYPE, DELETE_CLIENT);
+        deleteClient.put(TERM, term);
+        deleteClient.put(CLIENT_ID, clientId);
+        deleteClient.put(SENDER_ID, senderId);
+        return deleteClient;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getDeleteClientResponse(int term, boolean success) {
+        JSONObject deleteClient = new JSONObject();
+        deleteClient.put(TYPE, DELETE_CLIENT);
+        deleteClient.put(TERM, term);
+        deleteClient.put(SUCCESS, success);
+        return deleteClient;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getCreateChatroomRequest(int term, String clientId, String roomId, String senderId) {
+        JSONObject createRoom = new JSONObject();
+        createRoom.put(TYPE, CREATE_CHAT_ROOM);
+        createRoom.put(TERM, term);
+        createRoom.put(CLIENT_ID, clientId);
+        createRoom.put(ROOM_ID, roomId);
+        createRoom.put(SENDER_ID, senderId);
+        return createRoom;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getCreateChatroomResponse(int term, boolean success) {
+        JSONObject createRoom = new JSONObject();
+        createRoom.put(TYPE, CREATE_CHAT_ROOM);
+        createRoom.put(TERM, term);
+        createRoom.put(SUCCESS, success);
+        return createRoom;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getDeleteRoomRequest(int term, String clientId, String senderId) {
+        JSONObject deleteRoom = new JSONObject();
+        deleteRoom.put(TYPE, DELETE_CHAT_ROOM);
+        deleteRoom.put(TERM, term);
+        deleteRoom.put(CLIENT_ID, clientId);
+        deleteRoom.put(SENDER_ID, senderId);
+        return deleteRoom;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getDeleteRoomResponse(int term, boolean success) {
+        JSONObject deleteRoom = new JSONObject();
+        deleteRoom.put(TYPE, DELETE_CHAT_ROOM);
+        deleteRoom.put(TERM, term);
+        deleteRoom.put(SUCCESS, success);
+        return deleteRoom;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getChangeRoomRequest(int term, String clientId, String former, String roomId, String senderId) {
+        JSONObject changeRoom = new JSONObject();
+        changeRoom.put(TYPE, CHANGE_ROOM);
+        changeRoom.put(TERM, term);
+        changeRoom.put(CLIENT_ID, clientId);
+        changeRoom.put(FORMER, former);
+        changeRoom.put(ROOM_ID, roomId);
+        changeRoom.put(SENDER_ID, senderId);
+        return changeRoom;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getChangeRoomResponse(int term, boolean success) {
+        JSONObject changeRoom = new JSONObject();
+        changeRoom.put(TYPE, CHANGE_ROOM);
+        changeRoom.put(TERM, term);
+        changeRoom.put(SUCCESS, success);
+        return changeRoom;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getServerInitRequest(int term, String serverId) {
+        JSONObject serverInit = new JSONObject();
+        serverInit.put(TYPE, SERVER_INIT);
+        serverInit.put(TERM, term);
+        serverInit.put(SERVER_ID, serverId);
+        return serverInit;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getServerInitResponse(int term, boolean success) {
+        JSONObject serverInit = new JSONObject();
+        serverInit.put(TYPE, SERVER_INIT);
+        serverInit.put(TERM, term);
+        serverInit.put(SUCCESS, success);
+        return serverInit;
+    }
 }
