@@ -15,6 +15,7 @@ public class CommunicationProtocolKeyWordsConstants {
     public static final String LEADER_COMMIT = "leaderCommit";
     public static final String SUCCESS = "success";
     public static final String CLIENT_ID = "clientId";
+    public static final String CHATROOM_NAME = "chatroomId";
     public static final String SENDER_ID = "senderId";
     public static final String RECEIVER_ID = "receiverId";
     public static final String ROOM_ID = "roomId";

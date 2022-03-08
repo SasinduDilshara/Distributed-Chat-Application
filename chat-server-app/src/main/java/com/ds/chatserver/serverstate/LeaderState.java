@@ -10,6 +10,8 @@ import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.serverhandler.ServerSenderHandler;
 import com.ds.chatserver.serverhandler.heartbeatcomponent.HeartBeatSenderThread;
+import com.ds.chatserver.systemstate.ChatroomLog;
+import com.ds.chatserver.systemstate.ClientLog;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.ServerServerMessage;
@@ -109,7 +111,7 @@ public class LeaderState extends ServerState {
             success = false;
         } else {
             resultLogStatus = server.getRaftLog().checkLogIndexWithTerm(prevLogIndex, prevLogTerm);
-            if (resultLogStatus[0] == LogEntryStatus.NOT_FOUND) {\
+            if (resultLogStatus[0] == LogEntryStatus.NOT_FOUND) {
                 /*
                 Reply false if log doesn’t contain an entry at prevLogIndex
                     whose term matches prevLogTerm
@@ -174,6 +176,7 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleCreateClientRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
+        Boolean success = false;
         if (!(SystemState.isClientAvailableInDraft(clientId) || SystemState.isClientCommitted(clientId))) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
@@ -182,9 +185,63 @@ public class LeaderState extends ServerState {
                     .logIndex(server.incrementLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
-            return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), replicateLogs());
+            ClientLog client = new ClientLog(clientId, request.get(CHATROOM_NAME).toString(),
+                    request.get(SERVER_ID).toString());
+            // Add client to draft
+            SystemState.addDraftClient(client);
+            success = replicateLogs();
+            if (success) {
+                //Commit client
+                SystemState.commitClient(client);
+            }
         }
-        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), false);
+        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
+    }
+
+    @Override
+    public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
+        String clientId = request.get(CLIENT_ID).toString();
+        Boolean success = false;
+        //TODO: Change if concurrently handle requests
+        if (SystemState.isClientCommitted(clientId)) {
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(clientId)
+                    .serverId(request.get(SERVER_ID).toString())
+                    .type(EventType.QUIT)
+                    .logIndex(server.incrementLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .build());
+            success = replicateLogs();
+            if (success) {
+                SystemState.removeClient(new ClientLog(clientId, request.get(CHATROOM_NAME).toString(),
+                        request.get(SERVER_ID).toString()));
+            }
+        }
+        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
+    }
+
+    public JSONObject handleCreateChatroomRequest(JSONObject request) {
+        String chatroomName = request.get(CHATROOM_NAME).toString();
+        Boolean success = false;
+        if (!(SystemState.isChatroomAvailableInDraft(chatroomName) || SystemState.isChatroomCommitted(chatroomName))) {
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(request.get(CLIENT_ID).toString())
+                    .serverId(request.get(SERVER_ID).toString())
+                    .type(EventType.CREATE_ROOM)
+                    .logIndex(server.incrementLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .build());
+            ChatroomLog chatroom = new ChatroomLog(chatroomName, request.get(CLIENT_ID).toString(),
+                    request.get(SERVER_ID).toString());
+            // Add chatroom to draft
+            SystemState.addDraftChatroom(chatroom);
+            success = replicateLogs();
+            if (success) {
+                //Commit chatroom
+                SystemState.commitChatroom(chatroom);
+            }
+        }
+        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
     }
 
     private boolean replicateLogs() {

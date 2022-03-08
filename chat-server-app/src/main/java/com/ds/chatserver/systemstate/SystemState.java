@@ -24,29 +24,48 @@ public class SystemState {
         SystemState.chatroomLists = chatroomLists;
     }
 
-    public static void addClient(ClientLog clientLog) {
+    public static void commitClient(ClientLog clientLog) {
+        clientLists.put(clientLog.getClientId(), clientLog);
+        draftChatroomLists.remove(clientLog.getClientId());
+    }
 
+    public static void addDraftClient(ClientLog clientLog) {
+        draftClientLists.put(clientLog.getClientId(), clientLog);
     }
 
     public static void removeClient(ClientLog clientLog) {
-
+        clientLists.remove(clientLog.getClientId());
     }
 
-    public static void addChatroom(ChatroomLog chatroomLog) {
+    public static void commitChatroom(ChatroomLog chatroomLog) {
+        chatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
+        draftChatroomLists.remove(chatroomLog.getChatRoomName());
+    }
 
+    public static void addDraftChatroom(ChatroomLog chatroomLog) {
+        draftChatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
     }
 
     public static void removeChatroom(ChatroomLog chatroomLog) {
-
+        chatroomLists.remove(chatroomLog.getChatRoomName());
     }
 
     public static Boolean isClientCommitted(String clientId) {
         return clientLists.containsKey(clientId);
     }
 
-    public static Boolean isClientAvailableInDraft(String clientId) {
-        return draftClientLists.containsKey(clientId);
+    public static Boolean isClientAvailableInDraft(String chatroomName) {
+        return draftClientLists.containsKey(chatroomName);
     }
+
+    public static Boolean isChatroomCommitted(String chatroomName) {
+        return chatroomLists.containsKey(chatroomName);
+    }
+
+    public static Boolean isChatroomAvailableInDraft(String clientId) {
+        return draftChatroomLists.containsKey(clientId);
+    }
+
 
     public static void getChatroom(String chatroomId) {
 
