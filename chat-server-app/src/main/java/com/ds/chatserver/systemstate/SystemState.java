@@ -1,5 +1,10 @@
 package com.ds.chatserver.systemstate;
 
+import com.ds.chatserver.log.Event;
+import com.ds.chatserver.log.EventType;
+import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.utils.Util;
+
 import java.util.HashMap;
 
 public class SystemState {
@@ -7,6 +12,25 @@ public class SystemState {
     private static HashMap<String, ChatroomLog> chatroomLists;
     private static HashMap<String, ClientLog> draftClientLists;
     private static HashMap<String, ChatroomLog> draftChatroomLists;
+
+    public synchronized static void commit(Server server){
+        for(int i = server.getRaftLog().getLastApplied()+1; i <= server.getRaftLog().getCommitIndex(); i++){
+            Event event = server.getRaftLog().getIthEvent(i);
+
+            EventType eventType = event.getType();
+
+            switch (eventType){
+                case NEW_IDENTITY:
+                    clientLists.put(event.getClientId(), new ClientLog(event.getClientId(),
+                            Util.getMainhall(event.getServerId()),
+                            event.getServerId()));
+                    chatroomLists.get(Util.getMainhall(event.getServerId())).addParticipant(event.getClientId());
+            }
+
+            server.getRaftLog().incrementLastApplied();
+
+        }
+    }
 
     public HashMap<String, ClientLog> getClientLists() {
         return clientLists;
@@ -26,7 +50,7 @@ public class SystemState {
 
     public static void commitClient(ClientLog clientLog) {
         clientLists.put(clientLog.getClientId(), clientLog);
-        draftChatroomLists.remove(clientLog.getClientId());
+        draftClientLists.remove(clientLog.getClientId());
     }
 
     public static void addDraftClient(ClientLog clientLog) {

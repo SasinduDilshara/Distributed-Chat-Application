@@ -66,9 +66,9 @@ public class LogReplicateHandler extends Thread {
                     String responseServerId = (String) response.get(SERVER_ID);
                     if ((Boolean) response.get(SUCCESS)) {
                         successReponsesCount += 1;
-                        nextIndex.put(responseServerId, server.getLastLogIndex());
+                        nextIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
                         //TODO: Check
-                        matchIndex.put(responseServerId, server.getLastLogIndex());
+                        matchIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
                         if (successReponsesCount > serverCount/2) {
                             server.getRaftLog().setCommitIndex(server.getRaftLog().getCommitIndex() + 1);
                             //send response for client

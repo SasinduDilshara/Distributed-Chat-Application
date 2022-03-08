@@ -10,7 +10,8 @@ import java.util.List;
 @Getter
 public class RaftLog {
     private ArrayList<Event> logEntries;
-    private int commitIndex = 0;
+    private int commitIndex = -1;
+    private int lastApplied = -1;
 
     public int getLastLogIndex() {
         if (!logEntries.isEmpty()) {
@@ -29,7 +30,14 @@ public class RaftLog {
     }
 
     public int getTermFromIndex(int index) {
+        if(index >= logEntries.size()){
+            return -1;
+        }
         return logEntries.get(index).getLogTerm();
+    }
+
+    public void incrementLastApplied(){
+        this.lastApplied++;
     }
 
     public ArrayList<Event> getLogEntriesFromIndex(int index) {
@@ -85,6 +93,13 @@ public class RaftLog {
             }
         }
         return new int[]{LogEntryStatus.NOT_FOUND, 0};
+    }
+
+    public Event getIthEvent(int index){
+        if(index >= this.logEntries.size()){
+            return null;
+        }
+        return this.logEntries.get(index);
     }
 
 }

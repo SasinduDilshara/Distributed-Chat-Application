@@ -109,7 +109,7 @@ public class CandidateState extends ServerState {
             log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setState(new FollowerState(this.server, leaderId));
-            success = true;
+            return this.server.getState().handleRequestAppendEntries(jsonObject);
         }
         JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
