@@ -5,19 +5,18 @@ import com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.EventType;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.serverhandler.ServerSenderHandler;
 import com.ds.chatserver.serverhandler.heartbeatcomponent.HeartBeatSenderThread;
 import com.ds.chatserver.systemstate.SystemState;
+import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
@@ -27,16 +26,16 @@ import static com.ds.chatserver.constants.ServerConfigurationConstants.SERVER_ID
 
 @Slf4j
 public class LeaderState extends ServerState {
-    private HashMap<String, Integer> nextIndex;
-    private HashMap<String, Integer> matchIndex;
+    private Hashtable<String, Integer> nextIndex;
+    private Hashtable<String, Integer> matchIndex;
     private Timestamp lastHearBeatTimeStamp;
     private List<HeartBeatSenderThread> hbSenderThreads;
 
     public LeaderState(Server server) {
         super(server);
         log.info("Leader State : {}", this.server.getCurrentTerm());
-        nextIndex = new HashMap<String, Integer>();
-        matchIndex = new HashMap<String, Integer>();
+        nextIndex = new Hashtable<String, Integer>();
+        matchIndex = new Hashtable<String, Integer>();
         hbSenderThreads = new ArrayList<HeartBeatSenderThread>();
 
         this.initState();
@@ -114,13 +113,13 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public JSONObject handleCreateClientRequest(JSONObject request) {
+    public JSONObject handleCreateClientRequest(JSONObject request) throws IOException {
         /*
             Request contains client name, server id
          */
         String clientId = request.get(CLIENT_ID).toString();
-        if (!(SystemState.isClientAvailable(clientId))) {
-            ArrayBlockingQueue<JSONObject> arrayBlockingQueue =  new ArrayBlockingQueue<>();
+        if (!(SystemState.isClientAvailableInDraft(clientId) || SystemState.isClientCommitted(clientId))) {
+//            ArrayBlockingQueue<JSONObject> arrayBlockingQueue =  new ArrayBlockingQueue<>();
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SERVER_ID).toString())
@@ -130,9 +129,14 @@ public class LeaderState extends ServerState {
                     .build());
             //TODO: Handle race conditions if any
             //TODO: Create the JSon object using next indexes and match indexes
-            ServerSenderHandler.broadCastMessage(server.getServerId(), , arrayBlockingQueue);
+//            ServerSenderHandler.broadCastMessage(server.getServerId(), , arrayBlockingQueue);
+            replicateLogs();
         }
         return null;
+    }
+
+    private boolean replicateLogs() throws IOException {
+
     }
 
     @Override
