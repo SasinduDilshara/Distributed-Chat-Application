@@ -16,9 +16,10 @@ public class ServerServerMessage {
         JSONArray jsonEntries = new JSONArray();
         for(Event entry: entries) {
             JSONObject jsonEntry = new JSONObject();
-            jsonEntry.put(TERM, entry.getLogTerm());
-            jsonEntry.put(LOG_INDEX, entry.getLogIndex());
-            jsonEntry.put(TYPE, entry.getType());
+            jsonEntry.put(TERM, String.valueOf(entry.getLogTerm()));
+            jsonEntry.put(LOG_INDEX, String.valueOf(entry.getLogIndex()));
+            // type is converted from EventType to enum
+            jsonEntry.put(TYPE, entry.getType().toString());
             jsonEntry.put(CLIENT_ID, entry.getClientId());
             jsonEntry.put(SERVER_ID, entry.getServerId());
 
@@ -33,10 +34,10 @@ public class ServerServerMessage {
                                                    int lastLogTerm) {
         JSONObject requestVote = new JSONObject();
         requestVote.put(TYPE, REQUEST_VOTE);
-        requestVote.put(TERM, term);
+        requestVote.put(TERM, String.valueOf(term));
         requestVote.put(CANDIDATE_ID, candidateId);
-        requestVote.put(LAST_LOG_INDEX, lastLogIndex);
-        requestVote.put(LAST_LOG_TERM, lastLogTerm);
+        requestVote.put(LAST_LOG_INDEX, String.valueOf(lastLogIndex));
+        requestVote.put(LAST_LOG_TERM, String.valueOf(lastLogTerm));
         return requestVote;
     }
 
@@ -44,7 +45,7 @@ public class ServerServerMessage {
     public static JSONObject getRequestVoteResponse(int term, boolean voteGranted) {
         JSONObject requestVote = new JSONObject();
         requestVote.put(TYPE, REQUEST_VOTE);
-        requestVote.put(TERM, term);
+        requestVote.put(TERM, String.valueOf(term));
         requestVote.put(VOTE_GRANTED, voteGranted);
         return requestVote;
     }
@@ -54,20 +55,21 @@ public class ServerServerMessage {
                                                      int prevLogTerm, ArrayList<Event> entries, int leaderCommit) {
         JSONObject appendEntries = new JSONObject();
         appendEntries.put(TYPE, APPEND_ENTRIES);
-        appendEntries.put(TERM, term);
+        appendEntries.put(TERM, String.valueOf(term));
         appendEntries.put(LEADER_ID, leaderId);
-        appendEntries.put(PREVIOUS_LOG_INDEX, prevLogIndex);
-        appendEntries.put(PREVIOUS_LOG_TERM, prevLogTerm);
+        appendEntries.put(PREVIOUS_LOG_INDEX, String.valueOf(prevLogIndex));
+        appendEntries.put(PREVIOUS_LOG_TERM, String.valueOf(prevLogTerm));
         appendEntries.put(ENTRIES, convertEntriesToJson(entries));
-        appendEntries.put(LEADER_COMMIT, leaderCommit);
+        appendEntries.put(LEADER_COMMIT, String.valueOf(leaderCommit));
         return appendEntries;
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getAppendEntriesResponse(int term, boolean success) {
+    public static JSONObject getAppendEntriesResponse(int term, String serverId, boolean success) {
         JSONObject appendEntries = new JSONObject();
         appendEntries.put(TYPE, APPEND_ENTRIES);
-        appendEntries.put(TERM, term);
+        appendEntries.put(TERM, String.valueOf(term));
+        appendEntries.put(SERVER_ID, serverId);
         appendEntries.put(SUCCESS, success);
         return appendEntries;
     }
@@ -76,7 +78,7 @@ public class ServerServerMessage {
     public static JSONObject getCreateClientRequest(int term, String clientId, String senderId) {
         JSONObject createClient = new JSONObject();
         createClient.put(TYPE, CREATE_CLIENT);
-        createClient.put(TERM, term);
+        createClient.put(TERM, String.valueOf(term));
         createClient.put(CLIENT_ID, clientId);
         createClient.put(SENDER_ID, senderId);
         return createClient;
@@ -86,7 +88,7 @@ public class ServerServerMessage {
     public static JSONObject getCreateClientResponse(int term, boolean success) {
         JSONObject createClient = new JSONObject();
         createClient.put(TYPE, CREATE_CLIENT);
-        createClient.put(TERM, term);
+        createClient.put(TERM, String.valueOf(term));
         createClient.put(SUCCESS, success);
         return createClient;
     }
@@ -95,7 +97,7 @@ public class ServerServerMessage {
     public static JSONObject getDeleteClientRequest(int term, String clientId, String senderId) {
         JSONObject deleteClient = new JSONObject();
         deleteClient.put(TYPE, DELETE_CLIENT);
-        deleteClient.put(TERM, term);
+        deleteClient.put(TERM, String.valueOf(term));
         deleteClient.put(CLIENT_ID, clientId);
         deleteClient.put(SENDER_ID, senderId);
         return deleteClient;
@@ -105,7 +107,7 @@ public class ServerServerMessage {
     public static JSONObject getDeleteClientResponse(int term, boolean success) {
         JSONObject deleteClient = new JSONObject();
         deleteClient.put(TYPE, DELETE_CLIENT);
-        deleteClient.put(TERM, term);
+        deleteClient.put(TERM, String.valueOf(term));
         deleteClient.put(SUCCESS, success);
         return deleteClient;
     }
@@ -114,7 +116,7 @@ public class ServerServerMessage {
     public static JSONObject getCreateChatroomRequest(int term, String clientId, String roomId, String senderId) {
         JSONObject createRoom = new JSONObject();
         createRoom.put(TYPE, CREATE_CHAT_ROOM);
-        createRoom.put(TERM, term);
+        createRoom.put(TERM, String.valueOf(term));
         createRoom.put(CLIENT_ID, clientId);
         createRoom.put(ROOM_ID, roomId);
         createRoom.put(SENDER_ID, senderId);
@@ -125,7 +127,7 @@ public class ServerServerMessage {
     public static JSONObject getCreateChatroomResponse(int term, boolean success) {
         JSONObject createRoom = new JSONObject();
         createRoom.put(TYPE, CREATE_CHAT_ROOM);
-        createRoom.put(TERM, term);
+        createRoom.put(TERM, String.valueOf(term));
         createRoom.put(SUCCESS, success);
         return createRoom;
     }
@@ -134,7 +136,7 @@ public class ServerServerMessage {
     public static JSONObject getDeleteRoomRequest(int term, String clientId, String senderId) {
         JSONObject deleteRoom = new JSONObject();
         deleteRoom.put(TYPE, DELETE_CHAT_ROOM);
-        deleteRoom.put(TERM, term);
+        deleteRoom.put(TERM, String.valueOf(term));
         deleteRoom.put(CLIENT_ID, clientId);
         deleteRoom.put(SENDER_ID, senderId);
         return deleteRoom;
@@ -144,7 +146,7 @@ public class ServerServerMessage {
     public static JSONObject getDeleteRoomResponse(int term, boolean success) {
         JSONObject deleteRoom = new JSONObject();
         deleteRoom.put(TYPE, DELETE_CHAT_ROOM);
-        deleteRoom.put(TERM, term);
+        deleteRoom.put(TERM, String.valueOf(term));
         deleteRoom.put(SUCCESS, success);
         return deleteRoom;
     }
@@ -153,7 +155,7 @@ public class ServerServerMessage {
     public static JSONObject getChangeRoomRequest(int term, String clientId, String former, String roomId, String senderId) {
         JSONObject changeRoom = new JSONObject();
         changeRoom.put(TYPE, CHANGE_ROOM);
-        changeRoom.put(TERM, term);
+        changeRoom.put(TERM, String.valueOf(term));
         changeRoom.put(CLIENT_ID, clientId);
         changeRoom.put(FORMER, former);
         changeRoom.put(ROOM_ID, roomId);
@@ -165,7 +167,7 @@ public class ServerServerMessage {
     public static JSONObject getChangeRoomResponse(int term, boolean success) {
         JSONObject changeRoom = new JSONObject();
         changeRoom.put(TYPE, CHANGE_ROOM);
-        changeRoom.put(TERM, term);
+        changeRoom.put(TERM, String.valueOf(term));
         changeRoom.put(SUCCESS, success);
         return changeRoom;
     }
@@ -174,7 +176,7 @@ public class ServerServerMessage {
     public static JSONObject getServerInitRequest(int term, String serverId) {
         JSONObject serverInit = new JSONObject();
         serverInit.put(TYPE, SERVER_INIT);
-        serverInit.put(TERM, term);
+        serverInit.put(TERM, String.valueOf(term));
         serverInit.put(SERVER_ID, serverId);
         return serverInit;
     }
@@ -183,7 +185,7 @@ public class ServerServerMessage {
     public static JSONObject getServerInitResponse(int term, boolean success) {
         JSONObject serverInit = new JSONObject();
         serverInit.put(TYPE, SERVER_INIT);
-        serverInit.put(TERM, term);
+        serverInit.put(TERM, String.valueOf(term));
         serverInit.put(SUCCESS, success);
         return serverInit;
     }
