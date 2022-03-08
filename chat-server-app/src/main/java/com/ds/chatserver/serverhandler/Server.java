@@ -22,8 +22,6 @@ public class Server {
     private ServerState state;
     private String serverId;
     private int currentTerm = 0;
-    private int lastLogIndex = 0;
-    private int lastLogTerm = 0;
     private int lastVotedTerm = -1;
     private String leaderId = null;
     private String lastVotedServerId = null;
@@ -59,10 +57,5 @@ public class Server {
     public void setState(ServerState state){
         this.state.stop();
         this.state = state;
-    }
-
-    public int incrementLogIndex() {
-        setLastLogIndex(getLastLogIndex() + 1);
-        return getLastLogIndex();
     }
 }

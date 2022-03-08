@@ -2,6 +2,8 @@ package com.ds.chatserver.serverhandler;
 
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.utils.ServerServerMessage;
+import lombok.Getter;
+import lombok.Setter;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
@@ -14,10 +16,13 @@ import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.SUCCESS;
 import static com.ds.chatserver.constants.ServerConfigurationConstants.SERVER_ID;
 
+@Getter
+@Setter
 public class LogReplicateHandler extends Thread {
     private Server server;
     private Hashtable<String, Integer> nextIndex;
     private Hashtable<String, Integer> matchIndex;
+    private int successReponsesCount = 1;
 
     public LogReplicateHandler(Server server, Hashtable<String, Integer> nextIndex, Hashtable<String, Integer> matchIndex) {
         this.server = server;
@@ -40,7 +45,6 @@ public class LogReplicateHandler extends Thread {
         int serverCount = ServerConfigurations.getNumberOfServers();
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(serverCount);
         Set<String> serverIds = ServerConfigurations.getServerIds();
-        int successReponsesCount = 1;
         Thread thread = null;
 
         for (String id: serverIds) {
@@ -62,17 +66,18 @@ public class LogReplicateHandler extends Thread {
                     String responseServerId = (String) response.get(SERVER_ID);
                     if ((Boolean) response.get(SUCCESS)) {
                         successReponsesCount += 1;
-                        nextIndex.put(responseServerId, server.getLastLogIndex());
+                        nextIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
                         //TODO: Check
-                        matchIndex.put(responseServerId, server.getLastLogIndex());
+                        matchIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
                         if (successReponsesCount > serverCount/2) {
                             server.getRaftLog().setCommitIndex(server.getRaftLog().getCommitIndex() + 1);
+                            //send response for client
                         }
                     } else {
                         nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
-//                        thread = new Thread(new ServerRequestSender(responseServerId,
-//                                createJSONMessage(responseServerId), queue, 1));
-//                        thread.start();
+                        thread = new Thread(new ServerRequestSender(responseServerId,
+                                createJSONMessage(responseServerId), queue, 1));
+                        thread.start();
                     }
                 }
             } catch (InterruptedException | IOException e) {

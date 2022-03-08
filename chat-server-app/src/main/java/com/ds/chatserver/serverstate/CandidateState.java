@@ -37,11 +37,11 @@ public class CandidateState extends ServerState {
         int voteCount = 1;
         int rejectCount = 0;
         Set<String> serverIds = ServerConfigurations.getServerIds();
-        JSONObject jsonMessage = ServerServerMessage.requestVote(
+        JSONObject jsonMessage = ServerServerMessage.getRequestVoteRequest(
                 this.server.getCurrentTerm(),
                 this.server.getServerId(),
-                this.server.getLastLogIndex(),
-                this.server.getLastLogTerm());
+                this.server.getRaftLog().getLastLogIndex(),
+                this.server.getRaftLog().getLastLogTerm());
 
         for (String id: serverIds) {
             if (id.equals(this.server.getServerId())) {
@@ -96,7 +96,7 @@ public class CandidateState extends ServerState {
             this.server.setState(new FollowerState(this.server, null));
             return this.server.getState().handleRequestVote(request);
         }
-        return ServerServerMessage.responseVote(this.server.getCurrentTerm(), false);
+        return ServerServerMessage.getRequestVoteResponse(this.server.getCurrentTerm(), false);
     }
 
     public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
@@ -109,9 +109,9 @@ public class CandidateState extends ServerState {
             log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setState(new FollowerState(this.server, leaderId));
-            success = true;
+            return this.server.getState().handleRequestAppendEntries(jsonObject);
         }
-        JSONObject response = ServerServerMessage.responseAppendEntries(
+        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );
