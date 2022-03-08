@@ -66,7 +66,7 @@ public class FollowerState extends ServerState {
         if (requestVoteTerm > this.server.getCurrentTerm()) {
             this.server.setCurrentTerm(requestVoteTerm);
         }
-        JSONObject response = ServerServerMessage.responseVote(this.server.getCurrentTerm(), voteGranted);
+        JSONObject response = ServerServerMessage.getRequestVoteResponse(this.server.getCurrentTerm(), voteGranted);
         return response;
     }
 
@@ -89,7 +89,7 @@ public class FollowerState extends ServerState {
             this.server.setLeaderId(leaderId);
             success = true;
         }
-        JSONObject response = ServerServerMessage.responseAppendEntries(
+        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );

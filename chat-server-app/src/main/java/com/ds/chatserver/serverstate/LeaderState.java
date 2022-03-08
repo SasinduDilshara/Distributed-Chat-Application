@@ -56,7 +56,7 @@ public class LeaderState extends ServerState {
             if (id.equals(this.server.getServerId())) {
                 continue;
             }
-            HeartBeatSenderThread tmpThread = new HeartBeatSenderThread(this.server, id);
+            HeartBeatSenderThread tmpThread = new HeartBeatSenderThread(this.server, id, nextIndex, matchIndex);
             tmpThread.start();
             hbSenderThreads.add(tmpThread);
         }
