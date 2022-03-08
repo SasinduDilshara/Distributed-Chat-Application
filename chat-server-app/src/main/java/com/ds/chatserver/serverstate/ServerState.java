@@ -28,6 +28,16 @@ public abstract class ServerState {
                 return handleRequestAppendEntries(request);
             case CREATE_CLIENT:
                 return handleCreateClientRequest(request);
+            case DELETE_CLIENT:
+                return handleDeleteClientRequest(request);
+            case CREATE_CHAT_ROOM:
+                return handleCreateChatroomRequest(request);
+            case DELETE_CHAT_ROOM:
+                return handleDeleteChatroomRequest(request);
+            case CHANGE_ROOM:
+                return handleChangeRoomRequest(request);
+            case SERVER_INIT:
+                return handleServerInitRequest(request);
         }
 
         //TODO: return null cause and error
@@ -49,6 +59,31 @@ public abstract class ServerState {
     public abstract JSONObject handleRequestAppendEntries(JSONObject request);
 
     public JSONObject handleCreateClientRequest(JSONObject request) {
+        //TODO: Return Error
+        return null;
+    }
+
+    public JSONObject handleDeleteClientRequest(JSONObject request) {
+        //TODO: Return Error
+        return null;
+    }
+
+    public JSONObject handleCreateChatroomRequest(JSONObject request) {
+        //TODO: Return Error
+        return null;
+    }
+
+    public JSONObject handleDeleteChatroomRequest(JSONObject request) {
+        //TODO: Return Error
+        return null;
+    }
+
+    public JSONObject handleChangeRoomRequest(JSONObject request) {
+        //TODO: Return Error
+        return null;
+    }
+
+    public JSONObject handleServerInitRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
