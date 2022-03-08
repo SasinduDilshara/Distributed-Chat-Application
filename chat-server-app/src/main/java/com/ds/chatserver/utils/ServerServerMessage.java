@@ -65,10 +65,11 @@ public class ServerServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getAppendEntriesResponse(int term, boolean success) {
+    public static JSONObject getAppendEntriesResponse(int term, String serverId, boolean success) {
         JSONObject appendEntries = new JSONObject();
         appendEntries.put(TYPE, APPEND_ENTRIES);
         appendEntries.put(TERM, String.valueOf(term));
+        appendEntries.put(SERVER_ID, serverId);
         appendEntries.put(SUCCESS, success);
         return appendEntries;
     }
