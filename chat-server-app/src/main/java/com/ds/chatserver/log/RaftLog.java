@@ -9,9 +9,15 @@ import java.util.List;
 @Setter
 @Getter
 public class RaftLog {
-    private ArrayList<Event> logEntries;
-    private int commitIndex = -1;
-    private int lastApplied = -1;
+    private List<Event> logEntries;
+    private int commitIndex;
+    private int lastApplied;
+
+    public RaftLog() {
+        this.commitIndex = -1;
+        this.lastApplied = -1;
+        this.logEntries = new ArrayList<>();
+    }
 
     public int getLastLogIndex() {
         if (!logEntries.isEmpty()) {
@@ -40,8 +46,8 @@ public class RaftLog {
         this.lastApplied++;
     }
 
-    public ArrayList<Event> getLogEntriesFromIndex(int index) {
-        return (ArrayList<Event>) logEntries.subList(index, logEntries.size());
+    public List<Event> getLogEntriesFromIndex(int index) {
+        return logEntries.subList(index, logEntries.size());
     }
 
     public void insert(Event event) {
@@ -53,8 +59,8 @@ public class RaftLog {
         return logEntries.get(logEntries.size() - 1).getLogIndex();
     }
 
-    public int appendLogEntries(ArrayList<Event> entries) {
-        ArrayList<Event> newEntries = new ArrayList<>();
+    public int appendLogEntries(List<Event> entries) {
+        List<Event> newEntries = new ArrayList<>();
         int[] checkResult;
         for (Event event: entries) {
             checkResult = checkLogIndexWithTerm(event.getLogIndex(), event.getLogTerm());

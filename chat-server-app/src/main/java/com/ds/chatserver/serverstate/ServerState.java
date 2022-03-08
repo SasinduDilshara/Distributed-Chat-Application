@@ -44,6 +44,14 @@ public abstract class ServerState {
         return null;
     }
 
+    public JSONObject respondToClientRequest(JSONObject request) {
+        switch ((String) request.get(TYPE)) {
+            case "newidentity":
+                break;
+        }
+        return null;
+    }
+
     public abstract void initState();
 
     public void stop(){
@@ -87,4 +95,6 @@ public abstract class ServerState {
         //TODO: Return Error
         return null;
     }
+
+
 }

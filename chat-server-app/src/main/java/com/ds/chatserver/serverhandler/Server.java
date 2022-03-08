@@ -29,6 +29,7 @@ public class Server {
 
     public Server(String serverId) {
         this.serverId = serverId;
+        this.raftLog = new RaftLog();
     }
 
     public void incrementTerm() {
@@ -54,8 +55,13 @@ public class Server {
         return this.getState().respondToServerRequest(jsonObject);
     }
 
+    public JSONObject handleClientRequest(JSONObject jsonObject) {
+        return this.getState().respondToClientRequest(jsonObject);
+    }
+
     public void setState(ServerState state){
         this.state.stop();
         this.state = state;
     }
+
 }
