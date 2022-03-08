@@ -102,4 +102,7 @@ public class RaftLog {
         return this.logEntries.get(index);
     }
 
+    public int incrementLogIndex() {
+        return getLastLogIndex() + 1;
+    }
 }

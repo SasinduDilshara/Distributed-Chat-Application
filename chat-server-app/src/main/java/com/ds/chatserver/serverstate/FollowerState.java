@@ -56,8 +56,8 @@ public class FollowerState extends ServerState {
          * */
         else if (this.server.getLastVotedTerm() < this.server.getCurrentTerm()) {
             //TODO: recheck condition
-            if ((this.server.getLastLogIndex() <= (Integer.parseInt((String) jsonObject.get(LAST_LOG_INDEX))))
-                    && (this.server.getLastLogTerm() <= Integer.parseInt((String) jsonObject.get(LAST_LOG_TERM)))) {
+            if ((this.server.getRaftLog().getLastLogIndex() <= (Integer.parseInt((String) jsonObject.get(LAST_LOG_INDEX))))
+                    && (this.server.getRaftLog().getLastLogTerm() <= Integer.parseInt((String) jsonObject.get(LAST_LOG_TERM)))) {
                 voteGranted = true;
                 this.server.setLastVotedServerId((String) jsonObject.get(CANDIDATE_ID));
                 this.server.setLastVotedTerm(requestVoteTerm);

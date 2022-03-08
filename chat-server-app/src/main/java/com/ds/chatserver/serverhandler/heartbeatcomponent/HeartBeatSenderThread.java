@@ -79,8 +79,8 @@ public class HeartBeatSenderThread extends Thread{
                         }
                         //TODO: Handle Race conditions
                         if ((Boolean) response.get(SUCCESS)) {
-                            nextIndex.put(receiverId, server.getLastLogIndex());
-                            matchIndex.put(receiverId, server.getLastLogIndex());
+                            nextIndex.put(receiverId, server.getRaftLog().getLastLogIndex());
+                            matchIndex.put(receiverId, server.getRaftLog().getLastLogIndex());
                         } else {
                             nextIndex.put(receiverId, nextIndex.get(receiverId) - 1);
                         }

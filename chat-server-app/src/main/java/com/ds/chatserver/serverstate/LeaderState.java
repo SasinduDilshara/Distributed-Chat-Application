@@ -50,7 +50,7 @@ public class LeaderState extends ServerState {
         Set<String> serverIds = ServerConfigurations.getServerIds();
 
         for(String id: serverIds){
-            nextIndex.put(id, this.server.getLastLogIndex());
+            nextIndex.put(id, this.server.getRaftLog().getLastLogIndex());
             matchIndex.put(id, 0);
         }
 
@@ -122,7 +122,7 @@ public class LeaderState extends ServerState {
                     .clientId(clientId)
                     .serverId(request.get(SERVER_ID).toString())
                     .type(EventType.NEW_IDENTITY)
-                    .logIndex(server.incrementLogIndex())
+                    .logIndex(server.getRaftLog().incrementLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
 
@@ -237,9 +237,9 @@ public class LeaderState extends ServerState {
                     continue;
                 }
                 successReponsesCount += 1;
-                nextIndex.put(responseServerId, server.getLastLogIndex());
+                nextIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
                 //TODO: Check
-                matchIndex.put(responseServerId, server.getLastLogIndex());
+                matchIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
                 if (successReponsesCount > serverCount / 2) {
                     server.getRaftLog().setCommitIndex(server.getRaftLog().getLogEntries().size() - 1);
                     return true;

@@ -40,8 +40,8 @@ public class CandidateState extends ServerState {
         JSONObject jsonMessage = ServerServerMessage.getRequestVoteRequest(
                 this.server.getCurrentTerm(),
                 this.server.getServerId(),
-                this.server.getLastLogIndex(),
-                this.server.getLastLogTerm());
+                this.server.getRaftLog().getLastLogIndex(),
+                this.server.getRaftLog().getLastLogTerm());
 
         for (String id: serverIds) {
             if (id.equals(this.server.getServerId())) {
