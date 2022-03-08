@@ -217,7 +217,7 @@ public class LeaderState extends ServerState {
                         request.get(SERVER_ID).toString()));
             }
         }
-        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getDeleteClientResponse(server.getCurrentTerm(), success);
     }
 
     public JSONObject handleCreateChatroomRequest(JSONObject request) {
@@ -241,7 +241,29 @@ public class LeaderState extends ServerState {
                 SystemState.commitChatroom(chatroom);
             }
         }
-        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), success);
+    }
+
+    @Override
+    public synchronized JSONObject handleDeleteChatroomRequest(JSONObject request) {
+        String chatroomName = request.get(CHATROOM_NAME).toString();
+        Boolean success = false;
+        //TODO: Change if concurrently handle requests
+        if (SystemState.isChatroomCommitted(chatroomName)) {
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(request.get(CLIENT_ID).toString())
+                    .serverId(request.get(SERVER_ID).toString())
+                    .type(EventType.DELETE_ROOM)
+                    .logIndex(server.incrementLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .build());
+            success = replicateLogs();
+            if (success) {
+                SystemState.removeChatroom(new ChatroomLog(chatroomName, request.get(CLIENT_ID).toString(),
+                        request.get(SERVER_ID).toString()));
+            }
+        }
+        return ServerServerMessage.getDeleteRoomResponse(server.getCurrentTerm(), success);
     }
 
     private boolean replicateLogs() {
