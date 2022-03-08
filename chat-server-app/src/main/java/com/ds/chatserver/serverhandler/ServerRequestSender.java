@@ -15,6 +15,8 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.ERROR;
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.RECEIVER_ID;
 
 
 public class ServerRequestSender extends Thread {
@@ -97,7 +99,8 @@ public class ServerRequestSender extends Thread {
                 if(response == null){
                     response = new JSONObject();
                 }
-                response.put("error",false);
+                response.put(RECEIVER_ID,serverId);
+                response.put(ERROR,false);
             }
             try {
                 responseQueue.put(response);

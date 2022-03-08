@@ -13,7 +13,7 @@ public class SystemState {
     }
 
     public static void setClientLists(HashMap<String, ClientLog> clientLists) {
-        this.clientLists = clientLists;
+        SystemState.clientLists = clientLists;
     }
 
     public static HashMap<String, ChatroomLog> getChatroomLists() {
@@ -21,7 +21,7 @@ public class SystemState {
     }
 
     public static void setChatroomLists(HashMap<String, ChatroomLog> chatroomLists) {
-        chatroomLists = chatroomLists;
+        SystemState.chatroomLists = chatroomLists;
     }
 
     public static void addClient(ClientLog clientLog) {

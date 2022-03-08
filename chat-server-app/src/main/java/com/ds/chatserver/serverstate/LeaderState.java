@@ -4,6 +4,7 @@ import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.EventType;
+import com.ds.chatserver.serverhandler.LogReplicateHandler;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.serverhandler.ServerSenderHandler;
@@ -55,13 +56,10 @@ public class LeaderState extends ServerState {
             if (id.equals(this.server.getServerId())) {
                 continue;
             }
-
             HeartBeatSenderThread tmpThread = new HeartBeatSenderThread(this.server, id);
             tmpThread.start();
             hbSenderThreads.add(tmpThread);
-
         }
-
     }
 
     @Override
@@ -83,7 +81,7 @@ public class LeaderState extends ServerState {
             this.server.setState(new FollowerState(this.server, null));
             return this.server.getState().handleRequestVote(request);
         }
-        return ServerServerMessage.responseVote(this.server.getCurrentTerm(), false);
+        return ServerServerMessage.getRequestVoteResponse(this.server.getCurrentTerm(), false);
     }
 
     @Override
@@ -105,7 +103,7 @@ public class LeaderState extends ServerState {
             this.server.setState(new FollowerState(this.server, leaderId));
             success = true;
         }
-        JSONObject response = ServerServerMessage.responseAppendEntries(
+        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );
@@ -113,13 +111,9 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public JSONObject handleCreateClientRequest(JSONObject request) throws IOException {
-        /*
-            Request contains client name, server id
-         */
+    public synchronized JSONObject handleCreateClientRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         if (!(SystemState.isClientAvailableInDraft(clientId) || SystemState.isClientCommitted(clientId))) {
-//            ArrayBlockingQueue<JSONObject> arrayBlockingQueue =  new ArrayBlockingQueue<>();
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SERVER_ID).toString())
@@ -127,16 +121,66 @@ public class LeaderState extends ServerState {
                     .logIndex(server.incrementLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
-            //TODO: Handle race conditions if any
-            //TODO: Create the JSon object using next indexes and match indexes
-//            ServerSenderHandler.broadCastMessage(server.getServerId(), , arrayBlockingQueue);
-            replicateLogs();
+            return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), replicateLogs());
         }
-        return null;
+        return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), false);
     }
 
-    private boolean replicateLogs() throws IOException {
+    private boolean replicateLogs() {
+        int serverCount = ServerConfigurations.getNumberOfServers();
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(serverCount);
+        Set<String> serverIds = ServerConfigurations.getServerIds();
+        int successReponsesCount = 1;
+        Thread thread = null;
 
+        for (String id: serverIds) {
+            if (id.equals(this.server.getServerId())) {
+                continue;
+            }
+            try {
+                thread = new Thread(new ServerRequestSender( id, createJSONMessage(id), queue, 1));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            thread.start();
+        }
+
+        while (true) {
+            if (!(server.getLeaderId().equals(server.getServerId()))) {
+                return false;
+            }
+            try {
+                JSONObject response = queue.take();
+                String responseServerId = (String) response.get(RECEIVER_ID);
+                if (((Boolean) response.get(ERROR)) || !((Boolean) response.get(SUCCESS))) {
+                    nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
+                    thread = new Thread(new ServerRequestSender(responseServerId,
+                            createJSONMessage(responseServerId), queue, 1));
+                    thread.start();
+                    continue;
+                }
+                successReponsesCount += 1;
+                nextIndex.put(responseServerId, server.getLastLogIndex());
+                //TODO: Check
+                matchIndex.put(responseServerId, server.getLastLogIndex());
+                if (successReponsesCount > serverCount / 2) {
+                    server.getRaftLog().setCommitIndex(server.getRaftLog().getLogEntries().size() - 1);
+                    return true;
+                }
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private JSONObject createJSONMessage(String serverId) {
+        return ServerServerMessage.getAppendEntriesRequest(server.getCurrentTerm(),
+                server.getServerId(),
+                // previous log index get from next index
+                nextIndex.get(serverId),
+                server.getRaftLog().getTermFromIndex(nextIndex.get(serverId)),
+                server.getRaftLog().getLogEntriesFromIndex(nextIndex.get(serverId)),
+                server.getRaftLog().getCommitIndex());
     }
 
     @Override

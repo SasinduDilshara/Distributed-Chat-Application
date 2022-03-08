@@ -37,7 +37,7 @@ public class CandidateState extends ServerState {
         int voteCount = 1;
         int rejectCount = 0;
         Set<String> serverIds = ServerConfigurations.getServerIds();
-        JSONObject jsonMessage = ServerServerMessage.requestVote(
+        JSONObject jsonMessage = ServerServerMessage.getRequestVoteRequest(
                 this.server.getCurrentTerm(),
                 this.server.getServerId(),
                 this.server.getLastLogIndex(),
@@ -96,7 +96,7 @@ public class CandidateState extends ServerState {
             this.server.setState(new FollowerState(this.server, null));
             return this.server.getState().handleRequestVote(request);
         }
-        return ServerServerMessage.responseVote(this.server.getCurrentTerm(), false);
+        return ServerServerMessage.getRequestVoteResponse(this.server.getCurrentTerm(), false);
     }
 
     public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
@@ -111,7 +111,7 @@ public class CandidateState extends ServerState {
             this.server.setState(new FollowerState(this.server, leaderId));
             success = true;
         }
-        JSONObject response = ServerServerMessage.responseAppendEntries(
+        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );

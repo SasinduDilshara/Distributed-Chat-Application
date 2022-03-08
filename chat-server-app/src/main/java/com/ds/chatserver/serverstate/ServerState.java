@@ -48,7 +48,7 @@ public abstract class ServerState {
 
     public abstract JSONObject handleRequestAppendEntries(JSONObject request);
 
-    public JSONObject handleCreateClientRequest(JSONObject request) throws IOException {
+    public JSONObject handleCreateClientRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
