@@ -4,6 +4,7 @@ import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.EventType;
+import com.ds.chatserver.log.LogEntryStatus;
 import com.ds.chatserver.serverhandler.LogReplicateHandler;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.serverhandler.ServerRequestSender;
@@ -92,22 +93,82 @@ public class LeaderState extends ServerState {
     }
 
     public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
-
         int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
+        int prevLogIndex = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_INDEX));
+        int prevLogTerm = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_TERM));
+        int leaderCommit = Integer.parseInt((String)jsonObject.get(LEADER_COMMIT));
         String leaderId = (String) jsonObject.get(LEADER_ID);
-        log.info("Append Entry {} from {}", requestTerm, leaderId);
-        boolean success = false;
+
+        ArrayList<Event> logEntries = (ArrayList<Event>) jsonObject.get(ENTRIES);
+        Boolean success = false;
+        int[] resultLogStatus;
+        if (requestTerm < server.getCurrentTerm()) {
+            /*
+            Reply false if term < currentTerm
+             */
+            success = false;
+        } else {
+            resultLogStatus = server.getRaftLog().checkLogIndexWithTerm(prevLogIndex, prevLogTerm);
+            if (resultLogStatus[0] == LogEntryStatus.NOT_FOUND) {\
+                /*
+                Reply false if log doesn’t contain an entry at prevLogIndex
+                    whose term matches prevLogTerm
+                 */
+                success = false;
+            } else {
+                if (resultLogStatus[0] == LogEntryStatus.CONFLICT) {
+                    /*
+                    If an existing entry conflicts with a new one (same index
+                    but different terms), delete the existing entry and all that
+                    follow it
+                     */
+                    server.getRaftLog().deleteEntriesFromIndex(resultLogStatus[1]);
+                }
+                /*
+                Append any new entries not already in the log
+                 */
+                server.getRaftLog().appendLogEntries(logEntries);
+                /*
+                If leaderCommit > commitIndex, set commitIndex =
+                    min(leaderCommit, index of last new entry)
+                 */
+                if (leaderCommit > server.getRaftLog().getCommitIndex()) {
+                    server.getRaftLog().setCommitIndex(Math.min(leaderCommit,
+                            server.getRaftLog().getIndexFromLastEntry()));
+//                    if (server.getRaftLog().getCommitIndex() > server.getRaftLog().getLastApplied()) {
+//                        server.getRaftLog().setLastApplied(server.getRaftLog().getCommitIndex());
+//                    }
+                }
+                success = true;
+            }
+        }
         if (requestTerm > this.server.getCurrentTerm()) {
             log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setState(new FollowerState(this.server, leaderId));
             success = true;
         }
-        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
+            JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );
         return response;
+
+//        int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
+//        String leaderId = (String) jsonObject.get(LEADER_ID);
+//        log.info("Append Entry {} from {}", requestTerm, leaderId);
+//        boolean success = false;
+//        if (requestTerm > this.server.getCurrentTerm()) {
+//            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
+//            this.server.setCurrentTerm(requestTerm);
+//            this.server.setState(new FollowerState(this.server, leaderId));
+//            success = true;
+//        }
+//        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
+//                this.server.getCurrentTerm(),
+//                success
+//        );
+//        return response;
     }
 
     @Override

@@ -37,19 +37,54 @@ public class RaftLog {
     }
 
     public void insert(Event event) {
-
+        logEntries.add(event);
     }
 
-    public void overwrite(Event event) {
-
+    public int getIndexFromLastEntry() {
+        //TODO current commit Index????
+        return logEntries.get(logEntries.size() - 1).getLogIndex();
     }
 
-    public void delete() {
-
+    public int appendLogEntries(ArrayList<Event> entries) {
+        ArrayList<Event> newEntries = new ArrayList<>();
+        int[] checkResult;
+        for (Event event: entries) {
+            checkResult = checkLogIndexWithTerm(event.getLogIndex(), event.getLogTerm());
+            if (checkResult[0] == LogEntryStatus.NOT_FOUND) {
+                newEntries.add(event);
+            } else if (checkResult[0] == LogEntryStatus.CONFLICT) {
+                deleteEntriesFromIndex(checkResult[1]);
+                newEntries.add(event);
+            }
+        }
+        logEntries.addAll(newEntries);
+        return entries.get(entries.size() - 1).getLogIndex();
     }
 
-    public void update(Event event) {
+    public void deleteEntriesFromIndex(int logIndex) {
+        for (int i = logEntries.size() - 1; i >=0 ; i--) {
+            if (i < logIndex) {
+                return;
+            }
+            logEntries.remove(i);
+        }
+    }
 
+    public int[] checkLogIndexWithTerm(int logIndex, int logTerm) {
+        Event logEntry;
+        int logSize = logEntries.size();
+        if (logSize > logIndex) {
+            //TODO: Implement with logIndex = Array Position
+            for (int i = logSize - 1; i >= 0; i--) {
+                logEntry = logEntries.get(i);
+                if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() == logTerm) {
+                    return new int[]{LogEntryStatus.FOUND, i};
+                } else if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() != logTerm) {
+                    return new int[]{LogEntryStatus.CONFLICT, i};
+                }
+            }
+        }
+        return new int[]{LogEntryStatus.NOT_FOUND, 0};
     }
 
 }
