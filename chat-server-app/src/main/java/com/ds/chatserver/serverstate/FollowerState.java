@@ -3,13 +3,17 @@ package com.ds.chatserver.serverstate;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.LogEntryStatus;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.systemstate.SystemState;
+import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 import static com.ds.chatserver.constants.ServerConfigurationConstants.ELECTION_TIMEOUT;
@@ -22,8 +26,10 @@ public class FollowerState extends ServerState {
         super(server);
         this.server.setLeaderId(leaderId);
         lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
+        this.initState();
         log.info("Follower State: Term:{} leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
     }
+
 
     @Override
     public void heartBeatAndLeaderElect() {
@@ -75,8 +81,8 @@ public class FollowerState extends ServerState {
     }
 
     @Override
-    public void initState() {
-
+    public synchronized void initState() {
+        notifyAll();
     }
 
     @Override
@@ -152,5 +158,41 @@ public class FollowerState extends ServerState {
     @Override
     public String printState(){
         return "Follower State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+    }
+
+    @Override
+    public JSONObject respondNewIdentity(JSONObject request){
+        log.info(request.toString());
+        JSONObject requestToLeader = ServerServerMessage.getCreateClientRequest(
+                this.server.getCurrentTerm(),
+                (String) request.get(IDENTITY),
+                this.server.getServerId()
+        );
+
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender( this.server.getLeaderId(), requestToLeader, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+            log.info("Response from leader: {}", response.toString());
+
+            if ((Boolean) response.get(ERROR)) {
+                return ServerMessage.getNewIdentityResponse(false);
+            } else {
+                return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+//        return ServerMessage.getNewIdentityResponse((Boolean) reponse.get(APPROVED));
+        return null;
     }
 }

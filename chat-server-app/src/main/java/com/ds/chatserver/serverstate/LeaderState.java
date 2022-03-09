@@ -1,17 +1,11 @@
 package com.ds.chatserver.serverstate;
 
 import com.ds.chatserver.config.ServerConfigurations;
-import com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.EventType;
-import com.ds.chatserver.log.LogEntryStatus;
-import com.ds.chatserver.serverhandler.LogReplicateHandler;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.serverhandler.ServerRequestSender;
-import com.ds.chatserver.serverhandler.ServerSenderHandler;
 import com.ds.chatserver.serverhandler.heartbeatcomponent.HeartBeatSenderThread;
-import com.ds.chatserver.systemstate.ChatroomLog;
-import com.ds.chatserver.systemstate.ClientLog;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.ServerServerMessage;
@@ -19,14 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
-import static com.ds.chatserver.constants.ServerConfigurationConstants.SERVER_ID;
 
 @Slf4j
 public class LeaderState extends ServerState {
@@ -44,7 +34,7 @@ public class LeaderState extends ServerState {
         this.initState();
     }
 
-    public void initState() {
+    public synchronized void initState() {
         this.server.setLeaderId(this.server.getServerId());
         int serverCount = ServerConfigurations.getNumberOfServers();
         Set<String> serverIds = ServerConfigurations.getServerIds();
@@ -62,6 +52,7 @@ public class LeaderState extends ServerState {
             tmpThread.start();
             hbSenderThreads.add(tmpThread);
         }
+        notifyAll();
     }
 
     @Override
@@ -72,7 +63,7 @@ public class LeaderState extends ServerState {
 //        try {
 //            Thread.sleep(10000);
 //        } catch (InterruptedException e) {
-//            e.printStackTrace();
+//            e.prinhandleCreateClientRequesttStackTrace();
 //        }
 
     }
@@ -115,12 +106,13 @@ public class LeaderState extends ServerState {
 
     @Override
     public synchronized JSONObject handleCreateClientRequest(JSONObject request) {
+        log.info(request.toString());
         String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
         if (!(SystemState.isClientCommitted(clientId))) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
-                    .serverId(request.get(SERVER_ID).toString())
+                    .serverId(request.get(SENDER_ID).toString())
                     .type(EventType.NEW_IDENTITY)
                     .logIndex(server.getRaftLog().incrementLogIndex())
                     .logTerm(server.getCurrentTerm())
@@ -132,6 +124,7 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
+        log.info(ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success).toString());
         return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
     }
 //
@@ -215,7 +208,7 @@ public class LeaderState extends ServerState {
                 continue;
             }
             try {
-                thread = new Thread(new ServerRequestSender( id, createJSONMessage(id), queue, 1));
+                thread = new Thread(new ServerRequestSender( id, createAppendEntriesJSONMessage(id), queue, 1));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -228,11 +221,15 @@ public class LeaderState extends ServerState {
             }
             try {
                 JSONObject response = queue.take();
+                log.info(response.toString());
                 String responseServerId = (String) response.get(RECEIVER_ID);
                 if (((Boolean) response.get(ERROR)) || !((Boolean) response.get(SUCCESS))) {
-                    nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
+                    if(!(Boolean) response.get(ERROR)){
+                        nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
+                    }
+
                     thread = new Thread(new ServerRequestSender(responseServerId,
-                            createJSONMessage(responseServerId), queue, 1));
+                            createAppendEntriesJSONMessage(responseServerId), queue, 1));
                     thread.start();
                     continue;
                 }
@@ -250,7 +247,7 @@ public class LeaderState extends ServerState {
         }
     }
 
-    private JSONObject createJSONMessage(String serverId) {
+    private JSONObject createAppendEntriesJSONMessage(String serverId) {
         return ServerServerMessage.getAppendEntriesRequest(server.getCurrentTerm(),
                 server.getServerId(),
                 // previous log index get from next index
@@ -265,5 +262,16 @@ public class LeaderState extends ServerState {
         return "Leader State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
     }
 
+    @Override
+    public JSONObject respondNewIdentity(JSONObject request){
+        log.info(request.toString());
+        JSONObject response = handleCreateClientRequest(ServerServerMessage.getCreateClientRequest(
+                this.server.getCurrentTerm(),
+                (String) request.get(IDENTITY),
+                this.server.getServerId()
+        ));
+        log.info(ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS)).toString());
 
+        return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
+    }
 }

@@ -34,8 +34,8 @@ public class ChatServerApplication {
         Server server = new Server(serverId);
         Boolean success = server.init(serverId);
 
-//        Thread debugLogThread = new Thread(new DebugStateLog(server));
-//        debugLogThread.start();
+        Thread debugLogThread = new Thread(new DebugStateLog(server));
+        debugLogThread.start();
 
         Runnable runnable = new Runnable() {
             @Override

@@ -1,10 +1,18 @@
 package com.ds.chatserver.serverhandler;
 
+import com.ds.chatserver.chatroom.ChatRoom;
+import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.config.ServerConfigurations;
+import com.ds.chatserver.exceptions.ChatroomAlreadyExistsException;
+import com.ds.chatserver.exceptions.ClientNotInChatRoomException;
+import com.ds.chatserver.exceptions.InvalidChatroomException;
 import com.ds.chatserver.log.RaftLog;
 import com.ds.chatserver.serverstate.CandidateState;
 import com.ds.chatserver.serverstate.FollowerState;
 import com.ds.chatserver.serverstate.ServerState;
+import com.ds.chatserver.systemstate.ChatroomLog;
+import com.ds.chatserver.systemstate.SystemState;
+import com.ds.chatserver.utils.Util;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +22,7 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -30,6 +39,27 @@ public class Server {
     public Server(String serverId) {
         this.serverId = serverId;
         this.raftLog = new RaftLog();
+
+        createMainhall();
+    }
+    private void createMainhall(){
+        Set<String> serverIds = ServerConfigurations.getServerIds();
+
+        for (String id: serverIds) {
+            if(id.equals(this.getServerId())){
+                try {
+//                   // TODO Consider owerner null case
+                    ChatRoomHandler.getInstance().createChatRoom(Util.getMainhall(id),null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+//            SystemState.addChatroom(ChatroomLog.builder()
+//                .chatRoomName(Util.getMainhall(id))
+//                .serverId(id)
+//                .ownerId("").build());
+            SystemState.addChatroom(new ChatroomLog(Util.getMainhall(id), id, ""));
+        }
     }
 
     public void incrementTerm() {

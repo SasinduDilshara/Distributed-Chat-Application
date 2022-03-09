@@ -15,6 +15,8 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.IDENTITY;
+
 
 public class ClientThread implements Runnable {
     private String id;
@@ -76,42 +78,55 @@ public class ClientThread implements Runnable {
         String jsonString = null;
         try {
             jsonString = bufferedReader.readLine();
-            JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
-            String type = (String)jsonObject.get("type");
+            JSONObject request = JsonParser.stringToJSONObject(jsonString);
+            String type = (String)request.get("type");
+            JSONObject clientResponse = null;
+            logger.info(jsonString);
+
             switch (type) {
                 case "newidentity" -> {
-                    String identity = (String) jsonObject.get("identity");
-                    this.id = identity;
-                    JSONObject serverResponse = this.server.handleClientRequest(jsonObject);
-                    if (Validation.validateClientID(identity)) {
-                        try {
-                            this.sendResponse(ServerMessage.getNewIdentityResponse(true));
-                            chatRoomHandler.joinRoom(
-                                    chatRoomHandler.getMainHall().getRoomId(), this, null);
-                            logger.info("New Client with id {} joined", identity);
-                        } catch (ChatroomDoesntExistsException | ClientAlreadyInChatRoomException |
-                                ClientNotInChatRoomException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        this.sendResponse(ServerMessage.getNewIdentityResponse(false));
-                        logger.info("New Client join request with id {} failed", identity);
-                        // TODO: check if directly stopping the thread is okay
-                        this.stop();
+
+                    while(clientResponse == null){
+                        clientResponse = this.server.getState().respondToClientRequest(request);
+                        logger.info(clientResponse.toString());
                     }
+                    logger.info("New Client with id {} joined", request.get(IDENTITY).toString());
+
+//                    String identity = (String) jsonObject.get("identity");
+//                    this.id = identity;
+//                    JSONObject serverResponse = this.server.handleClientRequest(jsonObject);
+//                    if (Validation.validateClientID(identity)) {
+//                        try {
+//                            this.sendResponse(ServerMessage.getNewIdentityResponse(true));
+//                            chatRoomHandler.joinRoom(
+//                                    chatRoomHandler.getMainHall().getRoomId(), this, null);
+//                            logger.info("New Client with id {} joined", identity);
+//                        } catch (ChatroomDoesntExistsException | ClientAlreadyInChatRoomException |
+//                                ClientNotInChatRoomException e) {
+//                            e.printStackTrace();
+//                        }
+//                    } else {
+//                        this.sendResponse(ServerMessage.getNewIdentityResponse(false));
+//                        logger.info("New Client join request with id {} failed", identity);
+//                        // TODO: check if directly stopping the thread is okay
+//                        this.stop();
+//                    }
                 }
                 case "movejoin" -> {
-                    String former = (String) jsonObject.get("former");
-                    String roomId = (String) jsonObject.get("roomid");
-                    this.id = (String) jsonObject.get("identity");
-                    chatRoomHandler.moveJoinRoom(roomId, this, former);
-                    //TODO: serverId
-                    sendResponse(ServerMessage.getServerChangeResponse("serverId"));
-                    logger.info("Successfully changed server of {}", id);
+//                    String former = (String) jsonObject.get("former");
+//                    String roomId = (String) jsonObject.get("roomid");
+//                    this.id = (String) jsonObject.get("identity");
+//                    chatRoomHandler.moveJoinRoom(roomId, this, former);
+//                    //TODO: serverId
+//                    sendResponse(ServerMessage.getServerChangeResponse("serverId"));
+//                    logger.info("Successfully changed server of {}", id);
                 }
                 default -> this.stop();
             }
-        } catch (IOException | ChatroomDoesntExistsException | ClientAlreadyInChatRoomException e) {
+
+            this.sendResponse(clientResponse);
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

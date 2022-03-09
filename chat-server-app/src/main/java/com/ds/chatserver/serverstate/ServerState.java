@@ -45,9 +45,11 @@ public abstract class ServerState {
     }
 
     public JSONObject respondToClientRequest(JSONObject request) {
+        log.info("Client Req: {}", request.toString());
         switch ((String) request.get(TYPE)) {
-            case "newidentity":
-                break;
+            case NEW_IDENTITY:
+                return respondNewIdentity(request);
+
         }
         return null;
     }
@@ -96,5 +98,5 @@ public abstract class ServerState {
         return null;
     }
 
-
+    public abstract JSONObject respondNewIdentity(JSONObject request);
 }

@@ -8,10 +8,8 @@ import com.ds.chatserver.utils.Util;
 import java.util.HashMap;
 
 public class SystemState {
-    private static HashMap<String, ClientLog> clientLists;
-    private static HashMap<String, ChatroomLog> chatroomLists;
-    private static HashMap<String, ClientLog> draftClientLists;
-    private static HashMap<String, ChatroomLog> draftChatroomLists;
+    private static HashMap<String, ClientLog> clientLists = new HashMap<>();
+    private static HashMap<String, ChatroomLog> chatroomLists = new HashMap<>();
 
     public synchronized static void commit(Server server){
         for(int i = server.getRaftLog().getLastApplied()+1; i <= server.getRaftLog().getCommitIndex(); i++){
@@ -32,6 +30,10 @@ public class SystemState {
         }
     }
 
+    public static void addChatroom(ChatroomLog chatroomLog){
+        chatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
+    }
+
     public HashMap<String, ClientLog> getClientLists() {
         return clientLists;
     }
@@ -50,11 +52,12 @@ public class SystemState {
 
     public static void commitClient(ClientLog clientLog) {
         clientLists.put(clientLog.getClientId(), clientLog);
-        draftClientLists.remove(clientLog.getClientId());
+//        draftClientLists.remove(clientLog.getClientId());
     }
 
     public static void addDraftClient(ClientLog clientLog) {
-        draftClientLists.put(clientLog.getClientId(), clientLog);
+
+//        draftClientLists.put(clientLog.getClientId(), clientLog);
     }
 
     public static void removeClient(ClientLog clientLog) {
@@ -63,11 +66,11 @@ public class SystemState {
 
     public static void commitChatroom(ChatroomLog chatroomLog) {
         chatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
-        draftChatroomLists.remove(chatroomLog.getChatRoomName());
+//        draftChatroomLists.remove(chatroomLog.getChatRoomName());
     }
 
     public static void addDraftChatroom(ChatroomLog chatroomLog) {
-        draftChatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
+//        draftChatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
     }
 
     public static void removeChatroom(ChatroomLog chatroomLog) {
@@ -79,7 +82,8 @@ public class SystemState {
     }
 
     public static Boolean isClientAvailableInDraft(String chatroomName) {
-        return draftClientLists.containsKey(chatroomName);
+//        return draftClientLists.containsKey(chatroomName);
+        return null;
     }
 
     public static Boolean isChatroomCommitted(String chatroomName) {
@@ -87,7 +91,8 @@ public class SystemState {
     }
 
     public static Boolean isChatroomAvailableInDraft(String clientId) {
-        return draftChatroomLists.containsKey(clientId);
+//        return draftChatroomLists.containsKey(clientId);
+        return null;
     }
 
 

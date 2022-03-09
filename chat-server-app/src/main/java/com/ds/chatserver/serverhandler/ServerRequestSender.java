@@ -51,6 +51,18 @@ public class ServerRequestSender extends Thread {
         int numberOfReTrys = 0;
         int timeout = 100;
 
+        if (serverId == null) {
+            try {
+                response = new JSONObject();
+                response.put("error", true);
+                response.put(RECEIVER_ID,serverId);
+                responseQueue.put(response);
+                return;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         int port = ServerConfigurations.getServerDetails(serverId).getServerPort();
         String host = ServerConfigurations.getServerDetails(serverId).getIpAddress();
         Socket socket = null;
@@ -81,6 +93,7 @@ public class ServerRequestSender extends Thread {
             try {
                 response = new JSONObject();
                 response.put("error", true);
+                response.put(RECEIVER_ID,serverId);
                 responseQueue.put(response);
             } catch (InterruptedException e) {
                 e.printStackTrace();

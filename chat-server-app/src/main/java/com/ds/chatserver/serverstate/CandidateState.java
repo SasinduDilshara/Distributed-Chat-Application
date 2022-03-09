@@ -122,6 +122,16 @@ public class CandidateState extends ServerState {
     public String printState(){
         return "Candidate State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
     }
+
+    @Override
+    public synchronized JSONObject respondNewIdentity(JSONObject request){
+        try {
+            wait();
+        } catch (InterruptedException e) {
+//            e.printStackTrace();
+        }
+        return null;
+    }
 }
 
 

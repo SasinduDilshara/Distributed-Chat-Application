@@ -23,4 +23,6 @@ public class CommunicationProtocolKeyWordsConstants {
     public static final String LOG_INDEX = "logIndex";
     public static final String SERVER_ID = "serverId";
 
+    public static final String APPROVED = "approved";
+    public static final String IDENTITY = "identity";
 }

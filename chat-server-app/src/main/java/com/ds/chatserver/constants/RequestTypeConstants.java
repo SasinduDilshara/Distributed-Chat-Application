@@ -9,4 +9,5 @@ public class RequestTypeConstants {
     public static final String DELETE_CHAT_ROOM = "deleteChatRoom";
     public static final String CHANGE_ROOM = "changeRoom";
     public static final String SERVER_INIT = "serverInit";
+    public static final String NEW_IDENTITY = "newidentity";
 }
