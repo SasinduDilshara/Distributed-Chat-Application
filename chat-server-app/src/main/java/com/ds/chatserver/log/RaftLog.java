@@ -47,7 +47,10 @@ public class RaftLog {
     }
 
     public List<Event> getLogEntriesFromIndex(int index) {
-        if(index < 0 || index > logEntries.size()){
+        if(index < 0){
+            return logEntries;
+        }
+        if(index > logEntries.size()){
             return new ArrayList<>();
         }
         return logEntries.subList(index, logEntries.size());

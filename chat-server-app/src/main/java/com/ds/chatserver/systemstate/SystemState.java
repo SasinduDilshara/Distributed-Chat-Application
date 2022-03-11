@@ -12,6 +12,7 @@ public class SystemState {
     private static HashMap<String, ChatroomLog> chatroomLists = new HashMap<>();
 
     public synchronized static void commit(Server server){
+        System.out.println("Commiting.. commit index: " + server.getRaftLog().getCommitIndex());
         for(int i = server.getRaftLog().getLastApplied()+1; i <= server.getRaftLog().getCommitIndex(); i++){
             Event event = server.getRaftLog().getIthEvent(i);
 

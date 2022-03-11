@@ -7,7 +7,9 @@ import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.ServerServerMessage;
+import com.ds.chatserver.utils.Util;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
@@ -97,12 +99,13 @@ public class FollowerState extends ServerState {
         int leaderCommit = Integer.parseInt((String)jsonObject.get(LEADER_COMMIT));
         String leaderId = (String) jsonObject.get(LEADER_ID);
 
-        ArrayList<Event> logEntries = (ArrayList<Event>) jsonObject.get(ENTRIES);
+//        log.info("previousLogIndex: {}", prevLogIndex);
+        ArrayList<Event> logEntries = Util.decodeJsonEventList((JSONArray) jsonObject.get(ENTRIES));
         Boolean success = false;
         int[] resultLogStatus;
-        if(logEntries.size()>0){
-            log.info(jsonObject.toString());
-        }
+//        if(logEntries.size()>0){
+//            log.info(jsonObject.toString());
+//        }
 
         if (requestTerm < server.getCurrentTerm()) {
             /*

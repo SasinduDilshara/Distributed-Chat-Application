@@ -118,9 +118,11 @@ public class LeaderState extends ServerState {
                     .logTerm(server.getCurrentTerm())
                     .build());
 
+            int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
             success = replicateLogs();
             if (success) {
                 //Commit client
+                this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit, this.server.getRaftLog().getCommitIndex()));
                 SystemState.commit(this.server);
             }
         }
