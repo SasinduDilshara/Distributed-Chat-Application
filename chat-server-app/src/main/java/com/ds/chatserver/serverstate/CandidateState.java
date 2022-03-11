@@ -56,7 +56,7 @@ public class CandidateState extends ServerState {
                 JSONObject response = queue.take();
                 if ((!(Boolean) response.get(ERROR)) && (Boolean) response.get(VOTE_GRANTED)) {
                     voteCount++;
-                    log.info("Vote True");
+                    log.info("Vote True: {}", response.get(RECEIVER_ID));
                 } else {
                     if(!(Boolean) response.get(ERROR)){
                         int responseTerm = Integer.parseInt((String) response.get(TERM));
@@ -67,7 +67,7 @@ public class CandidateState extends ServerState {
                         }
                     }
 
-                    log.info("Vote False");
+                    log.info("Vote False: {}", response.get(RECEIVER_ID));
                     rejectCount ++;
                     if (rejectCount >= (serverCount - serverCount/2)) {
                         int electionTimeOut = 150 + (int)(Math.random()*150);
@@ -120,7 +120,8 @@ public class CandidateState extends ServerState {
 
     @Override
     public String printState(){
-        return "Candidate State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+        return "Candidate State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId()
+                + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override

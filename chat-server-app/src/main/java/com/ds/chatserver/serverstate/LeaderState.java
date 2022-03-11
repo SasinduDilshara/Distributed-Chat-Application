@@ -40,15 +40,15 @@ public class LeaderState extends ServerState {
         Set<String> serverIds = ServerConfigurations.getServerIds();
 
         for(String id: serverIds){
-            nextIndex.put(id, this.server.getRaftLog().getLastLogIndex());
-            matchIndex.put(id, 0);
+            nextIndex.put(id, this.server.getRaftLog().getLastLogIndex()+1);
+            matchIndex.put(id, -1);
         }
 
         for (String id: serverIds) {
             if (id.equals(this.server.getServerId())) {
                 continue;
             }
-            HeartBeatSenderThread tmpThread = new HeartBeatSenderThread(this.server, id, nextIndex, matchIndex);
+            HeartBeatSenderThread tmpThread = new HeartBeatSenderThread(this.server, id, this.nextIndex, this.matchIndex);
             tmpThread.start();
             hbSenderThreads.add(tmpThread);
         }
@@ -114,7 +114,7 @@ public class LeaderState extends ServerState {
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
                     .type(EventType.NEW_IDENTITY)
-                    .logIndex(server.getRaftLog().incrementLogIndex())
+                    .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
 
@@ -200,66 +200,94 @@ public class LeaderState extends ServerState {
         int serverCount = ServerConfigurations.getNumberOfServers();
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(serverCount);
         Set<String> serverIds = ServerConfigurations.getServerIds();
-        int successReponsesCount = 1;
-        Thread thread = null;
+//        int successReponsesCount = 1;
+        int logIndexToMatch = this.server.getRaftLog().getLastLogIndex();
+        Set<String> matchedNodes = new HashSet<>();
+        matchedNodes.add(this.server.getServerId());
 
-        for (String id: serverIds) {
-            if (id.equals(this.server.getServerId())) {
-                continue;
-            }
-            try {
-                thread = new Thread(new ServerRequestSender( id, createAppendEntriesJSONMessage(id), queue, 1));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            thread.start();
+        for(HeartBeatSenderThread thread : hbSenderThreads){
+            thread.invokeImmediateSend();
         }
 
-        while (true) {
-            if (!(server.getLeaderId().equals(server.getServerId()))) {
+        while(true){
+            for (String id: serverIds) {
+                if(this.matchIndex.get(id) >= logIndexToMatch){
+                    matchedNodes.add(id);
+                }
+            }
+
+            if(matchedNodes.size() > serverCount/2){
+//                log.info("Replication Succees");
+                return true;
+            }
+
+            if(!this.server.getServerId().equals(this.server.getLeaderId())){
+//                log.info("Replication Failed");
                 return false;
             }
-            try {
-                JSONObject response = queue.take();
-                log.info(response.toString());
-                String responseServerId = (String) response.get(RECEIVER_ID);
-                if (((Boolean) response.get(ERROR)) || !((Boolean) response.get(SUCCESS))) {
-                    if(!(Boolean) response.get(ERROR)){
-                        nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
-                    }
-
-                    thread = new Thread(new ServerRequestSender(responseServerId,
-                            createAppendEntriesJSONMessage(responseServerId), queue, 1));
-                    thread.start();
-                    continue;
-                }
-                successReponsesCount += 1;
-                nextIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
-                //TODO: Check
-                matchIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
-                if (successReponsesCount > serverCount / 2) {
-                    server.getRaftLog().setCommitIndex(server.getRaftLog().getLogEntries().size() - 1);
-                    return true;
-                }
-            } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
-            }
         }
+
+//        Thread thread = null;
+
+//        for (String id: serverIds) {
+//            if (id.equals(this.server.getServerId())) {
+//                continue;
+//            }
+//            try {
+//                thread = new Thread(new ServerRequestSender( id, createAppendEntriesJSONMessage(id), queue, 1));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            thread.start();
+//        }
+
+//        while (true) {
+//            if (!(server.getLeaderId().equals(server.getServerId()))) {
+//                return false;
+//            }
+//            try {
+//                JSONObject response = queue.take();
+//
+//                log.info(response.toString());
+//                String responseServerId = (String) response.get(RECEIVER_ID);
+//                if (((Boolean) response.get(ERROR)) || !((Boolean) response.get(SUCCESS))) {
+//                    if(!(Boolean) response.get(ERROR)){
+//                        nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
+//                    }
+//
+//                    thread = new Thread(new ServerRequestSender(responseServerId,
+//                            createAppendEntriesJSONMessage(responseServerId), queue, 1));
+//                    thread.start();
+//                    continue;
+//                }
+//                successReponsesCount += 1;
+//                nextIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
+//                //TODO: Check
+//                matchIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
+//                if (successReponsesCount > serverCount / 2) {
+//                    server.getRaftLog().setCommitIndex(server.getRaftLog().getLogEntries().size() - 1);
+//                    return true;
+//                }
+//            } catch (InterruptedException | IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
-    private JSONObject createAppendEntriesJSONMessage(String serverId) {
-        return ServerServerMessage.getAppendEntriesRequest(server.getCurrentTerm(),
-                server.getServerId(),
-                // previous log index get from next index
-                nextIndex.get(serverId),
-                server.getRaftLog().getTermFromIndex(nextIndex.get(serverId)),
-                server.getRaftLog().getLogEntriesFromIndex(nextIndex.get(serverId)),
-                server.getRaftLog().getCommitIndex());
-    }
+//    private JSONObject createAppendEntriesJSONMessage(String serverId) {
+//        return ServerServerMessage.getAppendEntriesRequest(server.getCurrentTerm(),
+//                server.getServerId(),
+//                // previous log index get from next index
+//                nextIndex.get(serverId),
+//                server.getRaftLog().getTermFromIndex(nextIndex.get(serverId)),
+//                server.getRaftLog().getLogEntriesFromIndex(nextIndex.get(serverId)),
+//                server.getRaftLog().getCommitIndex());
+//    }
 
     @Override
     public String printState(){
-        return "Leader State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+        return "Leader State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId()
+                + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override

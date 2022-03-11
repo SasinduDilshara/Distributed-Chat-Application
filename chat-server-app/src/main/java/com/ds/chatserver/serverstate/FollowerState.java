@@ -50,11 +50,12 @@ public class FollowerState extends ServerState {
 
     @Override
     public JSONObject handleRequestVote(JSONObject jsonObject) {
+//      TODO: Votelock instead of synchronized ?
         this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
         boolean voteGranted;
         int requestVoteTerm = Integer.parseInt((String) jsonObject.get(TERM));
 
-        if (requestVoteTerm <= this.server.getCurrentTerm()) {
+        if (requestVoteTerm < this.server.getCurrentTerm()) {
             voteGranted = false;
         }
         /**
@@ -86,8 +87,9 @@ public class FollowerState extends ServerState {
     }
 
     @Override
-    public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
-        this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
+    public synchronized JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
+//        moved to the else clause
+//        this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
 
         int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
         int prevLogIndex = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_INDEX));
@@ -98,7 +100,9 @@ public class FollowerState extends ServerState {
         ArrayList<Event> logEntries = (ArrayList<Event>) jsonObject.get(ENTRIES);
         Boolean success = false;
         int[] resultLogStatus;
-
+        if(logEntries.size()>0){
+            log.info(jsonObject.toString());
+        }
 
         if (requestTerm < server.getCurrentTerm()) {
             /*
@@ -106,8 +110,11 @@ public class FollowerState extends ServerState {
              */
             success = false;
         } else {
+            this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
+
             resultLogStatus = server.getRaftLog().checkLogIndexWithTerm(prevLogIndex, prevLogTerm);
             if (resultLogStatus[0] == LogEntryStatus.NOT_FOUND) {
+//                log.info("NOT_FOUND");
                 /*
                 Reply false if log doesn’t contain an entry at prevLogIndex
                     whose term matches prevLogTerm
@@ -115,6 +122,7 @@ public class FollowerState extends ServerState {
                 success = false;
             } else {
                 if (resultLogStatus[0] == LogEntryStatus.CONFLICT) {
+//                    log.info("CONFLICT");
                     /*
                     If an existing entry conflicts with a new one (same index
                     but different terms), delete the existing entry and all that
@@ -122,6 +130,7 @@ public class FollowerState extends ServerState {
                      */
                     server.getRaftLog().deleteEntriesFromIndex(resultLogStatus[1]);
                 }
+//                log.info("NORMAL");
                 /*
                 Append any new entries not already in the log
                  */
@@ -132,7 +141,7 @@ public class FollowerState extends ServerState {
                  */
                 if (leaderCommit > server.getRaftLog().getCommitIndex()) {
                     server.getRaftLog().setCommitIndex(Math.min(leaderCommit,
-                            server.getRaftLog().getIndexFromLastEntry()));
+                            server.getRaftLog().getLastLogIndex()));
                     SystemState.commit(this.server);
                 }
                 success = true;
@@ -143,7 +152,7 @@ public class FollowerState extends ServerState {
 //            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setLeaderId(leaderId);
-            success = true;
+//            success = true;
         }
 
 
@@ -151,13 +160,15 @@ public class FollowerState extends ServerState {
                 this.server.getCurrentTerm(),
                 success
         );
+//        log.info(response.toString());
         return response;
 
     }
 
     @Override
     public String printState(){
-        return "Follower State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+        return "Follower State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId()
+                + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override

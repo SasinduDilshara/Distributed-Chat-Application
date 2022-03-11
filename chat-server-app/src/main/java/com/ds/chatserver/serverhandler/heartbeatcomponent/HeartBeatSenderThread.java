@@ -10,6 +10,7 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -23,6 +24,7 @@ public class HeartBeatSenderThread extends Thread{
     private String receiverId;
     private Timestamp lastHeartBeatTimestamp;
     private Boolean exit;
+    private Boolean immediateSend;
     private Hashtable<String, Integer> nextIndex;
     private Hashtable<String, Integer> matchIndex;
 
@@ -35,6 +37,7 @@ public class HeartBeatSenderThread extends Thread{
         exit = false;
         this.nextIndex = nextIndex;
         this.matchIndex = matchIndex;
+        this.immediateSend = false;
     }
 
     @Override
@@ -44,18 +47,27 @@ public class HeartBeatSenderThread extends Thread{
             Timestamp expireTimestamp = new Timestamp(System.currentTimeMillis() - HEART_BEAT_FREQUENCY);
             ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(2);
 
-            if(expireTimestamp.after(lastHeartBeatTimestamp)){
+            if(this.immediateSend || expireTimestamp.after(lastHeartBeatTimestamp)){
+                this.immediateSend = false;
                 this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
+
+                int previousLogIndex = nextIndex.get(receiverId)-1;
+                int previousLogTerm = server.getRaftLog().getTermFromIndex(previousLogIndex);
+                int lastLogIndex = server.getRaftLog().getLastLogIndex();
 
                 JSONObject request = ServerServerMessage.getAppendEntriesRequest(
                         this.server.getCurrentTerm(),
                         this.server.getLeaderId(),
-                        nextIndex.get(receiverId),
-                        server.getRaftLog().getTermFromIndex(nextIndex.get(receiverId)),
-                        server.getRaftLog().getLogEntriesFromIndex(nextIndex.get(receiverId)),
+                        previousLogIndex,
+                        previousLogTerm,
+                        server.getRaftLog().getLogEntriesFromIndex(previousLogIndex),
+//                        new ArrayList<>(),
                         server.getRaftLog().getCommitIndex()
                 );
 
+                if(server.getRaftLog().getLogEntriesFromIndex(previousLogIndex).size() > 0){
+                    log.info("sdfds");
+                }
                 try {
                     // TODO: handle response
                     Thread thread = new Thread(new ServerRequestSender( receiverId, request, queue, 1));
@@ -79,10 +91,19 @@ public class HeartBeatSenderThread extends Thread{
                         }
                         //TODO: Handle Race conditions
                         if ((Boolean) response.get(SUCCESS)) {
-                            nextIndex.put(receiverId, server.getRaftLog().getLastLogIndex());
-                            matchIndex.put(receiverId, server.getRaftLog().getLastLogIndex());
+                            if(nextIndex.get(receiverId) != lastLogIndex+1){
+                                log.info("");
+                            }
+                            nextIndex.put(receiverId, lastLogIndex+1);
+                            matchIndex.put(receiverId, lastLogIndex);
+
+                            log.info("Matched: {} Index: {}", receiverId, previousLogIndex);
                         } else {
-                            nextIndex.put(receiverId, nextIndex.get(receiverId) - 1);
+                            if(nextIndex.get(receiverId) != lastLogIndex-1){
+                                log.info("");
+                            }
+                            nextIndex.put(receiverId, previousLogIndex - 1);
+                            log.info("Not Matched: {} Index: {}", receiverId, previousLogIndex);
                         }
 //                        TODO
 //                        log.info("Append Entries Success: {}", response.get("success"));
@@ -97,5 +118,9 @@ public class HeartBeatSenderThread extends Thread{
 
     public void stopThread(){
         exit = true;
+    }
+
+    public void invokeImmediateSend(){
+        this.immediateSend = true;
     }
 }

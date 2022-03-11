@@ -24,7 +24,7 @@ public class RaftLog {
             return logEntries.get(logEntries.size()-1).getLogIndex();
         }
         //TODO: recheck the default value
-        return 0;
+        return -1;
     }
 
     public int getLastLogTerm() {
@@ -32,11 +32,11 @@ public class RaftLog {
             return logEntries.get(logEntries.size()-1).getLogTerm();
         }
         //TODO: recheck the default value
-        return 0;
+        return -1;
     }
 
     public int getTermFromIndex(int index) {
-        if(index >= logEntries.size()){
+        if(index < 0 || index >= logEntries.size()){
             return -1;
         }
         return logEntries.get(index).getLogTerm();
@@ -47,6 +47,9 @@ public class RaftLog {
     }
 
     public List<Event> getLogEntriesFromIndex(int index) {
+        if(index < 0 || index > logEntries.size()){
+            return new ArrayList<>();
+        }
         return logEntries.subList(index, logEntries.size());
     }
 
@@ -54,10 +57,10 @@ public class RaftLog {
         logEntries.add(event);
     }
 
-    public int getIndexFromLastEntry() {
-        //TODO current commit Index????
-        return logEntries.get(logEntries.size() - 1).getLogIndex();
-    }
+//    public int getIndexFromLastEntry() {
+//        //TODO current commit Index????
+//        return logEntries.get(logEntries.size() - 1).getLogIndex();
+//    }
 
     public int appendLogEntries(List<Event> entries) {
         List<Event> newEntries = new ArrayList<>();
@@ -72,7 +75,8 @@ public class RaftLog {
             }
         }
         logEntries.addAll(newEntries);
-        return entries.get(entries.size() - 1).getLogIndex();
+//        return entries.get(entries.size() - 1).getLogIndex();
+        return getLastLogIndex();
     }
 
     public void deleteEntriesFromIndex(int logIndex) {
@@ -85,18 +89,31 @@ public class RaftLog {
     }
 
     public int[] checkLogIndexWithTerm(int logIndex, int logTerm) {
+        if(logIndex < 0){
+            return new int[]{LogEntryStatus.FOUND, logIndex};
+        }
+
         Event logEntry;
         int logSize = logEntries.size();
         if (logSize > logIndex) {
             //TODO: Implement with logIndex = Array Position
-            for (int i = logSize - 1; i >= 0; i--) {
-                logEntry = logEntries.get(i);
-                if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() == logTerm) {
-                    return new int[]{LogEntryStatus.FOUND, i};
-                } else if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() != logTerm) {
-                    return new int[]{LogEntryStatus.CONFLICT, i};
-                }
+            logEntry = logEntries.get(logIndex);
+            if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() == logTerm) {
+                return new int[]{LogEntryStatus.FOUND, logIndex};
+            } else if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() != logTerm) {
+                return new int[]{LogEntryStatus.CONFLICT, logIndex};
             }
+            else{
+                return new int[]{LogEntryStatus.NOT_FOUND, 0};
+            }
+//            for (int i = logSize - 1; i >= 0; i--) {
+//                logEntry = logEntries.get(i);
+//                if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() == logTerm) {
+//                    return new int[]{LogEntryStatus.FOUND, i};
+//                } else if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() != logTerm) {
+//                    return new int[]{LogEntryStatus.CONFLICT, i};
+//                }
+//            }
         }
         return new int[]{LogEntryStatus.NOT_FOUND, 0};
     }
@@ -108,7 +125,7 @@ public class RaftLog {
         return this.logEntries.get(index);
     }
 
-    public int incrementLogIndex() {
-        return getLastLogIndex() + 1;
+    public int getNextLogIndex() {
+        return (getLastLogIndex() + 1);
     }
 }
