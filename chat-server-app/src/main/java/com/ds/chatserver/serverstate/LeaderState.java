@@ -4,7 +4,6 @@ import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.EventType;
 import com.ds.chatserver.serverhandler.Server;
-import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.serverhandler.heartbeatcomponent.HeartBeatSenderThread;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerMessage;
@@ -109,7 +108,7 @@ public class LeaderState extends ServerState {
         log.info(request.toString());
         String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
-        if (!(SystemState.isClientCommitted(clientId))) {
+        if (!(SystemState.isClientExist(clientId))) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
@@ -122,7 +121,8 @@ public class LeaderState extends ServerState {
             success = replicateLogs();
             if (success) {
                 //Commit client
-                this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit, this.server.getRaftLog().getCommitIndex()));
+                this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit,
+                        this.server.getRaftLog().getCommitIndex()));
                 SystemState.commit(this.server);
             }
         }
@@ -293,7 +293,7 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public JSONObject respondNewIdentity(JSONObject request){
+    public JSONObject respondToNewIdentity(JSONObject request){
         log.info(request.toString());
         JSONObject response = handleCreateClientRequest(ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
@@ -303,5 +303,30 @@ public class LeaderState extends ServerState {
         log.info(ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS)).toString());
 
         return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
+    }
+
+    @Override
+    protected JSONObject respondToDeleteRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToJoinRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToCreateRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToMoveJoin(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToQuit(JSONObject request) {
+        return null;
     }
 }

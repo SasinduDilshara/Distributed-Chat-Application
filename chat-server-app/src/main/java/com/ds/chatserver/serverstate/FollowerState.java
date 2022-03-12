@@ -175,7 +175,7 @@ public class FollowerState extends ServerState {
     }
 
     @Override
-    public JSONObject respondNewIdentity(JSONObject request){
+    public JSONObject respondToNewIdentity(JSONObject request){
         log.info(request.toString());
         JSONObject requestToLeader = ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
@@ -207,6 +207,31 @@ public class FollowerState extends ServerState {
 
 
 //        return ServerMessage.getNewIdentityResponse((Boolean) reponse.get(APPROVED));
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToDeleteRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToJoinRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToCreateRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToMoveJoin(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToQuit(JSONObject request) {
         return null;
     }
 }

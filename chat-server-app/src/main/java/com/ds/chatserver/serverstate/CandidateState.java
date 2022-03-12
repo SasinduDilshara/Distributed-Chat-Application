@@ -120,17 +120,43 @@ public class CandidateState extends ServerState {
 
     @Override
     public String printState(){
-        return "Candidate State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId()
+        return "Candidate State - Term: " + this.server.getCurrentTerm()
+                + " Leader: " + this.server.getLeaderId()
                 + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override
-    public synchronized JSONObject respondNewIdentity(JSONObject request){
+    public synchronized JSONObject respondToNewIdentity(JSONObject request){
         try {
             wait();
         } catch (InterruptedException e) {
 //            e.printStackTrace();
         }
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToDeleteRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToJoinRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToCreateRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToMoveJoin(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToQuit(JSONObject request) {
         return null;
     }
 }

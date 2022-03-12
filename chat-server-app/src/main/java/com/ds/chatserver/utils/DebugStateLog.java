@@ -15,7 +15,7 @@ public class DebugStateLog implements Runnable{
     @Override
     public void run(){
         while(true){
-            log.info(this.server.getState().printState());
+            log.debug(this.server.getState().printState());
 
             try {
                 Thread.sleep(5000);
