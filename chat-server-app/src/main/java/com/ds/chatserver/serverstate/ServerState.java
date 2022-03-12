@@ -1,7 +1,6 @@
 package com.ds.chatserver.serverstate;
 
 import com.ds.chatserver.serverhandler.Server;
-import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +9,7 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 
+import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 import static com.ds.chatserver.constants.RequestTypeConstants.*;
 
@@ -45,11 +45,20 @@ public abstract class ServerState {
     }
 
     public JSONObject respondToClientRequest(JSONObject request) {
-        log.info("Client Req: {}", request.toString());
+//        log.debug("Client Req: {}", request.toString());
         switch ((String) request.get(TYPE)) {
             case NEW_IDENTITY:
-                return respondNewIdentity(request);
-
+                return respondToNewIdentity(request);
+            case MOVE_JOIN:
+                return respondToMoveJoin(request);
+            case CREATE_ROOM:
+                return respondToCreateRoom(request);
+            case JOIN_ROOM:
+                return respondToJoinRoom(request);
+            case DELETE_ROOM:
+                return respondToDeleteRoom(request);
+            case QUIT:
+                return respondToQuit(request);
         }
         return null;
     }
@@ -98,5 +107,15 @@ public abstract class ServerState {
         return null;
     }
 
-    public abstract JSONObject respondNewIdentity(JSONObject request);
+    public abstract JSONObject respondToNewIdentity(JSONObject request);
+
+    protected abstract JSONObject respondToDeleteRoom(JSONObject request);
+
+    protected abstract JSONObject respondToJoinRoom(JSONObject request);
+
+    protected abstract JSONObject respondToCreateRoom(JSONObject request);
+
+    protected abstract JSONObject respondToMoveJoin(JSONObject request);
+
+    protected abstract JSONObject respondToQuit(JSONObject request);
 }

@@ -54,10 +54,6 @@ public class Server {
                     e.printStackTrace();
                 }
             }
-//            SystemState.addChatroom(ChatroomLog.builder()
-//                .chatRoomName(Util.getMainhall(id))
-//                .serverId(id)
-//                .ownerId("").build());
             SystemState.addChatroom(new ChatroomLog(Util.getMainhall(id), id, ""));
         }
     }
@@ -83,10 +79,6 @@ public class Server {
 
     public JSONObject handleServerRequest(JSONObject jsonObject) {
         return this.getState().respondToServerRequest(jsonObject);
-    }
-
-    public JSONObject handleClientRequest(JSONObject jsonObject) {
-        return this.getState().respondToClientRequest(jsonObject);
     }
 
     public void setState(ServerState state){

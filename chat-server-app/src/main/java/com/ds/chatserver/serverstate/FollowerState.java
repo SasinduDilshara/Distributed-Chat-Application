@@ -7,7 +7,9 @@ import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.ServerServerMessage;
+import com.ds.chatserver.utils.Util;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
@@ -38,23 +40,16 @@ public class FollowerState extends ServerState {
             log.info("HB Timeout Last:{} Current:{} Expire: {}", lastHeartBeatTimestamp, new Timestamp(System.currentTimeMillis()), expireTimestamp);
             this.server.setState(new CandidateState(this.server));
         }
-//        while(true){
-//            log.info("Follower State: Term:{} leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
-//            try {
-//                Thread.sleep(10000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
     @Override
     public JSONObject handleRequestVote(JSONObject jsonObject) {
+//      TODO: Votelock instead of synchronized ?
         this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
         boolean voteGranted;
         int requestVoteTerm = Integer.parseInt((String) jsonObject.get(TERM));
 
-        if (requestVoteTerm <= this.server.getCurrentTerm()) {
+        if (requestVoteTerm < this.server.getCurrentTerm()) {
             voteGranted = false;
         }
         /**
@@ -86,8 +81,9 @@ public class FollowerState extends ServerState {
     }
 
     @Override
-    public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
-        this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
+    public synchronized JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
+//        moved to the else clause
+//        this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
 
         int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
         int prevLogIndex = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_INDEX));
@@ -95,10 +91,9 @@ public class FollowerState extends ServerState {
         int leaderCommit = Integer.parseInt((String)jsonObject.get(LEADER_COMMIT));
         String leaderId = (String) jsonObject.get(LEADER_ID);
 
-        ArrayList<Event> logEntries = (ArrayList<Event>) jsonObject.get(ENTRIES);
+        ArrayList<Event> logEntries = Util.decodeJsonEventList((JSONArray) jsonObject.get(ENTRIES));
         Boolean success = false;
         int[] resultLogStatus;
-
 
         if (requestTerm < server.getCurrentTerm()) {
             /*
@@ -106,6 +101,8 @@ public class FollowerState extends ServerState {
              */
             success = false;
         } else {
+            this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
+
             resultLogStatus = server.getRaftLog().checkLogIndexWithTerm(prevLogIndex, prevLogTerm);
             if (resultLogStatus[0] == LogEntryStatus.NOT_FOUND) {
                 /*
@@ -132,7 +129,7 @@ public class FollowerState extends ServerState {
                  */
                 if (leaderCommit > server.getRaftLog().getCommitIndex()) {
                     server.getRaftLog().setCommitIndex(Math.min(leaderCommit,
-                            server.getRaftLog().getIndexFromLastEntry()));
+                            server.getRaftLog().getLastLogIndex()));
                     SystemState.commit(this.server);
                 }
                 success = true;
@@ -140,28 +137,27 @@ public class FollowerState extends ServerState {
         }
 //        TODO chech codition
         if (requestTerm >= this.server.getCurrentTerm()) {
-//            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setLeaderId(leaderId);
-            success = true;
         }
-
 
         JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );
-        return response;
 
+        return response;
     }
 
     @Override
     public String printState(){
-        return "Follower State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+        return "Follower State - Term: " + this.server.getCurrentTerm()
+                + " Leader: " + this.server.getLeaderId()
+                + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override
-    public JSONObject respondNewIdentity(JSONObject request){
+    public JSONObject respondToNewIdentity(JSONObject request){
         log.info(request.toString());
         JSONObject requestToLeader = ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
@@ -180,7 +176,7 @@ public class FollowerState extends ServerState {
 
         try {
             JSONObject response = queue.take();
-            log.info("Response from leader: {}", response.toString());
+            log.debug("Response from leader: {}", response.toString());
 
             if ((Boolean) response.get(ERROR)) {
                 return ServerMessage.getNewIdentityResponse(false);
@@ -191,8 +187,31 @@ public class FollowerState extends ServerState {
             e.printStackTrace();
         }
 
+        return null;
+    }
 
-//        return ServerMessage.getNewIdentityResponse((Boolean) reponse.get(APPROVED));
+    @Override
+    protected JSONObject respondToDeleteRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToJoinRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToCreateRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToMoveJoin(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToQuit(JSONObject request) {
         return null;
     }
 }

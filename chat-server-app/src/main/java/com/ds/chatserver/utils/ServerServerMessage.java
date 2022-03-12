@@ -23,6 +23,7 @@ public class ServerServerMessage {
             jsonEntry.put(TYPE, entry.getType().toString());
             jsonEntry.put(CLIENT_ID, entry.getClientId());
             jsonEntry.put(SERVER_ID, entry.getServerId());
+            jsonEntry.put(PARAMETER, entry.getParameter());
 
             jsonEntries.add(jsonEntry);
         }

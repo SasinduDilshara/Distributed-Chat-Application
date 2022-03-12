@@ -56,7 +56,7 @@ public class CandidateState extends ServerState {
                 JSONObject response = queue.take();
                 if ((!(Boolean) response.get(ERROR)) && (Boolean) response.get(VOTE_GRANTED)) {
                     voteCount++;
-                    log.info("Vote True");
+                    log.debug("Vote True: {}", response.get(RECEIVER_ID));
                 } else {
                     if(!(Boolean) response.get(ERROR)){
                         int responseTerm = Integer.parseInt((String) response.get(TERM));
@@ -67,17 +67,15 @@ public class CandidateState extends ServerState {
                         }
                     }
 
-                    log.info("Vote False");
+                    log.debug("Vote False: {}", response.get(RECEIVER_ID));
                     rejectCount ++;
                     if (rejectCount >= (serverCount - serverCount/2)) {
                         int electionTimeOut = 150 + (int)(Math.random()*150);
-                        log.info("Election Timeoout - {}", electionTimeOut);
                         Thread.sleep(electionTimeOut);
                         break;
                     }
                 }
                 if (voteCount > serverCount/2) {
-                    // stateChange
                     this.server.setState(new LeaderState(this.server));
                     break;
                 }
@@ -103,10 +101,10 @@ public class CandidateState extends ServerState {
 
         int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
         String leaderId = (String) jsonObject.get(LEADER_ID);
-        log.info("Append Entry {} from {}", requestTerm, leaderId);
+//        log.debug("Append Entry {} from {}", requestTerm, leaderId);
         boolean success = false;
         if (requestTerm >= this.server.getCurrentTerm()) {
-            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
+//            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setState(new FollowerState(this.server, leaderId));
             return this.server.getState().handleRequestAppendEntries(jsonObject);
@@ -120,16 +118,43 @@ public class CandidateState extends ServerState {
 
     @Override
     public String printState(){
-        return "Candidate State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId();
+        return "Candidate State - Term: " + this.server.getCurrentTerm()
+                + " Leader: " + this.server.getLeaderId()
+                + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override
-    public synchronized JSONObject respondNewIdentity(JSONObject request){
+    public synchronized JSONObject respondToNewIdentity(JSONObject request){
         try {
             wait();
         } catch (InterruptedException e) {
 //            e.printStackTrace();
         }
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToDeleteRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToJoinRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToCreateRoom(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToMoveJoin(JSONObject request) {
+        return null;
+    }
+
+    @Override
+    protected JSONObject respondToQuit(JSONObject request) {
         return null;
     }
 }
