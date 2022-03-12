@@ -54,8 +54,8 @@ public class ServerRequestSender extends Thread {
         if (serverId == null) {
             try {
                 response = new JSONObject();
-                response.put("error", true);
-                response.put(RECEIVER_ID,serverId);
+                response.put(ERROR, true);
+                response.put(RECEIVER_ID, serverId);
                 responseQueue.put(response);
                 return;
             } catch (InterruptedException e) {
@@ -92,8 +92,8 @@ public class ServerRequestSender extends Thread {
         if (socket == null) {
             try {
                 response = new JSONObject();
-                response.put("error", true);
-                response.put(RECEIVER_ID,serverId);
+                response.put(ERROR, true);
+                response.put(RECEIVER_ID, serverId);
                 responseQueue.put(response);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -112,8 +112,8 @@ public class ServerRequestSender extends Thread {
                 if(response == null){
                     response = new JSONObject();
                 }
-                response.put(RECEIVER_ID,serverId);
-                response.put(ERROR,false);
+                response.put(RECEIVER_ID, serverId);
+                response.put(ERROR, false);
             }
             try {
                 responseQueue.put(response);

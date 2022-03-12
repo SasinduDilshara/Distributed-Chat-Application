@@ -40,14 +40,6 @@ public class FollowerState extends ServerState {
             log.info("HB Timeout Last:{} Current:{} Expire: {}", lastHeartBeatTimestamp, new Timestamp(System.currentTimeMillis()), expireTimestamp);
             this.server.setState(new CandidateState(this.server));
         }
-//        while(true){
-//            log.info("Follower State: Term:{} leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
-//            try {
-//                Thread.sleep(10000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
     @Override
@@ -99,13 +91,9 @@ public class FollowerState extends ServerState {
         int leaderCommit = Integer.parseInt((String)jsonObject.get(LEADER_COMMIT));
         String leaderId = (String) jsonObject.get(LEADER_ID);
 
-//        log.info("previousLogIndex: {}", prevLogIndex);
         ArrayList<Event> logEntries = Util.decodeJsonEventList((JSONArray) jsonObject.get(ENTRIES));
         Boolean success = false;
         int[] resultLogStatus;
-//        if(logEntries.size()>0){
-//            log.info(jsonObject.toString());
-//        }
 
         if (requestTerm < server.getCurrentTerm()) {
             /*
@@ -117,7 +105,6 @@ public class FollowerState extends ServerState {
 
             resultLogStatus = server.getRaftLog().checkLogIndexWithTerm(prevLogIndex, prevLogTerm);
             if (resultLogStatus[0] == LogEntryStatus.NOT_FOUND) {
-//                log.info("NOT_FOUND");
                 /*
                 Reply false if log doesn’t contain an entry at prevLogIndex
                     whose term matches prevLogTerm
@@ -125,7 +112,6 @@ public class FollowerState extends ServerState {
                 success = false;
             } else {
                 if (resultLogStatus[0] == LogEntryStatus.CONFLICT) {
-//                    log.info("CONFLICT");
                     /*
                     If an existing entry conflicts with a new one (same index
                     but different terms), delete the existing entry and all that
@@ -133,7 +119,6 @@ public class FollowerState extends ServerState {
                      */
                     server.getRaftLog().deleteEntriesFromIndex(resultLogStatus[1]);
                 }
-//                log.info("NORMAL");
                 /*
                 Append any new entries not already in the log
                  */
@@ -152,25 +137,22 @@ public class FollowerState extends ServerState {
         }
 //        TODO chech codition
         if (requestTerm >= this.server.getCurrentTerm()) {
-//            log.info("New Leader Appointed {} for the term {}", leaderId, requestTerm);
             this.server.setCurrentTerm(requestTerm);
             this.server.setLeaderId(leaderId);
-//            success = true;
         }
-
 
         JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );
-//        log.info(response.toString());
-        return response;
 
+        return response;
     }
 
     @Override
     public String printState(){
-        return "Follower State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId()
+        return "Follower State - Term: " + this.server.getCurrentTerm()
+                + " Leader: " + this.server.getLeaderId()
                 + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
@@ -194,7 +176,7 @@ public class FollowerState extends ServerState {
 
         try {
             JSONObject response = queue.take();
-            log.info("Response from leader: {}", response.toString());
+            log.debug("Response from leader: {}", response.toString());
 
             if ((Boolean) response.get(ERROR)) {
                 return ServerMessage.getNewIdentityResponse(false);
@@ -205,8 +187,6 @@ public class FollowerState extends ServerState {
             e.printStackTrace();
         }
 
-
-//        return ServerMessage.getNewIdentityResponse((Boolean) reponse.get(APPROVED));
         return null;
     }
 

@@ -20,7 +20,7 @@ public class ClientRequestHandler {
     private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
     public ClientRequestHandler (ChatRoomHandler chatRoomHandler, Server server) throws IOException {
-        logger.info("Initialize the Client Request Handler...");
+//        logger.debug("Initialize the Client Request Handler...");
         this.chatRoomHandler = chatRoomHandler;
         this.server = server;
         this.socketPort = ServerConfigurations.getServerDetails(server.getServerId()).getClientPort();
@@ -39,14 +39,8 @@ public class ClientRequestHandler {
     public void start() {
         while(true) {
             try {
-                logger.info("Waiting for new Client Connection ... ");
+//                logger.debug("Waiting for new Client Connection ... ");
                 Thread thread = new Thread(new ClientThread(serverSocket.accept(), chatRoomHandler, this.server));
-//                Thread thread = new Thread (
-//                        ClientThread.builder()
-//                                .socket(serverSocket.accept())
-//                                .chatRoomHandler(chatRoomHandler)
-//                                .build()
-//                );
                 thread.start();
             } catch (IOException e) {
                 e.printStackTrace();

@@ -16,6 +16,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.APPROVED;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.IDENTITY;
 
 
@@ -82,16 +83,18 @@ public class ClientThread implements Runnable {
             JSONObject request = JsonParser.stringToJSONObject(jsonString);
             String type = (String)request.get("type");
             JSONObject clientResponse = null;
-            logger.info(jsonString);
+            logger.debug(jsonString);
 
             switch (type) {
                 case "newidentity" -> {
-
+                    logger.info("New client request - clientId: {},", request.get(IDENTITY).toString());
                     while(clientResponse == null){
                         clientResponse = this.server.getState().respondToClientRequest(request);
-                        logger.info(clientResponse.toString());
+//                        logger.debug(clientResponse.toString());
                     }
-                    logger.info("New Client with id {} joined", request.get(IDENTITY).toString());
+                    logger.info("New client request - clientId: {} approved: {}",
+                            request.get(IDENTITY).toString(),
+                            clientResponse.get(APPROVED));
 
 //                    String identity = (String) jsonObject.get("identity");
 //                    this.id = identity;

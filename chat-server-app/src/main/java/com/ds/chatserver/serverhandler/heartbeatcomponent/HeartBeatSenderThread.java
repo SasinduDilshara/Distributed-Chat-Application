@@ -30,7 +30,6 @@ public class HeartBeatSenderThread extends Thread{
 
     public HeartBeatSenderThread(Server server, String receiverId,
                                  Hashtable<String, Integer> nextIndex, Hashtable<String, Integer> matchIndex) {
-        log.info("HB thread stated {}", receiverId);
         this.server = server;
         this.receiverId = receiverId;
         lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis() - 2* HEART_BEAT_FREQUENCY);
@@ -61,19 +60,10 @@ public class HeartBeatSenderThread extends Thread{
                         previousLogIndex,
                         previousLogTerm,
                         server.getRaftLog().getLogEntriesFromIndex(previousLogIndex),
-//                        new ArrayList<>(),
                         server.getRaftLog().getCommitIndex()
                 );
-//                if(this.receiverId.equals("s1") || this.receiverId.equals("s2")){
-//                    log.info("Receiver: {} previousLogIndex: {} lastLogIndex: {}",this.receiverId, previousLogIndex, lastLogIndex);
-//                    log.info(request.toString());
-//                }
 
-//                if(server.getRaftLog().getLogEntriesFromIndex(previousLogIndex).size() > 0){
-//                    log.info("sdfds");
-//                }
                 try {
-                    // TODO: handle response
                     Thread thread = new Thread(new ServerRequestSender( receiverId, request, queue, 1));
                     thread.start();
                 } catch (IOException e) {
@@ -84,38 +74,20 @@ public class HeartBeatSenderThread extends Thread{
                     JSONObject response =  queue.take();
                     if((Boolean) response.get(ERROR)) {
                         if(exit)break;
-//                        log.info("Append Entries False");
                     } else {
                         int responseTerm = Integer.parseInt((String) response.get(TERM));
                         if(responseTerm > this.server.getCurrentTerm()){
                             this.server.setCurrentTerm(responseTerm);
                             this.server.setState(new FollowerState(this.server, null));
                             break;
-//                            this.stopThread();
                         }
-                        //TODO: Handle Race conditions
+
                         if ((Boolean) response.get(SUCCESS)) {
-                            if(nextIndex.get(receiverId) != lastLogIndex+1){
-                                log.info("");
-                            }
                             nextIndex.put(receiverId, lastLogIndex+1);
                             matchIndex.put(receiverId, lastLogIndex);
-//                            if(this.receiverId.equals("s1") || this.receiverId.equals("s2")){
-//                                log.info("Matched: {} Index: {}", receiverId, previousLogIndex);
-//                            }
-
                         } else {
-                            if(nextIndex.get(receiverId) != lastLogIndex-1){
-                                log.info("");
-                            }
                             nextIndex.put(receiverId, previousLogIndex - 1);
-//                            if(this.receiverId.equals("s1") || this.receiverId.equals("s2")){
-//                                log.info("Not Matched: {} Index: {}", receiverId, previousLogIndex);
-//                            }
-
                         }
-//                        TODO
-//                        log.info("Append Entries Success: {}", response.get("success"));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

@@ -23,7 +23,7 @@ public class RaftLog {
         if (!logEntries.isEmpty()) {
             return logEntries.get(logEntries.size()-1).getLogIndex();
         }
-        //TODO: recheck the default value
+
         return -1;
     }
 
@@ -31,7 +31,7 @@ public class RaftLog {
         if (!logEntries.isEmpty()) {
             return logEntries.get(logEntries.size()-1).getLogTerm();
         }
-        //TODO: recheck the default value
+
         return -1;
     }
 
@@ -60,11 +60,6 @@ public class RaftLog {
         logEntries.add(event);
     }
 
-//    public int getIndexFromLastEntry() {
-//        //TODO current commit Index????
-//        return logEntries.get(logEntries.size() - 1).getLogIndex();
-//    }
-
     public int appendLogEntries(List<Event> entries) {
         List<Event> newEntries = new ArrayList<>();
         int[] checkResult;
@@ -78,7 +73,7 @@ public class RaftLog {
             }
         }
         logEntries.addAll(newEntries);
-//        return entries.get(entries.size() - 1).getLogIndex();
+
         return getLastLogIndex();
     }
 
@@ -99,7 +94,6 @@ public class RaftLog {
         Event logEntry;
         int logSize = logEntries.size();
         if (logSize > logIndex) {
-            //TODO: Implement with logIndex = Array Position
             logEntry = logEntries.get(logIndex);
             if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() == logTerm) {
                 return new int[]{LogEntryStatus.FOUND, logIndex};
@@ -109,14 +103,6 @@ public class RaftLog {
             else{
                 return new int[]{LogEntryStatus.NOT_FOUND, 0};
             }
-//            for (int i = logSize - 1; i >= 0; i--) {
-//                logEntry = logEntries.get(i);
-//                if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() == logTerm) {
-//                    return new int[]{LogEntryStatus.FOUND, i};
-//                } else if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() != logTerm) {
-//                    return new int[]{LogEntryStatus.CONFLICT, i};
-//                }
-//            }
         }
         return new int[]{LogEntryStatus.NOT_FOUND, 0};
     }

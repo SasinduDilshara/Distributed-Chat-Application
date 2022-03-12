@@ -45,7 +45,7 @@ public abstract class ServerState {
     }
 
     public JSONObject respondToClientRequest(JSONObject request) {
-        log.info("Client Req: {}", request.toString());
+//        log.debug("Client Req: {}", request.toString());
         switch ((String) request.get(TYPE)) {
             case NEW_IDENTITY:
                 return respondToNewIdentity(request);

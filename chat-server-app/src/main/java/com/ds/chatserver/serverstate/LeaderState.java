@@ -105,7 +105,6 @@ public class LeaderState extends ServerState {
 
     @Override
     public synchronized JSONObject handleCreateClientRequest(JSONObject request) {
-        log.info(request.toString());
         String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
         if (!(SystemState.isClientExist(clientId))) {
@@ -126,7 +125,6 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
-        log.info(ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success).toString());
         return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
     }
 //
@@ -200,9 +198,7 @@ public class LeaderState extends ServerState {
 
     private boolean replicateLogs() {
         int serverCount = ServerConfigurations.getNumberOfServers();
-        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(serverCount);
         Set<String> serverIds = ServerConfigurations.getServerIds();
-//        int successReponsesCount = 1;
         int logIndexToMatch = this.server.getRaftLog().getLastLogIndex();
         Set<String> matchedNodes = new HashSet<>();
         matchedNodes.add(this.server.getServerId());
@@ -219,88 +215,31 @@ public class LeaderState extends ServerState {
             }
 
             if(matchedNodes.size() > serverCount/2){
-//                log.info("Replication Succees");
                 return true;
             }
 
             if(!this.server.getServerId().equals(this.server.getLeaderId())){
-//                log.info("Replication Failed");
                 return false;
             }
         }
-
-//        Thread thread = null;
-
-//        for (String id: serverIds) {
-//            if (id.equals(this.server.getServerId())) {
-//                continue;
-//            }
-//            try {
-//                thread = new Thread(new ServerRequestSender( id, createAppendEntriesJSONMessage(id), queue, 1));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            thread.start();
-//        }
-
-//        while (true) {
-//            if (!(server.getLeaderId().equals(server.getServerId()))) {
-//                return false;
-//            }
-//            try {
-//                JSONObject response = queue.take();
-//
-//                log.info(response.toString());
-//                String responseServerId = (String) response.get(RECEIVER_ID);
-//                if (((Boolean) response.get(ERROR)) || !((Boolean) response.get(SUCCESS))) {
-//                    if(!(Boolean) response.get(ERROR)){
-//                        nextIndex.put(responseServerId, nextIndex.get(responseServerId) - 1);
-//                    }
-//
-//                    thread = new Thread(new ServerRequestSender(responseServerId,
-//                            createAppendEntriesJSONMessage(responseServerId), queue, 1));
-//                    thread.start();
-//                    continue;
-//                }
-//                successReponsesCount += 1;
-//                nextIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
-//                //TODO: Check
-//                matchIndex.put(responseServerId, server.getRaftLog().getLastLogIndex());
-//                if (successReponsesCount > serverCount / 2) {
-//                    server.getRaftLog().setCommitIndex(server.getRaftLog().getLogEntries().size() - 1);
-//                    return true;
-//                }
-//            } catch (InterruptedException | IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
-
-//    private JSONObject createAppendEntriesJSONMessage(String serverId) {
-//        return ServerServerMessage.getAppendEntriesRequest(server.getCurrentTerm(),
-//                server.getServerId(),
-//                // previous log index get from next index
-//                nextIndex.get(serverId),
-//                server.getRaftLog().getTermFromIndex(nextIndex.get(serverId)),
-//                server.getRaftLog().getLogEntriesFromIndex(nextIndex.get(serverId)),
-//                server.getRaftLog().getCommitIndex());
-//    }
 
     @Override
     public String printState(){
-        return "Leader State - Term: " + this.server.getCurrentTerm() + " Leader: " + this.server.getLeaderId()
+        return "Leader State - Term: " + this.server.getCurrentTerm()
+                + " Leader: " + this.server.getLeaderId()
                 + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override
     public JSONObject respondToNewIdentity(JSONObject request){
-        log.info(request.toString());
+//        log.debug(request.toString());
         JSONObject response = handleCreateClientRequest(ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
                 this.server.getServerId()
         ));
-        log.info(ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS)).toString());
+//        log.debug(ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS)).toString());
 
         return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
     }
