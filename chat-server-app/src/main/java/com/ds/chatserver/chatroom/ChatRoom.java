@@ -67,9 +67,9 @@ public class ChatRoom {
             throw new ClientAlreadyInChatRoomException(errorMsg);
         }
         this.clients.add(client);
-        for(ClientThread existingClient: clients) {
-            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
-        }
+//        for(ClientThread existingClient: clients) {
+//            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+//        }
 
     }
 

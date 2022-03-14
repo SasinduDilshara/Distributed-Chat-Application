@@ -212,6 +212,34 @@ public class FollowerState extends ServerState {
 
     @Override
     protected JSONObject respondToQuit(JSONObject request) {
+        String clientId = (String) request.get(IDENTITY);
+        String roomId = (String) request.get(ROOM_ID);
+        JSONObject requestToLeader = ServerServerMessage.getDeleteClientRequest(
+                this.server.getCurrentTerm(),
+                clientId,
+                this.server.getServerId()
+        );
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+
+            if ((Boolean) response.get(SUCCESS)) {
+                return ServerMessage.getRoomChangeResponse(
+                        clientId,
+                        roomId,
+                        "");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }

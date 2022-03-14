@@ -127,29 +127,30 @@ public class LeaderState extends ServerState {
         }
         return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
     }
-//
-//    @Override
-//    public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
-//        String clientId = request.get(CLIENT_ID).toString();
-//        Boolean success = false;
-//        //TODO: Change if concurrently handle requests
-//        if (SystemState.isClientCommitted(clientId)) {
-//            server.getRaftLog().insert(Event.builder()
-//                    .clientId(clientId)
-//                    .serverId(request.get(SERVER_ID).toString())
-//                    .type(EventType.QUIT)
-//                    .logIndex(server.incrementLogIndex())
-//                    .logTerm(server.getCurrentTerm())
-//                    .build());
-//            success = replicateLogs();
-//            if (success) {
-//                SystemState.removeClient(new ClientLog(clientId, request.get(CHATROOM_NAME).toString(),
-//                        request.get(SERVER_ID).toString()));
-//            }
-//        }
-//        return ServerServerMessage.getDeleteClientResponse(server.getCurrentTerm(), success);
-//    }
-//
+
+    @Override
+    public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
+        String clientId = request.get(CLIENT_ID).toString();
+        Boolean success = false;
+        if (SystemState.isClientExist(clientId)) {
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(clientId)
+                    .serverId(request.get(SENDER_ID).toString())
+                    .type(EventType.QUIT)
+                    .logIndex(server.getRaftLog().getNextLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .build());
+            int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
+            success = replicateLogs();
+            if (success) {
+                this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit,
+                        this.server.getRaftLog().getCommitIndex()));
+                SystemState.commit(this.server);
+            }
+        }
+        return ServerServerMessage.getDeleteClientResponse(server.getCurrentTerm(), success);
+    }
+
 //    public JSONObject handleCreateChatroomRequest(JSONObject request) {
 //        String chatroomName = request.get(CHATROOM_NAME).toString();
 //        Boolean success = false;
@@ -266,6 +267,19 @@ public class LeaderState extends ServerState {
 
     @Override
     protected JSONObject respondToQuit(JSONObject request) {
+        String clientId = (String) request.get(IDENTITY);
+        String roomId = (String) request.get(ROOM_ID);
+        JSONObject response = handleDeleteClientRequest(ServerServerMessage.getDeleteClientRequest(
+                this.server.getCurrentTerm(),
+                clientId,
+                this.server.getServerId()
+        ));
+        if ((Boolean) response.get(SUCCESS)) {
+            return ServerMessage.getRoomChangeResponse(
+                    clientId,
+                    roomId,
+                    "");
+        }
         return null;
     }
 }

@@ -135,6 +135,9 @@ public class CandidateState extends ServerState {
 
     @Override
     protected JSONObject respondToDeleteRoom(JSONObject request) {
+        try {
+            wait();
+        } catch (InterruptedException e) {}
         return null;
     }
 

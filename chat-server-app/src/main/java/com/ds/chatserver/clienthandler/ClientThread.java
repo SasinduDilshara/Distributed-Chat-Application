@@ -16,8 +16,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
-import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.APPROVED;
-import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.IDENTITY;
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 
 
 public class ClientThread implements Runnable {
@@ -87,7 +86,7 @@ public class ClientThread implements Runnable {
 
             switch (type) {
                 case "newidentity" -> {
-                    logger.info("New client request - clientId: {},", request.get(IDENTITY).toString());
+                    logger.info("New client request - clientId: {}", request.get(IDENTITY).toString());
                     while(clientResponse == null){
                         clientResponse = this.server.getState().respondToClientRequest(request);
 //                        logger.debug(clientResponse.toString());
@@ -95,9 +94,10 @@ public class ClientThread implements Runnable {
                     logger.info("New client request - clientId: {} approved: {}",
                             request.get(IDENTITY).toString(),
                             clientResponse.get(APPROVED));
-
-//                    String identity = (String) jsonObject.get("identity");
-//                    this.id = identity;
+                    String identity = request.get(IDENTITY).toString();
+                    this.id = identity;
+                    logger.info("Current chat room: {}", currentChatRoom.getRoomId());
+                    currentChatRoom.addClient(this, "");
 //                    JSONObject serverResponse = this.server.handleClientRequest(jsonObject);
 //                    if (Validation.validateClientID(identity)) {
 //                        try {
@@ -130,7 +130,7 @@ public class ClientThread implements Runnable {
 
             this.sendResponse(clientResponse);
 
-        } catch (IOException e) {
+        } catch (IOException | ClientAlreadyInChatRoomException e) {
             e.printStackTrace();
         }
 
@@ -219,12 +219,27 @@ public class ClientThread implements Runnable {
                 logger.info("{} send the message : {} to the chat room {}", id, content, currentChatRoom);
             }
             case QUIT -> {
+                // TODO: if the room owner
+                //       run deleteroom
+                //      (but special case. ie: owner should get a room change message w/ empty roomid value instead of
+                //      mainhall id)
+                // if not the room owner
+                JSONObject clientResponse = null;
+                message.put(IDENTITY, this.id);
+                message.put(ROOM_ID, this.currentChatRoom.getRoomId());
+                logger.info("Quit request - clientId: {},", this.id);
+                while(clientResponse == null){
+                    clientResponse = this.server.getState().respondToClientRequest(message);
+                }
+                logger.info("Quit request - clientId: {} , response: {} approved: true",
+                        this.id, clientResponse.toString());
+                this.sendResponse(clientResponse);
                 try {
-                    chatRoomHandler.quit(this);
-                } catch (ChatroomDoesntExistsException | ClientAlreadyInChatRoomException |
-                        ClientNotInChatRoomException | ClientNotOwnerException e) {
+                    this.currentChatRoom.removeClient(this, "");
+                } catch (ClientNotInChatRoomException e) {
                     e.printStackTrace();
                 }
+                this.stop();
             }
             default -> {
                 // Ignore unsupported message types

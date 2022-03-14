@@ -18,7 +18,7 @@ public class CommunicationProtocolKeyWordsConstants {
     public static final String CHATROOM_NAME = "chatroomId";
     public static final String SENDER_ID = "senderId";
     public static final String RECEIVER_ID = "receiverId";
-    public static final String ROOM_ID = "roomId";
+    public static final String ROOM_ID = "roomid";
     public static final String FORMER = "former";
     public static final String LOG_INDEX = "logIndex";
     public static final String SERVER_ID = "serverId";
