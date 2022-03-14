@@ -26,4 +26,10 @@ public class CommunicationProtocolKeyWordsConstants {
 
     public static final String APPROVED = "approved";
     public static final String IDENTITY = "identity";
+    public static final String ROOMS = "rooms";
+    public static final String IDENTITIES = "identities";
+    public static final String OWNER = "owner";
+    public static final String HOST = "host";
+    public static final String PORT = "port";
+    public static final String CONTENT = "content";
 }
