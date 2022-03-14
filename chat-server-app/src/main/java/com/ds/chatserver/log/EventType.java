@@ -6,6 +6,5 @@ public enum EventType {
     JOIN_ROOM,
     DELETE_ROOM,
     QUIT,
-    //TODO: Cannot store in room change
-    SERVER_CHANGE
+    ROUTE
 }
