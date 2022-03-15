@@ -169,23 +169,33 @@ public class ClientThread implements Runnable {
                 logger.info("Successfully Send List of Clients of room {} to {}", currentChatRoom.getRoomId(), id);
             }
             case CREATE_ROOM -> {
-                String roomId = (String) message.get(ROOM_ID_2);
-                if(Validation.validateRoomID(roomId) && !this.equals(currentChatRoom.getOwner())) {
-                    // validate the room id for the format, uniqueness
-                    // check if the client is not the owner of the room
-                    try {
-                        chatRoomHandler.createChatRoom(roomId, this);
-                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, true));
-                        logger.info("Successfully created chat room {}", roomId);
-                    } catch (ChatroomAlreadyExistsException | InvalidChatroomException |
-                            ClientNotInChatRoomException e) {
-                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
-                        logger.info("Failed creating chat room {}", roomId);
-                    }
-                } else {
-                    sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
-                    logger.info("Failed creating chat room {}", roomId);
+                JSONObject createRoomResponse = null;
+                logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
+                        message.get(IDENTITY).toString());
+                while(createRoomResponse == null){
+                    createRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
+                logger.info("New client request - clientId: {} approved: {}",
+                        message.get(ROOM_ID_2).toString(),
+                        createRoomResponse.get(APPROVED));
+
+//                String roomId = (String) message.get(ROOM_ID_2);
+                // validate the room id for the format, uniqueness
+                // check if the client is not the owner of the room
+//                if(Validation.validateRoomID(roomId) && !this.equals(currentChatRoom.getOwner())) {
+//                    try {
+//                        chatRoomHandler.createChatRoom(roomId, this);
+//                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, true));
+//                        logger.info("Successfully created chat room {}", roomId);
+//                    } catch (ChatroomAlreadyExistsException | InvalidChatroomException |
+//                            ClientNotInChatRoomException e) {
+//                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
+//                        logger.info("Failed creating chat room {}", roomId);
+//                    }
+//                } else {
+//                    sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
+//                    logger.info("Failed creating chat room {}", roomId);
+//                }
             }
             case JOIN_ROOM -> {
                 String roomId = (String) message.get("roomid");
@@ -248,31 +258,5 @@ public class ClientThread implements Runnable {
             chatRoomIds.add(chatRoom.getRoomId());
         }
         return chatRoomIds;
-    }
-
-    public void handleCreateRoomRequest(JSONObject message, boolean clientActive) {
-        // TODO: if the room owner
-        //       run deleteroom
-        //      (but special case. ie: owner should get a room change message w/ empty roomid value instead of
-        //      mainhall id)
-        // if not the room owner
-        JSONObject clientResponse = null;
-        message.put(IDENTITY, this.id);
-        message.put(ROOM_ID, this.currentChatRoom.getRoomId());
-        logger.info("Quit request - clientId: {},", this.id);
-        while(clientResponse == null){
-            clientResponse = this.server.getState().respondToClientRequest(message);
-        }
-        logger.info("Quit request - clientId: {} , response: {} approved: true",
-                this.id, clientResponse);
-        if(clientActive) {
-            this.sendResponse(clientResponse);
-        }
-        try {
-            this.currentChatRoom.removeClient(this, "");
-        } catch (ClientNotInChatRoomException e) {
-            e.printStackTrace();
-        }
-        this.stop();
     }
 }

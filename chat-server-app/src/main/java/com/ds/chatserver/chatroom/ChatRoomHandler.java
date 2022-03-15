@@ -32,13 +32,12 @@ public class ChatRoomHandler {
     }
 
     private Boolean validateChatroomName(String name) {
-        //TODO Implement
-        return true;
+        return Validation.validateRoomID(name);
     }
 
     public Boolean validateChatRoom(String name) {
-//        return (Server.validateChatroom(name));
-        return true;
+        //TODO Check??
+            return true;
     }
 
     // create new chat room by user

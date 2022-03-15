@@ -13,9 +13,4 @@ public class Validation {
         }
         return Character.isAlphabetic(identity.charAt(0)) && Util.isAlphaNumeric(identity);
     }
-
-    public static boolean isChatroomInSystem(String name) {
-        // TODO: Implement the fn and return true if the room exists somewhere in the entire system
-        return true;
-    }
 }
