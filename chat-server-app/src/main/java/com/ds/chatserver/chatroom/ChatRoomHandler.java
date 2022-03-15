@@ -42,7 +42,7 @@ public class ChatRoomHandler {
 
     // create new chat room by user
     public void createChatRoom(String name, ClientThread clientThread)
-            throws ChatroomAlreadyExistsException, InvalidChatroomException, ClientNotInChatRoomException {
+            throws ClientNotInChatRoomException, ChatroomAlreadyExistsException, InvalidChatroomException {
         if (!(validateChatRoom(name))) {
             throw new ChatroomAlreadyExistsException(name);
         } else if (!(validateChatroomName(name))) {

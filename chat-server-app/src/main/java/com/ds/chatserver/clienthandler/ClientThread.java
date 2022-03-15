@@ -178,6 +178,15 @@ public class ClientThread implements Runnable {
                 logger.info("New client request - clientId: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         createRoomResponse.get(APPROVED));
+                try {
+                    ChatRoomHandler.getInstance().createChatRoom(message.get(ROOM_ID_2).toString(), this);
+                } catch (ChatroomAlreadyExistsException e) {
+                    e.printStackTrace();
+                } catch (InvalidChatroomException e) {
+                    e.printStackTrace();
+                } catch (ClientNotInChatRoomException e) {
+                    e.printStackTrace();
+                }
                 sendResponse(createRoomResponse);
             }
             case JOIN_ROOM -> {
@@ -196,9 +205,20 @@ public class ClientThread implements Runnable {
                 while(deleteRoomResponse == null){
                     deleteRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
-                logger.info("New client request - clientId: {} approved: {}",
+                logger.info("Delete chatroom request - roomID: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         deleteRoomResponse.get(APPROVED));
+                try {
+                    ChatRoomHandler.getInstance().deleteRoom(this);
+                } catch (ChatroomDoesntExistsException e) {
+                    e.printStackTrace();
+                } catch (ClientNotOwnerException e) {
+                    e.printStackTrace();
+                } catch (ClientAlreadyInChatRoomException e) {
+                    e.printStackTrace();
+                } catch (ClientNotInChatRoomException e) {
+                    e.printStackTrace();
+                }
                 sendResponse(deleteRoomResponse);
             }
             case MESSAGE -> {
