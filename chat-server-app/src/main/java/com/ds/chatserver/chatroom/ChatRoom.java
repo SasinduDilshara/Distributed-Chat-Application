@@ -105,6 +105,15 @@ public class ChatRoom {
         }
     }
 
+    public void removeClient(ClientThread client) throws ClientNotInChatRoomException {
+        if(!isAClient(client.getId())) {
+            String errorMsg = ClientNotInChatRoomException.generateClientNotInChatRoomMessage(
+                    this.roomId, client.getId());
+            throw new ClientNotInChatRoomException(errorMsg);
+        }
+        this.clients.remove(client);
+    }
+
     // send a message to all the members of a room
     public void sendMessage(String message, String senderId) throws ClientNotInChatRoomException {
         if(!isAClient(senderId)) {

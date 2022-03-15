@@ -141,18 +141,27 @@ public class ChatRoomHandler {
         joinRoom("", clientThread, clientThread.getCurrentChatRoom());
     }
 
-    public Boolean deleteRoom(ClientThread clientThread)
+    public Boolean deleteRoom(ClientThread clientThread, Boolean isQuit, Boolean isForceQuit)
             throws ChatroomDoesntExistsException, ClientNotOwnerException,
             ClientAlreadyInChatRoomException, ClientNotInChatRoomException {
         // TODO: if success=true inform other servers and delete the room instance.
         ChatRoom chatRoom = clientThread.getCurrentChatRoom();
         if (clientThread.equals(chatRoom.getOwner())) {
-
             for(ClientThread client: chatRoom.getClients()) {
 //                chatRoom.getClients().remove(client);
+                if (isQuit && clientThread.equals(chatRoom.getOwner())) {
+                    if (!isForceQuit) {
+                        client.sendResponse(ServerMessage.getRoomChangeResponse(
+                                client.getId(), chatRoom.getRoomId(), ""));
+                    }
+                    continue;
+                }
                 client.sendResponse(ServerMessage.getRoomChangeResponse(
                         client.getId(), chatRoom.getRoomId(), mainHall.getRoomId()));
                 client.setCurrentChatRoom(mainHall);
+            }
+            if (isQuit && clientThread.equals(chatRoom.getOwner())) {
+                chatRoom.removeClient(chatRoom.getOwner());
             }
             mainHall.addClients(chatRoom.getClients(), chatRoom.getRoomId());
             // all pointers to chatroom deleted
@@ -161,6 +170,12 @@ public class ChatRoomHandler {
             return true;
         }
         return false;
+    }
+
+    public Boolean deleteRoom(ClientThread clientThread)
+            throws ChatroomDoesntExistsException, ClientNotOwnerException,
+            ClientAlreadyInChatRoomException, ClientNotInChatRoomException {
+        return deleteRoom(clientThread, false, false);
     }
 
     public boolean isChatroomInServer(String name) {
