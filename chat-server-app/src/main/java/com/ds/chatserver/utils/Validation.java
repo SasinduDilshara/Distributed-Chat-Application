@@ -10,7 +10,10 @@ public class Validation {
         return Character.isAlphabetic(identity.charAt(0)) && Util.isAlphaNumeric(identity);
     }
 
-    public static boolean validateRoomID(String chatRoomName) {
+    public static boolean validateRoomID(String chatRoomName, String serverId) {
+        if (chatRoomName.equals(Util.getMainhall(serverId))) {
+            return true;
+        }
         if (chatRoomName.length() < 3 || chatRoomName.length() > 16) {
             return false;
         }

@@ -179,11 +179,7 @@ public class ClientThread implements Runnable {
                         message.get(ROOM_ID_2).toString(),
                         createRoomResponse.get(APPROVED));
                 try {
-                    ChatRoomHandler.getInstance().createChatRoom(message.get(ROOM_ID_2).toString(), this);
-                } catch (ChatroomAlreadyExistsException e) {
-                    e.printStackTrace();
-                } catch (InvalidChatroomException e) {
-                    e.printStackTrace();
+                    ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
                 } catch (ClientNotInChatRoomException e) {
                     e.printStackTrace();
                 }
@@ -209,7 +205,7 @@ public class ClientThread implements Runnable {
                         message.get(ROOM_ID_2).toString(),
                         deleteRoomResponse.get(APPROVED));
                 try {
-                    ChatRoomHandler.getInstance().deleteRoom(this);
+                    ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
                 } catch (ChatroomDoesntExistsException e) {
                     e.printStackTrace();
                 } catch (ClientNotOwnerException e) {

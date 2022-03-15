@@ -49,7 +49,7 @@ public class Server {
             if(id.equals(this.getServerId())){
                 try {
 //                   // TODO Consider owerner null case
-                    ChatRoomHandler.getInstance().createChatRoom(Util.getMainhall(id),null);
+                    ChatRoom.createMainHall(id);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

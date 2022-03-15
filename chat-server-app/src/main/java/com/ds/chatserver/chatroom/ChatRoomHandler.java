@@ -11,28 +11,19 @@ import java.util.Objects;
 public class ChatRoomHandler {
     private final ChatRoom mainHall;
     private ArrayList<ChatRoom> chatrooms;
-    private static final ChatRoomHandler chatRoomHandler = getInstance();
 
-    public static ChatRoomHandler getInstance() {
-        return new ChatRoomHandler();
+    public static ChatRoomHandler getInstance(String serverId) {
+        return new ChatRoomHandler(serverId);
     }
 
-    private ChatRoomHandler() {
-        this.mainHall = ChatRoom.createMainHall();
+    private ChatRoomHandler(String serverId) {
+        this.mainHall = ChatRoom.createMainHall(serverId);
         this.chatrooms = new ArrayList<>();
         this.chatrooms.add(mainHall);
     }
 
-    public static ChatRoomHandler getChatRoomHandler() {
-        return chatRoomHandler;
-    }
-
     public ChatRoom getMainHall() {
         return this.mainHall;
-    }
-
-    private Boolean validateChatroomName(String name) {
-        return Validation.validateRoomID(name);
     }
 
     public Boolean validateChatRoom(String name) {
@@ -42,15 +33,18 @@ public class ChatRoomHandler {
 
     // create new chat room by user
     public void createChatRoom(String name, ClientThread clientThread)
-            throws ClientNotInChatRoomException, ChatroomAlreadyExistsException, InvalidChatroomException {
-        if (!(validateChatRoom(name))) {
-            throw new ChatroomAlreadyExistsException(name);
-        } else if (!(validateChatroomName(name))) {
-            throw new InvalidChatroomException(name);
-        }
+            throws ClientNotInChatRoomException {
         // remove from prev chatroom
         ChatRoom previousChatRoom = clientThread.getCurrentChatRoom();
         previousChatRoom.removeClient(clientThread, name);
+        // create and add to new chatroom
+        ChatRoom newChatRoom = ChatRoom.createChatRoom(name, clientThread);
+        chatrooms.add(newChatRoom);
+        clientThread.setCurrentChatRoom(newChatRoom);
+    }
+
+    public void createChatRoom(String name, ClientThread clientThread, Boolean mainhall)
+            throws ClientNotInChatRoomException {
         // create and add to new chatroom
         ChatRoom newChatRoom = ChatRoom.createChatRoom(name, clientThread);
         chatrooms.add(newChatRoom);

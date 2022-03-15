@@ -135,7 +135,7 @@ public class LeaderState extends ServerState {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
-        if (!SystemState.isChatroomExist(roomId) && Validation.validateRoomID(roomId)
+        if (!SystemState.isChatroomExist(roomId) && Validation.validateRoomID(roomId, server.getServerId())
                 && !SystemState.isOwner(clientId)) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
