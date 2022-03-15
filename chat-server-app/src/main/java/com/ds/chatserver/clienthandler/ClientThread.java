@@ -4,6 +4,7 @@ import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.utils.ClientMessage;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Validation;
@@ -137,15 +138,17 @@ public class ClientThread implements Runnable {
         while(!exit) {
             try {
                 if ((jsonString = bufferedReader.readLine()) == null) {
-                    this.stop();
-                    break;
+                    // client stops the socket gracefully
+                    JSONObject jsonObject = ClientMessage.getQuitRequest();
+                    handleQuitRequest(jsonObject, false);
                 } else {
                     JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
                     handleClientRequest(jsonObject);
                 }
             } catch (IOException e) {
-//                TODO implement quit
-                e.printStackTrace();
+                // client quits abruptly
+                JSONObject jsonObject = ClientMessage.getQuitRequest();
+                handleQuitRequest(jsonObject, false);
             }
         }
     }
@@ -218,29 +221,7 @@ public class ClientThread implements Runnable {
                 }
                 logger.info("{} send the message : {} to the chat room {}", id, content, currentChatRoom);
             }
-            case QUIT -> {
-                // TODO: if the room owner
-                //       run deleteroom
-                //      (but special case. ie: owner should get a room change message w/ empty roomid value instead of
-                //      mainhall id)
-                // if not the room owner
-                JSONObject clientResponse = null;
-                message.put(IDENTITY, this.id);
-                message.put(ROOM_ID, this.currentChatRoom.getRoomId());
-                logger.info("Quit request - clientId: {},", this.id);
-                while(clientResponse == null){
-                    clientResponse = this.server.getState().respondToClientRequest(message);
-                }
-                logger.info("Quit request - clientId: {} , response: {} approved: true",
-                        this.id, clientResponse.toString());
-                this.sendResponse(clientResponse);
-                try {
-                    this.currentChatRoom.removeClient(this, "");
-                } catch (ClientNotInChatRoomException e) {
-                    e.printStackTrace();
-                }
-                this.stop();
-            }
+            case QUIT -> handleQuitRequest(message, true);
             default -> {
                 // Ignore unsupported message types
             }
@@ -264,5 +245,31 @@ public class ClientThread implements Runnable {
             chatRoomIds.add(chatRoom.getRoomId());
         }
         return chatRoomIds;
+    }
+
+    public void handleQuitRequest(JSONObject message, boolean clientActive) {
+        // TODO: if the room owner
+        //       run deleteroom
+        //      (but special case. ie: owner should get a room change message w/ empty roomid value instead of
+        //      mainhall id)
+        // if not the room owner
+        JSONObject clientResponse = null;
+        message.put(IDENTITY, this.id);
+        message.put(ROOM_ID, this.currentChatRoom.getRoomId());
+        logger.info("Quit request - clientId: {},", this.id);
+        while(clientResponse == null){
+            clientResponse = this.server.getState().respondToClientRequest(message);
+        }
+        logger.info("Quit request - clientId: {} , response: {} approved: true",
+                this.id, clientResponse);
+        if(clientActive) {
+            this.sendResponse(clientResponse);
+        }
+        try {
+            this.currentChatRoom.removeClient(this, "");
+        } catch (ClientNotInChatRoomException e) {
+            e.printStackTrace();
+        }
+        this.stop();
     }
 }
