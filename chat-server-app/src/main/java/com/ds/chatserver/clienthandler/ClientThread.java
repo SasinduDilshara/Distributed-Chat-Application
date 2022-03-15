@@ -178,24 +178,7 @@ public class ClientThread implements Runnable {
                 logger.info("New client request - clientId: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         createRoomResponse.get(APPROVED));
-
-//                String roomId = (String) message.get(ROOM_ID_2);
-                // validate the room id for the format, uniqueness
-                // check if the client is not the owner of the room
-//                if(Validation.validateRoomID(roomId) && !this.equals(currentChatRoom.getOwner())) {
-//                    try {
-//                        chatRoomHandler.createChatRoom(roomId, this);
-//                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, true));
-//                        logger.info("Successfully created chat room {}", roomId);
-//                    } catch (ChatroomAlreadyExistsException | InvalidChatroomException |
-//                            ClientNotInChatRoomException e) {
-//                        sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
-//                        logger.info("Failed creating chat room {}", roomId);
-//                    }
-//                } else {
-//                    sendResponse(ServerMessage.getCreateRoomResponse(roomId, false));
-//                    logger.info("Failed creating chat room {}", roomId);
-//                }
+                sendResponse(createRoomResponse);
             }
             case JOIN_ROOM -> {
                 String roomId = (String) message.get("roomid");
@@ -207,16 +190,16 @@ public class ClientThread implements Runnable {
                 }
             }
             case DELETE_ROOM -> {
-                String roomId = (String) message.get("roomid");
-                try {
-                    Boolean success = chatRoomHandler.deleteRoom(this);
-                    sendResponse(ServerMessage.getDeleteRoomResponse(roomId, success));
-                    logger.info("Successfully deleted the room {}", currentChatRoom);
-                } catch (ChatroomDoesntExistsException | ClientNotOwnerException |
-                        ClientAlreadyInChatRoomException | ClientNotInChatRoomException e) {
-                    sendResponse(ServerMessage.getDeleteRoomResponse(roomId, false));
-                    logger.info("Failed to delete the room {}", currentChatRoom);
+                JSONObject deleteRoomResponse = null;
+                logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
+                        message.get(IDENTITY).toString());
+                while(deleteRoomResponse == null){
+                    deleteRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
+                logger.info("New client request - clientId: {} approved: {}",
+                        message.get(ROOM_ID_2).toString(),
+                        deleteRoomResponse.get(APPROVED));
+                sendResponse(deleteRoomResponse);
             }
             case MESSAGE -> {
                 String content = (String) message.get("content");
