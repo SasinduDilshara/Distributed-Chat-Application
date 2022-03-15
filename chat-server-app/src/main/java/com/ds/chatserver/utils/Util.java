@@ -40,4 +40,8 @@ public class Util {
 
         return eventObjectList;
     }
+
+    public static boolean isAlphaNumeric(String name) {
+        return name != null && name.matches("^[a-zA-Z0-9]*$");
+    }
 }

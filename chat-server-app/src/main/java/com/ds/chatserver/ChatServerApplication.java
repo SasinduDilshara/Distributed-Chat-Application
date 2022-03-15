@@ -55,7 +55,7 @@ public class ChatServerApplication {
 
 
         try {
-            ClientRequestHandler clientRequestHandler = new ClientRequestHandler(ChatRoomHandler.getInstance(), server);
+            ClientRequestHandler clientRequestHandler = new ClientRequestHandler(ChatRoomHandler.getInstance(serverId), server);
             clientRequestHandler.start();
         } catch (IOException e) {
             e.printStackTrace();
