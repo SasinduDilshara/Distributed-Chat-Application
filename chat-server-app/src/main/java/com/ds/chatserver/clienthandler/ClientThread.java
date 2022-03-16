@@ -187,10 +187,13 @@ public class ClientThread implements Runnable {
                 logger.info("New chatroom request - roomid: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         createRoomResponse.get(APPROVED));
-                try {
-                    ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
-                } catch (ClientNotInChatRoomException e) {
-                    e.printStackTrace();
+                if (createRoomResponse.get(TYPE).toString().equals(ROOM_CHANGE)
+                        || Boolean.parseBoolean(createRoomResponse.get(APPROVED).toString())) {
+                    try {
+                        ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
+                    } catch (ClientNotInChatRoomException e) {
+                        e.printStackTrace();
+                    }
                 }
                 sendResponse(createRoomResponse);
             }
@@ -214,16 +217,14 @@ public class ClientThread implements Runnable {
                 logger.info("Delete chatroom request - roomID: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         deleteRoomResponse.get(APPROVED));
-                try {
-                    ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
-                } catch (ChatroomDoesntExistsException e) {
-                    e.printStackTrace();
-                } catch (ClientNotOwnerException e) {
-                    e.printStackTrace();
-                } catch (ClientAlreadyInChatRoomException e) {
-                    e.printStackTrace();
-                } catch (ClientNotInChatRoomException e) {
-                    e.printStackTrace();
+                if (deleteRoomResponse.get(TYPE).toString().equals(ROOM_CHANGE)
+                        || Boolean.parseBoolean(deleteRoomResponse.get(APPROVED).toString())) {
+                    try {
+                        ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
+                    } catch (ChatroomDoesntExistsException | ClientNotOwnerException | ClientAlreadyInChatRoomException
+                            | ClientNotInChatRoomException e) {
+                        e.printStackTrace();
+                    }
                 }
                 sendResponse(deleteRoomResponse);
             }

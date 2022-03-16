@@ -178,7 +178,7 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
-        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getDeleteRoomResponse(server.getCurrentTerm(), success);
     }
 
     private boolean replicateLogs() {
