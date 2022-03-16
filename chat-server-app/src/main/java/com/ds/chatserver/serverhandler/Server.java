@@ -1,6 +1,7 @@
 package com.ds.chatserver.serverhandler;
 
 import com.ds.chatserver.chatroom.ChatRoom;
+import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.log.RaftLog;
 import com.ds.chatserver.serverstate.FollowerState;
@@ -41,7 +42,8 @@ public class Server {
             if(id.equals(this.getServerId())){
                 try {
 //                   // TODO Consider owerner null case
-                    ChatRoom.createMainHall(id);
+//                    ChatRoom.createMainHall(id);
+                    ChatRoomHandler.getInstance(id).getMainHall();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

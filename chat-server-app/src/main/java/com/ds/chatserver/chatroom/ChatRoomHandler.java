@@ -11,9 +11,21 @@ import java.util.Objects;
 public class ChatRoomHandler {
     private final ChatRoom mainHall;
     private ArrayList<ChatRoom> chatrooms;
+    private static ChatRoomHandler chatRoomHandler;
+    private static Object mutex = new Object();
 
     public static ChatRoomHandler getInstance(String serverId) {
-        return new ChatRoomHandler(serverId);
+        ChatRoomHandler tempChatRoomHandler = chatRoomHandler;
+        if (tempChatRoomHandler == null) {
+            synchronized (mutex) {
+                tempChatRoomHandler = chatRoomHandler;
+                if (tempChatRoomHandler == null) {
+                    chatRoomHandler = new ChatRoomHandler(serverId);
+                    tempChatRoomHandler = chatRoomHandler;
+                }
+            }
+        }
+        return chatRoomHandler;
     }
 
     private ChatRoomHandler(String serverId) {
