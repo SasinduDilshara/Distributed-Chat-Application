@@ -290,7 +290,7 @@ public class ClientThread implements Runnable {
         }
         if(clientResponse.get(TYPE).equals(ROOM_CHANGE)
                 && !clientResponse.get(ROOM_ID).equals(clientResponse.get(FORMER))) {
-            logger.info("Quit request - roomchange response - clientId: {} approved: true", this.id);
+            logger.info("Joinroom request - roomchange response - clientId: {} approved: true", this.id);
             try {
                 this.currentChatRoom.removeClient(this, (String) clientResponse.get(ROOM_ID));
                 this.currentChatRoom = chatRoomHandler.getChatroomFromName((String) clientResponse.get(ROOM_ID));
@@ -299,7 +299,8 @@ public class ClientThread implements Runnable {
                 e.printStackTrace();
             }
         } else if(clientResponse.get(TYPE).equals(ROUTE)){
-            logger.info("Quit request - route response - clientId: {} approved: true", this.id);
+            logger.info("Joinroom request - route response - clientId: {} approved: true, response: {}",
+                    this.id, clientResponse);
             try {
                 this.currentChatRoom.removeClient(this, (String) clientResponse.get(ROOM_ID));
                 reroute = true;
@@ -307,7 +308,7 @@ public class ClientThread implements Runnable {
                 e.printStackTrace();
             }
         } else {
-            logger.info("Quit request - roomchange response - clientId: {} approved: false", this.id);
+            logger.info("Joinroom - roomchange response - clientId: {} approved: false", this.id);
         }
         this.sendResponse(clientResponse);
     }

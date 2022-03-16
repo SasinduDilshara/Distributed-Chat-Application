@@ -316,7 +316,7 @@ public class LeaderState extends ServerState {
         if (success && !newServerId.equals(this.server.getServerId())) {
             ServerDetails sd = ServerConfigurations.getServerDetails(newServerId);
             String host = sd.getIpAddress();
-            String port = String.valueOf(sd.getServerPort());
+            String port = String.valueOf(sd.getClientPort());
             return ServerMessage.getRouteResponse(roomId, host, port);
         }
         return ServerMessage.getRoomChangeResponse(clientId, former, success? roomId: former);
