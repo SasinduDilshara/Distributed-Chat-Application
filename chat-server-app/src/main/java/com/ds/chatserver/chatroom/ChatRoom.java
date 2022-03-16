@@ -66,11 +66,10 @@ public class ChatRoom {
                     this.roomId, client.getId());
             throw new ClientAlreadyInChatRoomException(errorMsg);
         }
+        for(ClientThread existingClient: clients) {
+            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+        }
         this.clients.add(client);
-//        for(ClientThread existingClient: clients) {
-//            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
-//        }
-
     }
 
     // add a set of new clients to the room

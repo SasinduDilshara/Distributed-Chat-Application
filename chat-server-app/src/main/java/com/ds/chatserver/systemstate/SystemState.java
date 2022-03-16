@@ -153,4 +153,7 @@ public class SystemState {
         return chatroomLists.containsKey(chatroomName);
     }
 
+    public static ChatroomLog getChatroomFromName(String chatroomName) {
+        return chatroomLists.getOrDefault(chatroomName, null);
+    }
 }
