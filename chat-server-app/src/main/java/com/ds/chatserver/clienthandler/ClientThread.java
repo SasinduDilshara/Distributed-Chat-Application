@@ -177,7 +177,7 @@ public class ClientThread implements Runnable {
                 logger.info("Successfully Send List of Clients of room {} to {}", currentChatRoom.getRoomId(), id);
             }
             case CREATE_ROOM -> {
-                JSONObject createRoomResponse = null;
+                JSONObject createRoomResponse = null, response = null;
                 message.put(IDENTITY, this.getId());
                 logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
                        this.getId());
@@ -187,15 +187,21 @@ public class ClientThread implements Runnable {
                 logger.info("New chatroom request - roomid: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         createRoomResponse.get(APPROVED));
-                if (createRoomResponse.get(TYPE).toString().equals(ROOM_CHANGE)
-                        || Boolean.parseBoolean(createRoomResponse.get(APPROVED).toString())) {
-                    try {
-                        ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
-                    } catch (ClientNotInChatRoomException e) {
-                        e.printStackTrace();
+
+                for (int i = 0; i < 2; i++) {
+                    if (!createRoomResponse.containsKey(String.valueOf(i))) {
+                        continue;
                     }
+                    response = (JSONObject) createRoomResponse.get(String.valueOf(i));
+                    if (response.get(TYPE).toString().equals(ROOM_CHANGE)) {
+                        try {
+                            ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
+                        } catch (ClientNotInChatRoomException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    sendResponse(response);
                 }
-                sendResponse(createRoomResponse);
             }
             case JOIN_ROOM -> {
                 String roomId = (String) message.get("roomid");

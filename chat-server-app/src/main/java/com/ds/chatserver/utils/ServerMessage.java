@@ -103,4 +103,12 @@ public class ServerMessage {
         message.put(CONTENT, content);
         return message;
     }
+
+    public static JSONObject getJsonResponses(ArrayList<JSONObject> jsonObjects) {
+        JSONObject message = new JSONObject();
+        for (int i = 0; i < jsonObjects.size(); i++) {
+            message.put(String.valueOf(i), jsonObjects.get(i));
+        }
+        return message;
+    }
 }

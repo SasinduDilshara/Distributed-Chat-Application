@@ -259,21 +259,23 @@ public class LeaderState extends ServerState {
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID_2);
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject response = handleCreateChatroomRequest(ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 roomId,
                 this.server.getServerId()
         ));
-        if ((Boolean) response.get(SUCCESS)) {
-            return ServerMessage.getRoomChangeResponse(
-                    clientId, Util.getMainhall(this.server.getServerId()),
-                    roomId);
-        }
-        return ServerMessage.getCreateRoomResponse(
+        jsonObjects.add(ServerMessage.getCreateRoomResponse(
                 roomId,
                 (Boolean) response.get(SUCCESS)
-        );
+        ));
+        if ((Boolean) response.get(SUCCESS)) {
+            jsonObjects.add(ServerMessage.getRoomChangeResponse(
+                    clientId, Util.getMainhall(this.server.getServerId()),
+                    roomId));
+        }
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override
