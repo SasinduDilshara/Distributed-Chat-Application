@@ -54,7 +54,7 @@ public class ServerMessage {
         change_room.put(TYPE, ROOM_CHANGE);
         change_room.put(IDENTITY, identity);
         change_room.put(FORMER, former);
-        change_room.put(ROOM_ID, roomid);
+        change_room.put(ROOM_ID_2, roomid);
         return change_room;
     }
 
