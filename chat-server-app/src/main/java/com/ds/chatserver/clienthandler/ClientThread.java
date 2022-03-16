@@ -214,7 +214,7 @@ public class ClientThread implements Runnable {
             }
             case DELETE_ROOM -> {
                 message.put(IDENTITY, this.getId());
-                JSONObject deleteRoomResponse = null;
+                JSONObject deleteRoomResponse = null, response = null;
                 logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
                         message.get(IDENTITY).toString());
                 while(deleteRoomResponse == null){
@@ -223,16 +223,22 @@ public class ClientThread implements Runnable {
                 logger.info("Delete chatroom request - roomID: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         deleteRoomResponse.get(APPROVED));
-                if (deleteRoomResponse.get(TYPE).toString().equals(ROOM_CHANGE)
-                        || Boolean.parseBoolean(deleteRoomResponse.get(APPROVED).toString())) {
-                    try {
-                        ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
-                    } catch (ChatroomDoesntExistsException | ClientNotOwnerException | ClientAlreadyInChatRoomException
-                            | ClientNotInChatRoomException e) {
-                        e.printStackTrace();
+
+                for (int i = 0; i < 2; i++) {
+                    if (!deleteRoomResponse.containsKey(String.valueOf(i))) {
+                        continue;
                     }
+                    response = (JSONObject) deleteRoomResponse.get(String.valueOf(i));
+                    if (response.get(TYPE).toString().equals(ROOM_CHANGE)) {
+                        try {
+                            ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
+                        } catch (ChatroomDoesntExistsException | ClientNotOwnerException | ClientAlreadyInChatRoomException
+                                | ClientNotInChatRoomException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    sendResponse(response);
                 }
-                sendResponse(deleteRoomResponse);
             }
             case MESSAGE -> {
                 String content = (String) message.get("content");

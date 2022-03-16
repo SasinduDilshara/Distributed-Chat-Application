@@ -233,21 +233,22 @@ public class LeaderState extends ServerState {
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID_2);
-        //TODO: Don't we need room Id
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject response = handleDeleteChatroomRequest(ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 this.server.getServerId(),
                 roomId
         ));
-        if ((Boolean) response.get(SUCCESS)) {
-            return ServerMessage.getRoomChangeResponse(
-                    clientId, roomId, Util.getMainhall(this.server.getServerId()));
-        }
-        return ServerMessage.getDeleteRoomResponse(
+        jsonObjects.add(ServerMessage.getDeleteRoomResponse(
                 roomId,
                 (Boolean) response.get(SUCCESS)
-        );
+        ));
+        if ((Boolean) response.get(SUCCESS)) {
+            jsonObjects.add(ServerMessage.getRoomChangeResponse(
+                    clientId, roomId, Util.getMainhall(this.server.getServerId())));
+        }
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override

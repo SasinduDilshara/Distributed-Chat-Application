@@ -194,7 +194,7 @@ public class FollowerState extends ServerState {
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID_2);
-        //TODO Don't we need room id?
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject requestToLeader = ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
@@ -214,19 +214,25 @@ public class FollowerState extends ServerState {
             JSONObject response = queue.take();
 
             if ((Boolean) response.get(SUCCESS)) {
-                return ServerMessage.getRoomChangeResponse(
+                jsonObjects.add(ServerMessage.getDeleteRoomResponse(
+                        roomId,
+                        (Boolean) response.get(SUCCESS)
+                ));
+                jsonObjects.add((ServerMessage.getRoomChangeResponse(
                         clientId,
                         roomId,
                         Util.getMainhall(this.server.getServerId())
-                        );
+                        )));
+                return ServerMessage.getJsonResponses(jsonObjects);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return ServerMessage.getDeleteRoomResponse(
+        jsonObjects.add(ServerMessage.getDeleteRoomResponse(
                 roomId,
                 false
-        );
+        ));
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override
