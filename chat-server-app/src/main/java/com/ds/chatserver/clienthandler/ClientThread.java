@@ -4,6 +4,7 @@ import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.utils.ClientMessage;
 import com.ds.chatserver.systemstate.ChatroomLog;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
@@ -28,7 +29,8 @@ public class ClientThread implements Runnable {
     private ChatRoom currentChatRoom;
     private final PrintWriter printWriter;
     private final BufferedReader bufferedReader;
-    private Boolean exit;
+    private boolean exit;
+    private Boolean reroute;
 
     private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
@@ -40,6 +42,7 @@ public class ClientThread implements Runnable {
         this.chatRoomHandler = chatRoomHandler;
         this.currentChatRoom = chatRoomHandler.getMainHall();
         this.exit = false;
+        this.reroute = false;
     }
 
     public String getId() {
@@ -144,15 +147,13 @@ public class ClientThread implements Runnable {
         while(!exit) {
             try {
                 if ((jsonString = bufferedReader.readLine()) == null) {
-                    this.stop();
-                    break;
+                    manageClientClosure();
                 } else {
                     JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
                     handleClientRequest(jsonObject);
                 }
             } catch (IOException e) {
-//                TODO implement quit
-                e.printStackTrace();
+                manageClientClosure();
             }
         }
     }
@@ -179,39 +180,31 @@ public class ClientThread implements Runnable {
             case CREATE_ROOM -> {
                 JSONObject createRoomResponse = null;
                 message.put(IDENTITY, this.getId());
-                logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
+                logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID).toString(), "Client ID:- ",
                        this.getId());
                 while(createRoomResponse == null){
                     createRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
                 logger.info("New chatroom request - roomid: {} approved: {}",
-                        message.get(ROOM_ID_2).toString(),
+                        message.get(ROOM_ID).toString(),
                         createRoomResponse.get(APPROVED));
                 try {
-                    ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
+                    ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID).toString(), this);
                 } catch (ClientNotInChatRoomException e) {
                     e.printStackTrace();
                 }
                 sendResponse(createRoomResponse);
             }
-            case JOIN_ROOM -> {
-                String roomId = (String) message.get("roomid");
-                try {
-                    chatRoomHandler.joinRoom(roomId, this, currentChatRoom);
-                } catch (ChatroomDoesntExistsException | ClientAlreadyInChatRoomException |
-                        ClientNotInChatRoomException e) {
-                    e.printStackTrace();
-                }
-            }
+            case JOIN_ROOM -> handleJoinRoomRequest(message);
             case DELETE_ROOM -> {
                 JSONObject deleteRoomResponse = null;
-                logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
+                logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID).toString(), "Client ID:- ",
                         message.get(IDENTITY).toString());
                 while(deleteRoomResponse == null){
                     deleteRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
                 logger.info("Delete chatroom request - roomID: {} approved: {}",
-                        message.get(ROOM_ID_2).toString(),
+                        message.get(ROOM_ID).toString(),
                         deleteRoomResponse.get(APPROVED));
                 try {
                     ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
@@ -235,14 +228,7 @@ public class ClientThread implements Runnable {
                 }
                 logger.info("{} send the message : {} to the chat room {}", id, content, currentChatRoom);
             }
-            case QUIT -> {
-                try {
-                    chatRoomHandler.quit(this);
-                } catch (ChatroomDoesntExistsException | ClientAlreadyInChatRoomException |
-                        ClientNotInChatRoomException | ClientNotOwnerException e) {
-                    e.printStackTrace();
-                }
-            }
+            case QUIT -> handleQuitRequest(message, true);
             default -> {
                 // Ignore unsupported message types
             }
@@ -266,6 +252,77 @@ public class ClientThread implements Runnable {
             chatRoomIds.add(chatRoom.getRoomId());
         }
         return chatRoomIds;
+    }
+
+    private void handleQuitRequest(JSONObject message, boolean clientActive) {
+        // TODO: if the room owner
+        //       run deleteroom
+        //      (but special case. ie: owner should get a room change message w/ empty roomid value instead of
+        //      mainhall id)
+        // if not the room owner
+        JSONObject clientResponse = null;
+        message.put(IDENTITY, this.id);
+        message.put(ROOM_ID, this.currentChatRoom.getRoomId());
+        logger.info("Quit request - clientId: {},", this.id);
+        while(clientResponse == null){
+            clientResponse = this.server.getState().respondToClientRequest(message);
+        }
+        logger.info("Quit request - clientId: {} , response: {} approved: true",
+                this.id, clientResponse);
+        if(clientActive) {
+            this.sendResponse(clientResponse);
+        }
+        try {
+            this.currentChatRoom.removeClient(this, "");
+        } catch (ClientNotInChatRoomException e) {
+            e.printStackTrace();
+        }
+        this.stop();
+    }
+
+    private void handleJoinRoomRequest(JSONObject message) {
+        logger.info("Joinroom request - clientId: {}", this.id);
+        message.put(IDENTITY, this.id);
+        message.put(FORMER, this.currentChatRoom.getRoomId());
+        JSONObject clientResponse = null;
+        while(clientResponse==null) {
+            clientResponse = this.server.getState().respondToClientRequest(message);
+        }
+        if(clientResponse.get(TYPE).equals(ROOM_CHANGE)
+                && !clientResponse.get(ROOM_ID).equals(clientResponse.get(FORMER))) {
+            logger.info("Joinroom request - roomchange response - clientId: {} approved: true", this.id);
+            try {
+                this.currentChatRoom.removeClient(this, (String) clientResponse.get(ROOM_ID));
+                this.currentChatRoom = chatRoomHandler.getChatroomFromName((String) clientResponse.get(ROOM_ID));
+                this.currentChatRoom.addClient(this, (String) clientResponse.get(FORMER));
+            } catch (ClientNotInChatRoomException | ClientAlreadyInChatRoomException | ChatroomDoesntExistsException e) {
+                e.printStackTrace();
+            }
+        } else if(clientResponse.get(TYPE).equals(ROUTE)){
+            logger.info("Joinroom request - route response - clientId: {} approved: true, response: {}",
+                    this.id, clientResponse);
+            try {
+                this.currentChatRoom.removeClient(this, (String) clientResponse.get(ROOM_ID));
+                reroute = true;
+            } catch (ClientNotInChatRoomException e) {
+                e.printStackTrace();
+            }
+        } else {
+            logger.info("Joinroom - roomchange response - clientId: {} approved: false", this.id);
+        }
+        this.sendResponse(clientResponse);
+    }
+
+    private void manageClientClosure() {
+        // client stops the socket gracefully
+        // route
+        if(reroute) {
+            this.stop();
+        } else {
+            // quit
+            JSONObject jsonObject = ClientMessage.getQuitRequest();
+            handleQuitRequest(jsonObject, false);
+        }
     }
 
     @Override

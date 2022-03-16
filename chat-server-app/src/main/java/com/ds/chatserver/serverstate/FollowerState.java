@@ -1,8 +1,10 @@
 package com.ds.chatserver.serverstate;
 
+import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.LogEntryStatus;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.serverhandler.ServerDetails;
 import com.ds.chatserver.serverhandler.ServerRequestSender;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ServerMessage;
@@ -15,6 +17,7 @@ import org.json.simple.JSONObject;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
@@ -227,13 +230,46 @@ public class FollowerState extends ServerState {
 
     @Override
     protected JSONObject respondToJoinRoom(JSONObject request) {
+        String clientId = (String) request.get(IDENTITY);
+        String former = (String) request.get(FORMER);
+        String roomId = (String) request.get(ROOM_ID);
+        JSONObject requestToLeader = ServerServerMessage.getChangeRoomRequest(
+                this.server.getCurrentTerm(),
+                clientId,
+                former,
+                roomId,
+                this.server.getServerId()
+        );
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+            Boolean success = (Boolean) response.get(SUCCESS);
+            String newServerId = response.get(SERVER_ID).toString();
+            if (success && !newServerId.equals(this.server.getServerId())) {
+                ServerDetails sd = ServerConfigurations.getServerDetails(newServerId);
+                String host = sd.getIpAddress();
+                String port = String.valueOf(sd.getServerPort());
+                return ServerMessage.getRouteResponse(roomId, host, port);
+            }
+            return ServerMessage.getRoomChangeResponse(clientId, former, success? roomId: former);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID_2);
+        String roomId = (String) request.get(ROOM_ID);
         JSONObject requestToLeader = ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
@@ -274,6 +310,33 @@ public class FollowerState extends ServerState {
 
     @Override
     protected JSONObject respondToQuit(JSONObject request) {
+        String clientId = (String) request.get(IDENTITY);
+        String roomId = (String) request.get(ROOM_ID);
+        JSONObject requestToLeader = ServerServerMessage.getDeleteClientRequest(
+                this.server.getCurrentTerm(),
+                clientId,
+                this.server.getServerId()
+        );
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+            if ((Boolean) response.get(SUCCESS)) {
+                return ServerMessage.getRoomChangeResponse(
+                        clientId,
+                        roomId,
+                        "");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }
