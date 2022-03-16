@@ -11,47 +11,40 @@ import java.util.Objects;
 public class ChatRoomHandler {
     private final ChatRoom mainHall;
     private ArrayList<ChatRoom> chatrooms;
-    private static final ChatRoomHandler chatRoomHandler = getInstance();
 
-    public static ChatRoomHandler getInstance() {
-        return new ChatRoomHandler();
+    public static ChatRoomHandler getInstance(String serverId) {
+        return new ChatRoomHandler(serverId);
     }
 
-    private ChatRoomHandler() {
-        this.mainHall = ChatRoom.createMainHall();
+    private ChatRoomHandler(String serverId) {
+        this.mainHall = ChatRoom.createMainHall(serverId);
         this.chatrooms = new ArrayList<>();
         this.chatrooms.add(mainHall);
-    }
-
-    public static ChatRoomHandler getChatRoomHandler() {
-        return chatRoomHandler;
     }
 
     public ChatRoom getMainHall() {
         return this.mainHall;
     }
 
-    private Boolean validateChatroomName(String name) {
-        //TODO Implement
-        return true;
-    }
-
     public Boolean validateChatRoom(String name) {
-//        return (Server.validateChatroom(name));
-        return true;
+        //TODO Check??
+            return true;
     }
 
     // create new chat room by user
     public void createChatRoom(String name, ClientThread clientThread)
-            throws ChatroomAlreadyExistsException, InvalidChatroomException, ClientNotInChatRoomException {
-        if (!(validateChatRoom(name))) {
-            throw new ChatroomAlreadyExistsException(name);
-        } else if (!(validateChatroomName(name))) {
-            throw new InvalidChatroomException(name);
-        }
+            throws ClientNotInChatRoomException {
         // remove from prev chatroom
         ChatRoom previousChatRoom = clientThread.getCurrentChatRoom();
         previousChatRoom.removeClient(clientThread, name);
+        // create and add to new chatroom
+        ChatRoom newChatRoom = ChatRoom.createChatRoom(name, clientThread);
+        chatrooms.add(newChatRoom);
+        clientThread.setCurrentChatRoom(newChatRoom);
+    }
+
+    public void createChatRoom(String name, ClientThread clientThread, Boolean mainhall)
+            throws ClientNotInChatRoomException {
         // create and add to new chatroom
         ChatRoom newChatRoom = ChatRoom.createChatRoom(name, clientThread);
         chatrooms.add(newChatRoom);
@@ -148,18 +141,27 @@ public class ChatRoomHandler {
         joinRoom("", clientThread, clientThread.getCurrentChatRoom());
     }
 
-    public Boolean deleteRoom(ClientThread clientThread)
+    public Boolean deleteRoom(ClientThread clientThread, Boolean isQuit, Boolean isForceQuit)
             throws ChatroomDoesntExistsException, ClientNotOwnerException,
             ClientAlreadyInChatRoomException, ClientNotInChatRoomException {
         // TODO: if success=true inform other servers and delete the room instance.
         ChatRoom chatRoom = clientThread.getCurrentChatRoom();
         if (clientThread.equals(chatRoom.getOwner())) {
-
             for(ClientThread client: chatRoom.getClients()) {
 //                chatRoom.getClients().remove(client);
+                if (isQuit && clientThread.equals(chatRoom.getOwner())) {
+                    if (!isForceQuit) {
+                        client.sendResponse(ServerMessage.getRoomChangeResponse(
+                                client.getId(), chatRoom.getRoomId(), ""));
+                    }
+                    continue;
+                }
                 client.sendResponse(ServerMessage.getRoomChangeResponse(
                         client.getId(), chatRoom.getRoomId(), mainHall.getRoomId()));
                 client.setCurrentChatRoom(mainHall);
+            }
+            if (isQuit && clientThread.equals(chatRoom.getOwner())) {
+                chatRoom.removeClient(chatRoom.getOwner());
             }
             mainHall.addClients(chatRoom.getClients(), chatRoom.getRoomId());
             // all pointers to chatroom deleted
@@ -168,6 +170,12 @@ public class ChatRoomHandler {
             return true;
         }
         return false;
+    }
+
+    public Boolean deleteRoom(ClientThread clientThread)
+            throws ChatroomDoesntExistsException, ClientNotOwnerException,
+            ClientAlreadyInChatRoomException, ClientNotInChatRoomException {
+        return deleteRoom(clientThread, false, false);
     }
 
     public boolean isChatroomInServer(String name) {
