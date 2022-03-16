@@ -261,7 +261,10 @@ public class FollowerState extends ServerState {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return null;
+        return ServerMessage.getCreateRoomResponse(
+                roomId,
+                false
+        );
     }
 
     @Override

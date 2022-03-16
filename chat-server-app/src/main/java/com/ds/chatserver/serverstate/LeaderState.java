@@ -141,6 +141,7 @@ public class LeaderState extends ServerState {
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
                     .type(EventType.CREATE_ROOM)
+                    .parameter(roomId)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
@@ -264,7 +265,10 @@ public class LeaderState extends ServerState {
                     clientId, Util.getMainhall(this.server.getServerId()),
                     roomId);
         }
-        return null;
+        return ServerMessage.getCreateRoomResponse(
+                roomId,
+                (Boolean) response.get(SUCCESS)
+        );
     }
 
     @Override

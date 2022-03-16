@@ -43,7 +43,7 @@ public class ServerMessage {
     public static JSONObject getCreateRoomResponse(String roomid, Boolean approved) {
         JSONObject create_room = new JSONObject();
         create_room.put(TYPE, CREATE_ROOM);
-        create_room.put(ROOM_ID, roomid);
+        create_room.put(ROOM_ID_2, roomid);
         create_room.put(APPROVED, approved.toString());
         return create_room;
     }
