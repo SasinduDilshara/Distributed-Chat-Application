@@ -5,6 +5,7 @@ import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.ClientMessage;
+import com.ds.chatserver.systemstate.ChatroomLog;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Validation;
@@ -89,18 +90,26 @@ public class ClientThread implements Runnable {
 
             switch (type) {
                 case "newidentity" -> {
-                    logger.info("New client request - clientId: {}", request.get(IDENTITY).toString());
+                    String clientId = request.get(IDENTITY).toString();
+                    logger.info("New client request - clientId: {},", clientId);
                     while(clientResponse == null){
                         clientResponse = this.server.getState().respondToClientRequest(request);
 //                        logger.debug(clientResponse.toString());
                     }
                     logger.info("New client request - clientId: {} approved: {}",
-                            request.get(IDENTITY).toString(),
+                            clientId,
                             clientResponse.get(APPROVED));
-                    String identity = request.get(IDENTITY).toString();
-                    this.id = identity;
-                    logger.info("Current chat room: {}", currentChatRoom.getRoomId());
-                    currentChatRoom.addClient(this, "");
+                    this.setId(clientId);
+                    this.sendResponse(clientResponse);
+                    if (Boolean.parseBoolean(clientResponse.get(APPROVED).toString())) {
+                        try {
+                            ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClient(this, "");
+                        } catch (ClientAlreadyInChatRoomException e) {
+                            e.printStackTrace();
+                        }
+                    }
+//                    String identity = (String) jsonObject.get("identity");
+//                    this.id = identity;
 //                    JSONObject serverResponse = this.server.handleClientRequest(jsonObject);
 //                    if (Validation.validateClientID(identity)) {
 //                        try {
@@ -131,9 +140,7 @@ public class ClientThread implements Runnable {
                 default -> this.stop();
             }
 
-            this.sendResponse(clientResponse);
-
-        } catch (IOException | ClientAlreadyInChatRoomException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -172,12 +179,13 @@ public class ClientThread implements Runnable {
             }
             case CREATE_ROOM -> {
                 JSONObject createRoomResponse = null;
+                message.put(IDENTITY, this.getId());
                 logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID).toString(), "Client ID:- ",
-                        message.get(IDENTITY).toString());
+                       this.getId());
                 while(createRoomResponse == null){
                     createRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
-                logger.info("New client request - clientId: {} approved: {}",
+                logger.info("New chatroom request - roomid: {} approved: {}",
                         message.get(ROOM_ID).toString(),
                         createRoomResponse.get(APPROVED));
                 try {
@@ -314,5 +322,13 @@ public class ClientThread implements Runnable {
             JSONObject jsonObject = ClientMessage.getQuitRequest();
             handleQuitRequest(jsonObject, false);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ClientThread{" +
+                "id='" + id + '\'' +
+                ", server=" + server.getServerId() +
+                '}';
     }
 }
