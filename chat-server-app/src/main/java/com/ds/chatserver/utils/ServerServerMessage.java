@@ -119,7 +119,7 @@ public class ServerServerMessage {
         createRoom.put(TYPE, CREATE_CHAT_ROOM);
         createRoom.put(TERM, String.valueOf(term));
         createRoom.put(CLIENT_ID, clientId);
-        createRoom.put(ROOM_ID_2, roomId);
+        createRoom.put(ROOM_ID, roomId);
         createRoom.put(SENDER_ID, senderId);
         return createRoom;
     }
@@ -166,11 +166,12 @@ public class ServerServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getChangeRoomResponse(int term, boolean success) {
+    public static JSONObject getChangeRoomResponse(int term, boolean success, String serverId) {
         JSONObject changeRoom = new JSONObject();
         changeRoom.put(TYPE, CHANGE_ROOM);
         changeRoom.put(TERM, String.valueOf(term));
         changeRoom.put(SUCCESS, success);
+        changeRoom.put(SERVER_ID, serverId);
         return changeRoom;
     }
 

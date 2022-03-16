@@ -153,6 +153,9 @@ public class SystemState {
         return chatroomLists.containsKey(chatroomName);
     }
 
+    public static ChatroomLog getChatroomFromName(String chatroomName) {
+        return chatroomLists.getOrDefault(chatroomName, null);
+    }
     public static Boolean isOwner(String clientId) {
         String chatroomId = clientLists.get(clientId).getChatroomName();
         return chatroomLists.get(chatroomId).getOwnerId().equals(clientId);
