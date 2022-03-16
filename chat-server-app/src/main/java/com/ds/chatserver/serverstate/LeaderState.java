@@ -212,7 +212,11 @@ public class LeaderState extends ServerState {
         boolean success = false;
         String newServerId = "";
         if (SystemState.isClientExist(clientId) && SystemState.isChatroomExist(formerRoomId)
-                && SystemState.isChatroomExist(newRoomId)) {
+                && SystemState.isChatroomExist(newRoomId) && !SystemState.isOwner(clientId)) {
+            // client exists
+            // former chatroom exists
+            // new chatroom exists
+            // client not the owner of former chatroom
             newServerId = SystemState.getChatroomFromName(newRoomId).getServerId();
             EventType eventType = newServerId.equals(senderServerId)? EventType.JOIN_ROOM: EventType.ROUTE;
             server.getRaftLog().insert(Event.builder()
