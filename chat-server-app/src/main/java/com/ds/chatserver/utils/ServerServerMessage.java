@@ -134,12 +134,13 @@ public class ServerServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getDeleteRoomRequest(int term, String clientId, String senderId) {
+    public static JSONObject getDeleteRoomRequest(int term, String clientId, String senderId, String roomId) {
         JSONObject deleteRoom = new JSONObject();
         deleteRoom.put(TYPE, DELETE_CHAT_ROOM);
         deleteRoom.put(TERM, String.valueOf(term));
         deleteRoom.put(CLIENT_ID, clientId);
         deleteRoom.put(SENDER_ID, senderId);
+        deleteRoom.put(ROOM_ID_2, roomId);
         return deleteRoom;
     }
 

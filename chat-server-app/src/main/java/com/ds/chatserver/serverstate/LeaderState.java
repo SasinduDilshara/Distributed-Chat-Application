@@ -159,15 +159,16 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleDeleteChatroomRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
-        String roomId = request.get(ROOM_ID).toString();
+        String roomId = request.get(ROOM_ID_2).toString();
         Boolean success = false;
-        if (SystemState.isChatroomExist(roomId)) {
+        if (SystemState.isChatroomExist(roomId) && SystemState.checkOwnerFromChatroom(roomId, clientId)) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
                     .type(EventType.DELETE_ROOM)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
+                    .parameter(roomId)
                     .build());
             int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
             success = replicateLogs();
@@ -236,13 +237,17 @@ public class LeaderState extends ServerState {
         JSONObject response = handleDeleteChatroomRequest(ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
-                this.server.getServerId()
+                this.server.getServerId(),
+                roomId
         ));
         if ((Boolean) response.get(SUCCESS)) {
             return ServerMessage.getRoomChangeResponse(
                     clientId, roomId, Util.getMainhall(this.server.getServerId()));
         }
-        return null;
+        return ServerMessage.getDeleteRoomResponse(
+                roomId,
+                (Boolean) response.get(SUCCESS)
+        );
     }
 
     @Override

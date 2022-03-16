@@ -204,6 +204,7 @@ public class ClientThread implements Runnable {
                 }
             }
             case DELETE_ROOM -> {
+                message.put(IDENTITY, this.getId());
                 JSONObject deleteRoomResponse = null;
                 logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
                         message.get(IDENTITY).toString());

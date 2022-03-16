@@ -193,12 +193,13 @@ public class FollowerState extends ServerState {
     @Override
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID);
+        String roomId = (String) request.get(ROOM_ID_2);
         //TODO Don't we need room id?
         JSONObject requestToLeader = ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
-                this.server.getServerId()
+                this.server.getServerId(),
+                roomId
         );
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
         Thread thread = null;
@@ -222,7 +223,10 @@ public class FollowerState extends ServerState {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return null;
+        return ServerMessage.getDeleteRoomResponse(
+                roomId,
+                false
+        );
     }
 
     @Override

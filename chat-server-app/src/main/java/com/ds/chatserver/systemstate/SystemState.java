@@ -157,4 +157,8 @@ public class SystemState {
         String chatroomId = clientLists.get(clientId).getChatroomName();
         return chatroomLists.get(chatroomId).getOwnerId().equals(clientId);
     }
+
+    public static Boolean checkOwnerFromChatroom(String chatroomId, String clientId) {
+        return chatroomLists.get(chatroomId).getOwnerId().equals(clientId);
+    }
 }
