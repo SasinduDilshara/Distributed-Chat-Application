@@ -196,7 +196,7 @@ public class FollowerState extends ServerState {
     @Override
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID_2);
+        String roomId = (String) request.get(ROOM_ID);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject requestToLeader = ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
@@ -279,7 +279,7 @@ public class FollowerState extends ServerState {
     @Override
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID_2);
+        String roomId = (String) request.get(ROOM_ID);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject requestToLeader = ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),

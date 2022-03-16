@@ -140,7 +140,7 @@ public class ServerServerMessage {
         deleteRoom.put(TERM, String.valueOf(term));
         deleteRoom.put(CLIENT_ID, clientId);
         deleteRoom.put(SENDER_ID, senderId);
-        deleteRoom.put(ROOM_ID_2, roomId);
+        deleteRoom.put(ROOM_ID, roomId);
         return deleteRoom;
     }
 

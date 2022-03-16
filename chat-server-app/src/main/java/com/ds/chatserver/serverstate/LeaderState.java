@@ -182,7 +182,7 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleDeleteChatroomRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
-        String roomId = request.get(ROOM_ID_2).toString();
+        String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
         if (SystemState.isChatroomExist(roomId) && SystemState.checkOwnerFromChatroom(roomId, clientId)) {
             server.getRaftLog().insert(Event.builder()
@@ -290,7 +290,7 @@ public class LeaderState extends ServerState {
     @Override
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID_2);
+        String roomId = (String) request.get(ROOM_ID);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject response = handleDeleteChatroomRequest(ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
@@ -335,7 +335,7 @@ public class LeaderState extends ServerState {
     @Override
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID_2);
+        String roomId = (String) request.get(ROOM_ID);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject response = handleCreateChatroomRequest(ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),

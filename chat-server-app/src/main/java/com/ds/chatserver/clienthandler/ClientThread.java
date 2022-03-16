@@ -196,7 +196,7 @@ public class ClientThread implements Runnable {
                     response = (JSONObject) createRoomResponse.get(String.valueOf(i));
                     if (response.get(TYPE).toString().equals(ROOM_CHANGE)) {
                         try {
-                            ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID_2).toString(), this);
+                            ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID).toString(), this);
                         } catch (ClientNotInChatRoomException e) {
                             e.printStackTrace();
                         }
@@ -208,7 +208,7 @@ public class ClientThread implements Runnable {
             case DELETE_ROOM -> {
                 message.put(IDENTITY, this.getId());
                 JSONObject deleteRoomResponse = null, response = null;
-                logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
+                logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID).toString(), "Client ID:- ",
                         message.get(IDENTITY).toString());
                 while(deleteRoomResponse == null){
                     deleteRoomResponse = this.server.getState().respondToClientRequest(message);
