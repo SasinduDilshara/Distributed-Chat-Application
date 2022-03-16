@@ -121,7 +121,6 @@ public class ServerServerMessage {
         createRoom.put(CLIENT_ID, clientId);
         createRoom.put(ROOM_ID_2, roomId);
         createRoom.put(SENDER_ID, senderId);
-        System.out.println("Create room:- " + createRoom);
         return createRoom;
     }
 
