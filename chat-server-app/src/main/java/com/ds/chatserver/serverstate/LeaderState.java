@@ -133,9 +133,9 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleCreateChatroomRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
-        String roomId = request.get(ROOM_ID).toString();
+        String roomId = request.get(ROOM_ID_2).toString();
         Boolean success = false;
-        if (!SystemState.isChatroomExist(roomId) && Validation.validateRoomID(roomId, server.getServerId())
+        if (!(SystemState.isChatroomExist(roomId)) && Validation.validateRoomID(roomId, server.getServerId())
                 && !SystemState.isOwner(clientId)) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)

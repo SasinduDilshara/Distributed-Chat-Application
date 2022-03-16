@@ -233,7 +233,7 @@ public class FollowerState extends ServerState {
     @Override
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
-        String roomId = (String) request.get(ROOM_ID);
+        String roomId = (String) request.get(ROOM_ID_2);
         JSONObject requestToLeader = ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),
                 clientId,

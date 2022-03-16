@@ -97,10 +97,13 @@ public class ClientThread implements Runnable {
                             clientId,
                             clientResponse.get(APPROVED));
                     this.setId(clientId);
-                    try {
-                        ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClient(this, "");
-                    } catch (ClientAlreadyInChatRoomException e) {
-                        e.printStackTrace();
+                    this.sendResponse(clientResponse);
+                    if (Boolean.parseBoolean(clientResponse.get(APPROVED).toString())) {
+                        try {
+                            ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClient(this, "");
+                        } catch (ClientAlreadyInChatRoomException e) {
+                            e.printStackTrace();
+                        }
                     }
 //                    String identity = (String) jsonObject.get("identity");
 //                    this.id = identity;
@@ -133,8 +136,6 @@ public class ClientThread implements Runnable {
                 }
                 default -> this.stop();
             }
-
-            this.sendResponse(clientResponse);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,12 +178,13 @@ public class ClientThread implements Runnable {
             }
             case CREATE_ROOM -> {
                 JSONObject createRoomResponse = null;
+                message.put(IDENTITY, this.getId());
                 logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID_2).toString(), "Client ID:- ",
-                        message.get(IDENTITY).toString());
+                       this.getId());
                 while(createRoomResponse == null){
                     createRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
-                logger.info("New client request - clientId: {} approved: {}",
+                logger.info("New chatroom request - roomid: {} approved: {}",
                         message.get(ROOM_ID_2).toString(),
                         createRoomResponse.get(APPROVED));
                 try {
