@@ -60,6 +60,5 @@ public class ChatServerApplication {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

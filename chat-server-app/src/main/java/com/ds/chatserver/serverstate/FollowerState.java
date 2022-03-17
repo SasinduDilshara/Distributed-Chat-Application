@@ -197,11 +197,12 @@ public class FollowerState extends ServerState {
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
-        //TODO Don't we need room id?
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject requestToLeader = ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
-                this.server.getServerId()
+                this.server.getServerId(),
+                roomId
         );
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
         Thread thread = null;
@@ -216,16 +217,25 @@ public class FollowerState extends ServerState {
             JSONObject response = queue.take();
 
             if ((Boolean) response.get(SUCCESS)) {
-                return ServerMessage.getRoomChangeResponse(
+                jsonObjects.add(ServerMessage.getDeleteRoomResponse(
+                        roomId,
+                        (Boolean) response.get(SUCCESS)
+                ));
+                jsonObjects.add((ServerMessage.getRoomChangeResponse(
                         clientId,
                         roomId,
                         Util.getMainhall(this.server.getServerId())
-                        );
+                        )));
+                return ServerMessage.getJsonResponses(jsonObjects);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return null;
+        jsonObjects.add(ServerMessage.getDeleteRoomResponse(
+                roomId,
+                false
+        ));
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override
@@ -270,6 +280,7 @@ public class FollowerState extends ServerState {
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject requestToLeader = ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
@@ -289,22 +300,56 @@ public class FollowerState extends ServerState {
             JSONObject response = queue.take();
 
             if ((Boolean) response.get(SUCCESS)) {
-                return ServerMessage.getRoomChangeResponse(
+                jsonObjects.add(ServerMessage.getCreateRoomResponse(
+                        roomId,
+                        (Boolean) response.get(SUCCESS)
+                ));
+                jsonObjects.add(ServerMessage.getRoomChangeResponse(
                         clientId,
                         Util.getMainhall(this.server.getServerId()),
-                        roomId);
+                        roomId));
+                return ServerMessage.getJsonResponses(jsonObjects);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return ServerMessage.getCreateRoomResponse(
+        jsonObjects.add(ServerMessage.getCreateRoomResponse(
                 roomId,
                 false
-        );
+        ));
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override
     protected JSONObject respondToMoveJoin(JSONObject request) {
+        JSONObject requestToLeader = ServerServerMessage.getMoveJoinRequest(
+                this.server.getCurrentTerm(),
+                (String) request.get(IDENTITY),
+                (String) request.get(FORMER),
+                (String) request.get(ROOM_ID),
+                this.server.getServerId());
+
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender( this.server.getLeaderId(), requestToLeader, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+            log.debug("Response from leader: {}", response);
+
+            if ((Boolean) response.get(ERROR)) {
+                return ServerMessage.getServerChangeResponse(false, this.server.getServerId());
+            } else {
+                return ServerMessage.getServerChangeResponse((Boolean) response.get(SUCCESS), this.server.getServerId());
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

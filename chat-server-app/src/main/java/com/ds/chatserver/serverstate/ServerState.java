@@ -38,6 +38,8 @@ public abstract class ServerState {
                 return handleChangeRoomRequest(request);
             case SERVER_INIT:
                 return handleServerInitRequest(request);
+            case MOVE_JOIN:
+                return handleMoveJoinRequest(request);
         }
 
         //TODO: return null cause and error
@@ -103,6 +105,11 @@ public abstract class ServerState {
     }
 
     public JSONObject handleServerInitRequest(JSONObject request) {
+        //TODO: Return Error
+        return null;
+    }
+
+    public JSONObject handleMoveJoinRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }

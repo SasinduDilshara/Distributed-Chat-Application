@@ -69,10 +69,10 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getServerChangeResponse(String serverId) {
+    public static JSONObject getServerChangeResponse(Boolean approved ,String serverId) {
         JSONObject serverchange = new JSONObject();
         serverchange.put(TYPE, SERVER_CHANGE);
-        serverchange.put(APPROVED, "true");
+        serverchange.put(APPROVED, approved);
         serverchange.put(SERVER_ID, serverId);
         return serverchange;
     }
@@ -101,6 +101,14 @@ public class ServerMessage {
         message.put(TYPE, MESSAGE);
         message.put(IDENTITY, identity);
         message.put(CONTENT, content);
+        return message;
+    }
+
+    public static JSONObject getJsonResponses(ArrayList<JSONObject> jsonObjects) {
+        JSONObject message = new JSONObject();
+        for (int i = 0; i < jsonObjects.size(); i++) {
+            message.put(String.valueOf(i), jsonObjects.get(i));
+        }
         return message;
     }
 }

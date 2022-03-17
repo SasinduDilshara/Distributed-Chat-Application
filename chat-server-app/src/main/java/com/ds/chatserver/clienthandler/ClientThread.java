@@ -4,6 +4,7 @@ import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ClientMessage;
 import com.ds.chatserver.systemstate.ChatroomLog;
 import com.ds.chatserver.utils.JsonParser;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
@@ -129,9 +131,12 @@ public class ClientThread implements Runnable {
 //                    }
                 }
                 case "movejoin" -> {
-//                    String former = (String) jsonObject.get("former");
-//                    String roomId = (String) jsonObject.get("roomid");
-//                    this.id = (String) jsonObject.get("identity");
+                    while(clientResponse == null) {
+                        clientResponse = this.server.getState().respondToClientRequest(request);
+                    }
+                    logger.info("Move Join request - clientId: {} approved: {}",
+                            request.get(IDENTITY).toString(),
+                            clientResponse.get(APPROVED));
 //                    chatRoomHandler.moveJoinRoom(roomId, this, former);
 //                    //TODO: serverId
 //                    sendResponse(ServerMessage.getServerChangeResponse("serverId"));
@@ -163,7 +168,8 @@ public class ClientThread implements Runnable {
 
         switch (type) {
             case LIST -> {
-                JSONObject response = ServerMessage.getRoomListResponse(getRoomIdFromChatRooms());
+                JSONObject response = ServerMessage
+                        .getRoomListResponse(SystemState.getChatRooms());
                 sendResponse(response);
                 logger.info("Successfully Send List of ChatRooms to {}", id);
             }
@@ -178,7 +184,7 @@ public class ClientThread implements Runnable {
                 logger.info("Successfully Send List of Clients of room {} to {}", currentChatRoom.getRoomId(), id);
             }
             case CREATE_ROOM -> {
-                JSONObject createRoomResponse = null;
+                JSONObject createRoomResponse = null, response = null;
                 message.put(IDENTITY, this.getId());
                 logger.info("New Chatroom request - Room Id: {},", message.get(ROOM_ID).toString(), "Client ID:- ",
                        this.getId());
@@ -188,16 +194,26 @@ public class ClientThread implements Runnable {
                 logger.info("New chatroom request - roomid: {} approved: {}",
                         message.get(ROOM_ID).toString(),
                         createRoomResponse.get(APPROVED));
-                try {
-                    ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID).toString(), this);
-                } catch (ClientNotInChatRoomException e) {
-                    e.printStackTrace();
+
+                for (int i = 0; i < 2; i++) {
+                    if (!createRoomResponse.containsKey(String.valueOf(i))) {
+                        continue;
+                    }
+                    response = (JSONObject) createRoomResponse.get(String.valueOf(i));
+                    if (response.get(TYPE).toString().equals(ROOM_CHANGE)) {
+                        try {
+                            ChatRoomHandler.getInstance(server.getServerId()).createChatRoom(message.get(ROOM_ID).toString(), this);
+                        } catch (ClientNotInChatRoomException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    sendResponse(response);
                 }
-                sendResponse(createRoomResponse);
             }
             case JOIN_ROOM -> handleJoinRoomRequest(message);
             case DELETE_ROOM -> {
-                JSONObject deleteRoomResponse = null;
+                message.put(IDENTITY, this.getId());
+                JSONObject deleteRoomResponse = null, response = null;
                 logger.info("Delete Chatroom request - Room Id: {},", message.get(ROOM_ID).toString(), "Client ID:- ",
                         message.get(IDENTITY).toString());
                 while(deleteRoomResponse == null){
@@ -206,23 +222,27 @@ public class ClientThread implements Runnable {
                 logger.info("Delete chatroom request - roomID: {} approved: {}",
                         message.get(ROOM_ID).toString(),
                         deleteRoomResponse.get(APPROVED));
-                try {
-                    ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
-                } catch (ChatroomDoesntExistsException e) {
-                    e.printStackTrace();
-                } catch (ClientNotOwnerException e) {
-                    e.printStackTrace();
-                } catch (ClientAlreadyInChatRoomException e) {
-                    e.printStackTrace();
-                } catch (ClientNotInChatRoomException e) {
-                    e.printStackTrace();
+
+                for (int i = 0; i < 2; i++) {
+                    if (!deleteRoomResponse.containsKey(String.valueOf(i))) {
+                        continue;
+                    }
+                    response = (JSONObject) deleteRoomResponse.get(String.valueOf(i));
+                    if (response.get(TYPE).toString().equals(ROOM_CHANGE)) {
+                        try {
+                            ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this);
+                        } catch (ChatroomDoesntExistsException | ClientNotOwnerException | ClientAlreadyInChatRoomException
+                                | ClientNotInChatRoomException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    sendResponse(response);
                 }
-                sendResponse(deleteRoomResponse);
             }
             case MESSAGE -> {
                 String content = (String) message.get("content");
                 try {
-                    currentChatRoom.sendMessage(content, this.id);
+                    currentChatRoom.sendMessage(content, this);
                 } catch (ClientNotInChatRoomException e) {
                     e.printStackTrace();
                 }
@@ -244,14 +264,6 @@ public class ClientThread implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private ArrayList<String> getRoomIdFromChatRooms() {
-        ArrayList<String> chatRoomIds = new ArrayList<>();
-        for (ChatRoom chatRoom: chatRoomHandler.getChatRooms()) {
-            chatRoomIds.add(chatRoom.getRoomId());
-        }
-        return chatRoomIds;
     }
 
     private void handleQuitRequest(JSONObject message, boolean clientActive) {

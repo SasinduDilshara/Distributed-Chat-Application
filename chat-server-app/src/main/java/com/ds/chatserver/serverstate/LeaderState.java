@@ -134,12 +134,15 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
+        String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
-        if (SystemState.isClientExist(clientId)) {
+        if (!(SystemState.isChatroomExist(roomId)) && Validation.validateRoomID(roomId, server.getServerId())
+                && !SystemState.isOwner(clientId)) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
-                    .type(EventType.QUIT)
+                    .type(EventType.CREATE_ROOM)
+                    .parameter(roomId)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
@@ -151,9 +154,10 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
-        return ServerServerMessage.getDeleteClientResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), success);
     }
 
+    @Override
     public synchronized JSONObject handleCreateChatroomRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
@@ -184,13 +188,14 @@ public class LeaderState extends ServerState {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
-        if (SystemState.isChatroomExist(roomId)) {
+        if (SystemState.isChatroomExist(roomId) && SystemState.checkOwnerFromChatroom(roomId, clientId)) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
                     .type(EventType.DELETE_ROOM)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
+                    .parameter(roomId)
                     .build());
             int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
             success = replicateLogs();
@@ -200,7 +205,7 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
-        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getDeleteRoomResponse(server.getCurrentTerm(), success);
     }
 
     @Override
@@ -238,6 +243,31 @@ public class LeaderState extends ServerState {
         return ServerServerMessage.getChangeRoomResponse(server.getCurrentTerm(), success, newServerId);
     }
 
+    @Override
+    public synchronized JSONObject handleMoveJoinRequest(JSONObject request) {
+        String clientId = (String) request.get(CLIENT_ID);
+        Boolean success = false;
+        if (!(SystemState.isClientExist(clientId))) {
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(clientId)
+                    .serverId(request.get(SENDER_ID).toString())
+                    .type(EventType.ROUTE)
+                    .logIndex(server.getRaftLog().getNextLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .parameter((String) request.get(FORMER))
+                    .build());
+
+            int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
+            success = replicateLogs();
+            if (success) {
+                //Commit client
+                this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit,
+                        this.server.getRaftLog().getCommitIndex()));
+                SystemState.commit(this.server);
+            }
+        }
+        return ServerServerMessage.getMoveJoinResponse(server.getCurrentTerm(), success);
+    }
     private boolean replicateLogs() {
         int serverCount = ServerConfigurations.getNumberOfServers();
         Set<String> serverIds = ServerConfigurations.getServerIds();
@@ -290,17 +320,22 @@ public class LeaderState extends ServerState {
     protected JSONObject respondToDeleteRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
-        //TODO: Don't we need room Id
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject response = handleDeleteChatroomRequest(ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
-                this.server.getServerId()
+                this.server.getServerId(),
+                roomId
+        ));
+        jsonObjects.add(ServerMessage.getDeleteRoomResponse(
+                roomId,
+                (Boolean) response.get(SUCCESS)
         ));
         if ((Boolean) response.get(SUCCESS)) {
-            return ServerMessage.getRoomChangeResponse(
-                    clientId, roomId, Util.getMainhall(this.server.getServerId()));
+            jsonObjects.add(ServerMessage.getRoomChangeResponse(
+                    clientId, roomId, Util.getMainhall(this.server.getServerId())));
         }
-        return null;
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override
@@ -330,26 +365,34 @@ public class LeaderState extends ServerState {
     protected JSONObject respondToCreateRoom(JSONObject request) {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
+        ArrayList<JSONObject> jsonObjects = new ArrayList<>();
         JSONObject response = handleCreateChatroomRequest(ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 roomId,
                 this.server.getServerId()
         ));
-        if ((Boolean) response.get(SUCCESS)) {
-            return ServerMessage.getRoomChangeResponse(
-                    clientId, Util.getMainhall(this.server.getServerId()),
-                    roomId);
-        }
-        return ServerMessage.getCreateRoomResponse(
+        jsonObjects.add(ServerMessage.getCreateRoomResponse(
                 roomId,
                 (Boolean) response.get(SUCCESS)
-        );
+        ));
+        if ((Boolean) response.get(SUCCESS)) {
+            jsonObjects.add(ServerMessage.getRoomChangeResponse(
+                    clientId, Util.getMainhall(this.server.getServerId()),
+                    roomId));
+        }
+        return ServerMessage.getJsonResponses(jsonObjects);
     }
 
     @Override
     protected JSONObject respondToMoveJoin(JSONObject request) {
-        return null;
+        JSONObject response = handleMoveJoinRequest(ServerServerMessage.getMoveJoinRequest(
+                this.server.getCurrentTerm(),
+                (String) request.get(IDENTITY),
+                (String) request.get(FORMER),
+                (String) request.get(ROOM_ID),
+                this.server.getServerId()));
+        return ServerMessage.getServerChangeResponse((Boolean) response.get(SUCCESS), this.server.getServerId());
     }
 
     @Override

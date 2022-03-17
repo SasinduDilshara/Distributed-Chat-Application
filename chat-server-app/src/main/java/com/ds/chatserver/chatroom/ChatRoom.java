@@ -69,10 +69,12 @@ public class ChatRoom {
                     this.roomId, client.getId());
             throw new ClientAlreadyInChatRoomException(errorMsg);
         }
+        //TODO: this.clients.add(client);
+        this.clients.add(client);
         for(ClientThread existingClient: clients) {
             existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
         }
-        this.clients.add(client);
+
     }
 
     // add a set of new clients to the room
@@ -122,6 +124,14 @@ public class ChatRoom {
         for(ClientThread client: clients) {
             if(!client.getId().equals(senderId)) {
                 client.sendResponse(ServerMessage.getMessageResponse(senderId, message));
+            }
+        }
+    }
+
+    public void sendMessage(String message, ClientThread sender) throws ClientNotInChatRoomException {
+        for(ClientThread client: clients) {
+            if(!client.equals(sender)) {
+                client.sendResponse(ServerMessage.getMessageResponse(sender.getId(), message));
             }
         }
     }
