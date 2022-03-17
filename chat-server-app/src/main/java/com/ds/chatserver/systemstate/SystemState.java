@@ -170,4 +170,12 @@ public class SystemState {
     public static ArrayList<String> getClients() {
         return new ArrayList<>(SystemState.clientLists.keySet());
     }
+
+    public static Boolean checkOwnerFromChatroom(String chatroomId, String clientId) {
+        ChatroomLog chatroom = chatroomLists.get(chatroomId);
+        if (chatroom == null) {
+            return false;
+        }
+        return chatroom.getOwnerId().equals(clientId);
+    }
 }
