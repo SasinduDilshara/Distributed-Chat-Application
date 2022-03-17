@@ -23,6 +23,10 @@ public class ChatroomLog {
         this.participants = new HashSet<>();
     }
 
+    public HashSet<String> getParticipants() {
+        return (HashSet<String>) participants.clone();
+    }
+
     public void addParticipant(String participant){
         this.participants.add(participant);
     }

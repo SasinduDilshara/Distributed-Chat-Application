@@ -5,10 +5,7 @@ import com.ds.chatserver.log.EventType;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.Util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class SystemState {
     private static HashMap<String, ClientLog> clientLists = new HashMap<>();
@@ -143,35 +140,35 @@ public class SystemState {
         chatroomLists.get(chatroomId).addParticipant(clientId);
     }
 
-    public static void addChatroom(ChatroomLog chatroomLog){
+    public synchronized static void addChatroom(ChatroomLog chatroomLog){
         chatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
     }
 
-    public static Boolean isClientExist(String clientId) {
+    public synchronized static Boolean isClientExist(String clientId) {
         return clientLists.containsKey(clientId);
     }
 
-    public static Boolean isChatroomExist(String chatroomName) {
+    public synchronized static Boolean isChatroomExist(String chatroomName) {
         return chatroomLists.containsKey(chatroomName);
     }
 
-    public static ChatroomLog getChatroomFromName(String chatroomName) {
+    public synchronized static ChatroomLog getChatroomFromName(String chatroomName) {
         return chatroomLists.getOrDefault(chatroomName, null);
     }
-    public static Boolean isOwner(String clientId) {
+    public synchronized static Boolean isOwner(String clientId) {
         String chatroomId = clientLists.get(clientId).getChatroomName();
         return chatroomLists.get(chatroomId).getOwnerId().equals(clientId);
     }
 
-    public static ArrayList<String> getChatRooms() {
+    public synchronized static ArrayList<String> getChatRooms() {
         return new ArrayList<>(SystemState.chatroomLists.keySet());
     }
 
-    public static ArrayList<String> getClients() {
+    public synchronized static ArrayList<String> getClients() {
         return new ArrayList<>(SystemState.clientLists.keySet());
     }
 
-    public static Boolean checkOwnerFromChatroom(String chatroomId, String clientId) {
+    public synchronized static Boolean checkOwnerFromChatroom(String chatroomId, String clientId) {
         ChatroomLog chatroom = chatroomLists.get(chatroomId);
         if (chatroom == null) {
             return false;
