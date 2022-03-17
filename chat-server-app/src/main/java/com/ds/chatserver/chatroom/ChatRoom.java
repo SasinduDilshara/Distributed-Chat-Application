@@ -63,7 +63,7 @@ public class ChatRoom {
     }
 
     // add a new client to the room
-    public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
+    public void addClientToMainhall(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
         if(isAClient(client.getId())) {
             String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
                     this.roomId, client.getId());
@@ -74,7 +74,18 @@ public class ChatRoom {
         for(ClientThread existingClient: clients) {
             existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
         }
+    }
 
+    public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
+        if(isAClient(client.getId())) {
+            String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
+                    this.roomId, client.getId());
+            throw new ClientAlreadyInChatRoomException(errorMsg);
+        }
+        for(ClientThread existingClient: clients) {
+            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+        }
+        this.clients.add(client);
     }
 
     // add a set of new clients to the room

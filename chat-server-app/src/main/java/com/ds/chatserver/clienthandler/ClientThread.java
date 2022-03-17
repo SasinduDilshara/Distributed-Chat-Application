@@ -105,7 +105,7 @@ public class ClientThread implements Runnable {
                     this.sendResponse(clientResponse);
                     if (Boolean.parseBoolean(clientResponse.get(APPROVED).toString())) {
                         try {
-                            ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClient(this, "");
+                            ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClientToMainhall(this, "");
                         } catch (ClientAlreadyInChatRoomException e) {
                             e.printStackTrace();
                         }
