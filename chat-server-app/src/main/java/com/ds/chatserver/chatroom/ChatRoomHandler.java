@@ -161,8 +161,8 @@ public class ChatRoomHandler {
         if (clientThread.equals(chatRoom.getOwner())) {
             for(ClientThread client: chatRoom.getClients()) {
 //                chatRoom.getClients().remove(client);
-                if (isQuit && clientThread.equals(chatRoom.getOwner())) {
-                    if (!isForceQuit) {
+                if (client.equals(chatRoom.getOwner())) {
+                    if (isQuit && !isForceQuit) {
                         client.sendResponse(ServerMessage.getRoomChangeResponse(
                                 client.getId(), chatRoom.getRoomId(), ""));
                     }
