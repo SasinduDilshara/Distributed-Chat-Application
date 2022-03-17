@@ -134,15 +134,12 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
-        String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
-        if (!(SystemState.isChatroomExist(roomId)) && Validation.validateRoomID(roomId, server.getServerId())
-                && !SystemState.isOwner(clientId)) {
+        if (SystemState.isClientExist(clientId)) {
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
-                    .type(EventType.CREATE_ROOM)
-                    .parameter(roomId)
+                    .type(EventType.QUIT)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .build());
@@ -154,7 +151,7 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
-        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getDeleteClientResponse(server.getCurrentTerm(), success);
     }
 
     @Override
