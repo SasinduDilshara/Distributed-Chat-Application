@@ -305,6 +305,34 @@ public class FollowerState extends ServerState {
 
     @Override
     protected JSONObject respondToMoveJoin(JSONObject request) {
+        JSONObject requestToLeader = ServerServerMessage.getMoveJoinRequest(
+                this.server.getCurrentTerm(),
+                (String) request.get(IDENTITY),
+                (String) request.get(FORMER),
+                (String) request.get(ROOM_ID),
+                this.server.getServerId());
+
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender( this.server.getLeaderId(), requestToLeader, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+            log.debug("Response from leader: {}", response);
+
+            if ((Boolean) response.get(ERROR)) {
+                return ServerMessage.getServerChangeResponse(false, this.server.getServerId());
+            } else {
+                return ServerMessage.getServerChangeResponse((Boolean) response.get(SUCCESS), this.server.getServerId());
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

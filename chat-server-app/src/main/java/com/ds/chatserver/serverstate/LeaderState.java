@@ -238,6 +238,31 @@ public class LeaderState extends ServerState {
         return ServerServerMessage.getChangeRoomResponse(server.getCurrentTerm(), success, newServerId);
     }
 
+    @Override
+    public synchronized JSONObject handleMoveJoinRequest(JSONObject request) {
+        String clientId = (String) request.get(CLIENT_ID);
+        Boolean success = false;
+        if (!(SystemState.isClientExist(clientId))) {
+            server.getRaftLog().insert(Event.builder()
+                    .clientId(clientId)
+                    .serverId(request.get(SENDER_ID).toString())
+                    .type(EventType.ROUTE)
+                    .logIndex(server.getRaftLog().getNextLogIndex())
+                    .logTerm(server.getCurrentTerm())
+                    .parameter((String) request.get(FORMER))
+                    .build());
+
+            int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
+            success = replicateLogs();
+            if (success) {
+                //Commit client
+                this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit,
+                        this.server.getRaftLog().getCommitIndex()));
+                SystemState.commit(this.server);
+            }
+        }
+        return ServerServerMessage.getMoveJoinResponse(server.getCurrentTerm(), success);
+    }
     private boolean replicateLogs() {
         int serverCount = ServerConfigurations.getNumberOfServers();
         Set<String> serverIds = ServerConfigurations.getServerIds();
@@ -349,7 +374,13 @@ public class LeaderState extends ServerState {
 
     @Override
     protected JSONObject respondToMoveJoin(JSONObject request) {
-        return null;
+        JSONObject response = handleMoveJoinRequest(ServerServerMessage.getMoveJoinRequest(
+                this.server.getCurrentTerm(),
+                (String) request.get(IDENTITY),
+                (String) request.get(FORMER),
+                (String) request.get(ROOM_ID),
+                this.server.getServerId()));
+        return ServerMessage.getServerChangeResponse((Boolean) response.get(SUCCESS), this.server.getServerId());
     }
 
     @Override

@@ -126,6 +126,14 @@ public class ChatRoom {
         }
     }
 
+    public void sendMessage(String message, ClientThread sender) throws ClientNotInChatRoomException {
+        for(ClientThread client: clients) {
+            if(!client.equals(sender)) {
+                client.sendResponse(ServerMessage.getMessageResponse(sender.getId(), message));
+            }
+        }
+    }
+
     // inform all the members of the room about the deletion of the room
     public void deleteRoom(String clientId, String mainHallId) throws ClientNotOwnerException {
         if(this.owner == null || !clientId.equals(this.owner.getId())) {

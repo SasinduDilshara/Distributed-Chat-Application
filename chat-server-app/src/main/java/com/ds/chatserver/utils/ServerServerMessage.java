@@ -7,6 +7,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ds.chatserver.constants.ClientRequestTypeConstants.MOVE_JOIN;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 import static com.ds.chatserver.constants.RequestTypeConstants.*;
 
@@ -190,5 +191,24 @@ public class ServerServerMessage {
         serverInit.put(TERM, String.valueOf(term));
         serverInit.put(SUCCESS, success);
         return serverInit;
+    }
+
+    public static JSONObject getMoveJoinRequest(int term, String clientId, String former, String roomId, String senderId) {
+        JSONObject moveJoinRoom = new JSONObject();
+        moveJoinRoom.put(TYPE, MOVE_JOIN);
+        moveJoinRoom.put(TERM, String.valueOf(term));
+        moveJoinRoom.put(CLIENT_ID, clientId);
+        moveJoinRoom.put(FORMER, former);
+        moveJoinRoom.put(ROOM_ID, roomId);
+        moveJoinRoom.put(SENDER_ID, senderId);
+        return moveJoinRoom;
+    }
+
+    public static JSONObject getMoveJoinResponse(int term, boolean success) {
+        JSONObject moveJoinRoom = new JSONObject();
+        moveJoinRoom.put(TYPE, MOVE_JOIN);
+        moveJoinRoom.put(TERM, String.valueOf(term));
+        moveJoinRoom.put(SUCCESS, success);
+        return moveJoinRoom;
     }
 }

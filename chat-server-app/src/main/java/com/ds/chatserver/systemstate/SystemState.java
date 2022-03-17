@@ -5,8 +5,10 @@ import com.ds.chatserver.log.EventType;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.Util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class SystemState {
     private static HashMap<String, ClientLog> clientLists = new HashMap<>();
@@ -159,5 +161,13 @@ public class SystemState {
     public static Boolean isOwner(String clientId) {
         String chatroomId = clientLists.get(clientId).getChatroomName();
         return chatroomLists.get(chatroomId).getOwnerId().equals(clientId);
+    }
+
+    public static ArrayList<String> getChatRooms() {
+        return new ArrayList<>(SystemState.chatroomLists.keySet());
+    }
+
+    public static ArrayList<String> getClients() {
+        return new ArrayList<>(SystemState.clientLists.keySet());
     }
 }

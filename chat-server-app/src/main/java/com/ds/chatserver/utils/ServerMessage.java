@@ -69,10 +69,10 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getServerChangeResponse(String serverId) {
+    public static JSONObject getServerChangeResponse(Boolean approved ,String serverId) {
         JSONObject serverchange = new JSONObject();
         serverchange.put(TYPE, SERVER_CHANGE);
-        serverchange.put(APPROVED, "true");
+        serverchange.put(APPROVED, approved);
         serverchange.put(SERVER_ID, serverId);
         return serverchange;
     }
