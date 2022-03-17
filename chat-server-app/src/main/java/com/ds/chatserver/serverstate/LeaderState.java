@@ -133,7 +133,7 @@ public class LeaderState extends ServerState {
 
     @Override
     public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
-        String clientId = request.get(IDENTITY).toString();
+        String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
         if (SystemState.isClientExist(clientId)) {
             server.getRaftLog().insert(Event.builder()
