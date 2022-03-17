@@ -81,7 +81,7 @@ public class ServerMessage {
     public static JSONObject getDeleteRoomResponse(String roomId, Boolean approved) {
         JSONObject delete = new JSONObject();
         delete.put(TYPE, DELETE_ROOM);
-        delete.put(ROOM_ID_2, roomId);
+        delete.put(ROOM_ID, roomId);
         delete.put(APPROVED, approved.toString());
         return delete;
     }
@@ -91,7 +91,7 @@ public class ServerMessage {
         JSONObject server_delete = new JSONObject();
         server_delete.put(TYPE, DELETE_ROOM);
         server_delete.put(SERVER_ID, serverId);
-        server_delete.put(ROOM_ID_2, roomId);
+        server_delete.put(ROOM_ID, roomId);
         return server_delete;
     }
 
