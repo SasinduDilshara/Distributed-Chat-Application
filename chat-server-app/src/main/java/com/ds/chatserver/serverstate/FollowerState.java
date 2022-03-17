@@ -362,6 +362,7 @@ public class FollowerState extends ServerState {
                 clientId,
                 this.server.getServerId()
         );
+        log.debug("Message to leader composed:{}", requestToLeader);
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
         Thread thread = null;
         try {
@@ -373,6 +374,7 @@ public class FollowerState extends ServerState {
 
         try {
             JSONObject response = queue.take();
+            log.debug("response recieved: {}", response);
             if ((Boolean) response.get(SUCCESS)) {
                 return ServerMessage.getRoomChangeResponse(
                         clientId,
