@@ -72,7 +72,7 @@ public class ServerMessage {
     public static JSONObject getServerChangeResponse(Boolean approved ,String serverId) {
         JSONObject serverchange = new JSONObject();
         serverchange.put(TYPE, SERVER_CHANGE);
-        serverchange.put(APPROVED, approved);
+        serverchange.put(APPROVED, approved.toString());
         serverchange.put(SERVER_ID, serverId);
         return serverchange;
     }

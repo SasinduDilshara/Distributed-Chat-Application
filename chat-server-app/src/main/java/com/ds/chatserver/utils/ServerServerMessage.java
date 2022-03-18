@@ -205,10 +205,11 @@ public class ServerServerMessage {
         return moveJoinRoom;
     }
 
-    public static JSONObject getMoveJoinResponse(int term, boolean success) {
+    public static JSONObject getMoveJoinResponse(int term, String roomId, boolean success) {
         JSONObject moveJoinRoom = new JSONObject();
         moveJoinRoom.put(TYPE, MOVE_JOIN);
         moveJoinRoom.put(TERM, String.valueOf(term));
+        moveJoinRoom.put(ROOM_ID, roomId);
         moveJoinRoom.put(SUCCESS, success);
         return moveJoinRoom;
     }

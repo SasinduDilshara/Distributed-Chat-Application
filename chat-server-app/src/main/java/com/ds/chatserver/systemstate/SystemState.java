@@ -38,9 +38,8 @@ public class SystemState {
                     commitRoute(event);
                     break;
             }
-
+            System.out.println(event);
             server.getRaftLog().incrementLastApplied();
-
         }
     }
 
@@ -174,5 +173,10 @@ public class SystemState {
             return false;
         }
         return chatroom.getOwnerId().equals(clientId);
+    }
+
+    public synchronized static String getChatroomServer(String chatroomId) {
+        ChatroomLog chatroom = chatroomLists.get(chatroomId);
+        return chatroom.getServerId();
     }
 }

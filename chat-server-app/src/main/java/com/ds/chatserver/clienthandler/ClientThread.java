@@ -6,18 +6,14 @@ import com.ds.chatserver.exceptions.*;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.systemstate.SystemState;
 import com.ds.chatserver.utils.ClientMessage;
-import com.ds.chatserver.systemstate.ChatroomLog;
 import com.ds.chatserver.utils.JsonParser;
 import com.ds.chatserver.utils.ServerMessage;
-import com.ds.chatserver.utils.Validation;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
@@ -105,7 +101,7 @@ public class ClientThread implements Runnable {
                     this.sendResponse(clientResponse);
                     if (Boolean.parseBoolean(clientResponse.get(APPROVED).toString())) {
                         try {
-                            ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClientToMainhall(this, "");
+                            ChatRoomHandler.getInstance(server.getServerId()).getMainHall().addClientAndNotify(this, "");
                         } catch (ClientAlreadyInChatRoomException e) {
                             e.printStackTrace();
                         }
@@ -130,22 +126,33 @@ public class ClientThread implements Runnable {
 //                        this.stop();
 //                    }
                 }
-                case "movejoin" -> {
+                case MOVE_JOIN -> {
+                    this.setId((String) request.get(IDENTITY));
                     while(clientResponse == null) {
                         clientResponse = this.server.getState().respondToClientRequest(request);
                     }
+
+                    String roomId = null;
+                    if(clientResponse.containsKey(ROOM_ID)){
+                        roomId = (String) clientResponse.get(ROOM_ID);
+                        clientResponse.remove(ROOM_ID);
+                    }
+                    this.sendResponse(clientResponse);
+
                     logger.info("Move Join request - clientId: {} approved: {}",
                             request.get(IDENTITY).toString(),
                             clientResponse.get(APPROVED));
-                    if ((Boolean) clientResponse.get(SUCCESS)) {
+
+                    if (Boolean.parseBoolean((String) clientResponse.get(APPROVED))) {
                         try {
-                            String prevRoom = (String) request.get(ROOM_ID);
-                            this.currentChatRoom = chatRoomHandler.getChatroomFromName(prevRoom);
+                            String prevRoomId = (String) request.get(FORMER);
+                            this.currentChatRoom = chatRoomHandler.getChatroomFromName(roomId);
                             try {
-                                this.currentChatRoom.addClient(this, prevRoom);
+                                this.currentChatRoom.addClientAndNotify(this, prevRoomId);
                             } catch (ClientAlreadyInChatRoomException e) {
                                 e.printStackTrace();
                             }
+//                                clientResponse.remove(ROOM_ID);
                         } catch (ChatroomDoesntExistsException e) {
                             e.printStackTrace();
                         }
@@ -165,13 +172,14 @@ public class ClientThread implements Runnable {
         while(!exit) {
             try {
                 if ((jsonString = bufferedReader.readLine()) == null) {
+                    logger.debug("Abtruply disconnected");
                     manageClientClosure();
                 } else {
                     JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
                     handleClientRequest(jsonObject);
                 }
             } catch (IOException e) {
-                manageClientClosure();
+                e.printStackTrace();
             }
         }
     }

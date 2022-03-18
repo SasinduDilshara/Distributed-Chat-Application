@@ -221,11 +221,10 @@ public class LeaderState extends ServerState {
             // new chatroom exists
             // client not the owner of former chatroom
             newServerId = SystemState.getChatroomFromName(newRoomId).getServerId();
-            EventType eventType = newServerId.equals(senderServerId)? EventType.JOIN_ROOM: EventType.ROUTE;
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(senderServerId)
-                    .type(eventType)
+                    .type(EventType.JOIN_ROOM)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
                     .parameter(newRoomId)
@@ -244,15 +243,20 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleMoveJoinRequest(JSONObject request) {
         String clientId = (String) request.get(CLIENT_ID);
+        String roomId = (String) request.get(ROOM_ID);
+        String senderId = (String) request.get(SENDER_ID);
         Boolean success = false;
-        if (!(SystemState.isClientExist(clientId))) {
+        if (SystemState.isClientExist(clientId)) {
+            if(!(SystemState.isChatroomExist(roomId) && senderId.equals(SystemState.getChatroomServer(roomId)))) {
+                roomId = Util.getMainhall(senderId);
+            }
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
                     .serverId(request.get(SENDER_ID).toString())
                     .type(EventType.ROUTE)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
-                    .parameter((String) request.get(FORMER))
+                    .parameter(roomId)
                     .build());
 
             int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
@@ -263,8 +267,9 @@ public class LeaderState extends ServerState {
                         this.server.getRaftLog().getCommitIndex()));
                 SystemState.commit(this.server);
             }
+
         }
-        return ServerServerMessage.getMoveJoinResponse(server.getCurrentTerm(), success);
+        return ServerServerMessage.getMoveJoinResponse(server.getCurrentTerm(), roomId, success);
     }
     private boolean replicateLogs() {
         int serverCount = ServerConfigurations.getNumberOfServers();
@@ -390,7 +395,10 @@ public class LeaderState extends ServerState {
                 (String) request.get(FORMER),
                 (String) request.get(ROOM_ID),
                 this.server.getServerId()));
-        return ServerMessage.getServerChangeResponse((Boolean) response.get(SUCCESS), this.server.getServerId());
+        JSONObject clientResponse = ServerMessage.getServerChangeResponse(
+                (Boolean) response.get(SUCCESS), this.server.getServerId());
+        clientResponse.put(ROOM_ID, response.get(ROOM_ID));
+        return clientResponse;
     }
 
     @Override

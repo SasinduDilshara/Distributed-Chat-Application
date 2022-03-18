@@ -345,7 +345,10 @@ public class FollowerState extends ServerState {
             if ((Boolean) response.get(ERROR)) {
                 return ServerMessage.getServerChangeResponse(false, this.server.getServerId());
             } else {
-                return ServerMessage.getServerChangeResponse((Boolean) response.get(SUCCESS), this.server.getServerId());
+                JSONObject clientResponse = ServerMessage.getServerChangeResponse(
+                        (Boolean) response.get(SUCCESS), this.server.getServerId());
+                clientResponse.put(ROOM_ID, response.get(ROOM_ID));
+                return clientResponse;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

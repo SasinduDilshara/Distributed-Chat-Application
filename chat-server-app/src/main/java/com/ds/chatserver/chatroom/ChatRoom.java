@@ -63,13 +63,12 @@ public class ChatRoom {
     }
 
     // add a new client to the room
-    public void addClientToMainhall(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
+    public void addClientAndNotify(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
         if(isAClient(client.getId())) {
             String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
                     this.roomId, client.getId());
             throw new ClientAlreadyInChatRoomException(errorMsg);
         }
-        //TODO: this.clients.add(client);
         this.clients.add(client);
         for(ClientThread existingClient: clients) {
             existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));

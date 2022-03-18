@@ -14,4 +14,16 @@ public class Event {
     private int logIndex;
     private int logTerm;
     private String parameter;
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "clientId='" + clientId + '\'' +
+                ", serverId='" + serverId + '\'' +
+                ", type=" + type +
+                ", parameter='" + parameter + '\'' +
+                ", logIndex=" + logIndex +
+                ", logTerm=" + logTerm +
+                '}';
+    }
 }

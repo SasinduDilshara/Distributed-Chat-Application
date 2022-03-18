@@ -25,7 +25,7 @@ public class Util {
             EventType type = EventType.valueOf((String) jsonEntry.get(TYPE));
             int logIndex = Integer.parseInt((String) jsonEntry.get(LOG_INDEX));
             int logTerm = Integer.parseInt((String) jsonEntry.get(TERM));
-//            String parameter = (String) jsonEntry.get(PARAMETER);
+            String parameter = (String) jsonEntry.get(PARAMETER);
 
             Event event = Event.builder()
                     .clientId(clientId)
@@ -33,6 +33,7 @@ public class Util {
                     .type(type)
                     .logIndex(logIndex)
                     .logTerm(logTerm)
+                    .parameter(parameter)
                     .build();
 
             eventObjectList.add(event);
