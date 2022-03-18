@@ -11,4 +11,13 @@ public class ClientLog {
     private String clientId;
     private String chatroomName;
     private String serverId;
+
+    @Override
+    public String toString() {
+        return "ClientLog{" +
+                "clientId='" + clientId + '\'' +
+                ", chatroomName='" + chatroomName + '\'' +
+                ", serverId='" + serverId + '\'' +
+                '}';
+    }
 }

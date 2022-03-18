@@ -48,7 +48,7 @@ public class Server {
                     e.printStackTrace();
                 }
             }
-            SystemState.addChatroom(new ChatroomLog(Util.getMainhall(id), id, ""));
+            SystemState.addChatroom(new ChatroomLog(Util.getMainhall(id), "", id));
         }
     }
 

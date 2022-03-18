@@ -39,6 +39,8 @@ public class SystemState {
                     break;
             }
             System.out.println(event);
+            System.out.println(chatroomLists);
+            System.out.println(clientLists);
             server.getRaftLog().incrementLastApplied();
         }
     }

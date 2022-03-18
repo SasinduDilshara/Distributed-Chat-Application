@@ -328,7 +328,6 @@ public class FollowerState extends ServerState {
                 (String) request.get(FORMER),
                 (String) request.get(ROOM_ID),
                 this.server.getServerId());
-
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<>(1);
         Thread thread = null;
         try {

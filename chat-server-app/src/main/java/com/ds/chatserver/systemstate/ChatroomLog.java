@@ -34,5 +34,15 @@ public class ChatroomLog {
     public void removeParticipant(String participant){
         this.participants.remove(participant);
     }
+
+    @Override
+    public String toString() {
+        return "ChatroomLog{" +
+                "chatRoomName='" + chatRoomName + '\'' +
+                ", ownerId='" + ownerId + '\'' +
+                ", serverId='" + serverId + '\'' +
+                ", participants=" + participants +
+                '}';
+    }
 }
 

@@ -162,15 +162,19 @@ public class ChatRoomHandler {
             for(ClientThread client: chatRoom.getClients()) {
 //                chatRoom.getClients().remove(client);
                 if (client.equals(chatRoom.getOwner())) {
-                    if (isQuit && !isForceQuit) {
-                        client.sendResponse(ServerMessage.getRoomChangeResponse(
-                                client.getId(), chatRoom.getRoomId(), ""));
+                    if (isQuit) {
+                        if (!isForceQuit) {
+                            client.sendResponse(ServerMessage.getRoomChangeResponse(
+                                    client.getId(), chatRoom.getRoomId(), ""));
+                        }
+                    } else {
+                        client.setCurrentChatRoom(mainHall);
                     }
-                    continue;
+                } else {
+                    client.sendResponse(ServerMessage.getRoomChangeResponse(
+                            client.getId(), chatRoom.getRoomId(), mainHall.getRoomId()));
+                    client.setCurrentChatRoom(mainHall);
                 }
-                client.sendResponse(ServerMessage.getRoomChangeResponse(
-                        client.getId(), chatRoom.getRoomId(), mainHall.getRoomId()));
-                client.setCurrentChatRoom(mainHall);
             }
             if (isQuit && clientThread.equals(chatRoom.getOwner())) {
                 chatRoom.removeClient(chatRoom.getOwner());

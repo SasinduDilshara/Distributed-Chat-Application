@@ -216,9 +216,6 @@ public class ClientThread implements Runnable {
                 while(createRoomResponse == null){
                     createRoomResponse = this.server.getState().respondToClientRequest(message);
                 }
-                logger.info("New chatroom request - roomid: {} approved: {}",
-                        message.get(ROOM_ID).toString(),
-                        createRoomResponse.get(APPROVED));
 
                 for (int i = 0; i < 2; i++) {
                     if (!createRoomResponse.containsKey(String.valueOf(i))) {
@@ -232,6 +229,9 @@ public class ClientThread implements Runnable {
                             e.printStackTrace();
                         }
                     }
+                    logger.info("New chatroom request - roomid: {} approved: {}",
+                            message.get(ROOM_ID).toString(),
+                            response.get(APPROVED));
                     sendResponse(response);
                 }
             }
@@ -331,7 +331,7 @@ public class ClientThread implements Runnable {
         }
         if(clientResponse.get(TYPE).equals(ROOM_CHANGE)
                 && !clientResponse.get(ROOM_ID).equals(clientResponse.get(FORMER))) {
-            logger.info("Joinroom request - roomchange response - clientId: {} approved: true", this.id);
+//            logger.info("Joinroom request - roomchange response - clientId: {} approved: true", this.id);
             try {
                 this.currentChatRoom.removeClient(this, (String) clientResponse.get(ROOM_ID));
                 this.currentChatRoom = chatRoomHandler.getChatroomFromName((String) clientResponse.get(ROOM_ID));

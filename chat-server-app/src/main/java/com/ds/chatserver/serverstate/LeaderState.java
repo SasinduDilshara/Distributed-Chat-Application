@@ -214,6 +214,11 @@ public class LeaderState extends ServerState {
         String newRoomId = request.get(ROOM_ID).toString();
         boolean success = false;
         String newServerId = "";
+        log.info("Handle changeroom method!!!");
+        log.info("{}", SystemState.isClientExist(clientId));
+        log.info("{}", SystemState.isChatroomExist(formerRoomId));
+        log.info("{}", SystemState.isChatroomExist(newRoomId));
+        log.info("{}", !SystemState.isOwner(clientId));
         if (SystemState.isClientExist(clientId) && SystemState.isChatroomExist(formerRoomId)
                 && SystemState.isChatroomExist(newRoomId) && !SystemState.isOwner(clientId)) {
             // client exists
@@ -246,6 +251,10 @@ public class LeaderState extends ServerState {
         String roomId = (String) request.get(ROOM_ID);
         String senderId = (String) request.get(SENDER_ID);
         Boolean success = false;
+        log.info("{}, {}, {}, {}", SystemState.isChatroomExist(roomId),
+                SystemState.isChatroomExist(roomId),
+                senderId.equals(SystemState.getChatroomServer(roomId))
+        );
         if (SystemState.isClientExist(clientId)) {
             if(!(SystemState.isChatroomExist(roomId) && senderId.equals(SystemState.getChatroomServer(roomId)))) {
                 roomId = Util.getMainhall(senderId);
