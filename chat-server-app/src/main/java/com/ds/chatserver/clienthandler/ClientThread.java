@@ -179,6 +179,7 @@ public class ClientThread implements Runnable {
                     handleClientRequest(jsonObject);
                 }
             } catch (IOException e) {
+                stop();
                 e.printStackTrace();
             }
         }
