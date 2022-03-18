@@ -16,7 +16,6 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 
@@ -107,7 +106,7 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public synchronized JSONObject handleCreateClientRequest(JSONObject request) {
+    public synchronized JSONObject handleCreateClientServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
         if ((!(SystemState.isClientExist(clientId)) && Validation.validateClientID(clientId))) {
@@ -128,11 +127,17 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
+        if(success){
+            log.info("Leader: New identity created: {}", clientId);
+        }
+        else{
+            log.info("Leader: New identity creation Failed: {}", clientId);
+        }
         return ServerServerMessage.getCreateClientResponse(server.getCurrentTerm(), success);
     }
 
     @Override
-    public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
+    public synchronized JSONObject handleDeleteClientServerRequest(JSONObject request) {
         log.debug("Delete client started in leader. request:{}", request);
         String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
@@ -156,7 +161,7 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public synchronized JSONObject handleCreateChatroomRequest(JSONObject request) {
+    public synchronized JSONObject handleCreateChatroomServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
@@ -182,7 +187,7 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public synchronized JSONObject handleDeleteChatroomRequest(JSONObject request) {
+    public synchronized JSONObject handleDeleteChatroomServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
         Boolean success = false;
@@ -207,7 +212,7 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public synchronized JSONObject handleChangeRoomRequest(JSONObject request) {
+    public synchronized JSONObject handleChangeRoomServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         String senderServerId = request.get(SENDER_ID).toString();
         String formerRoomId = request.get(FORMER).toString();
@@ -246,7 +251,7 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public synchronized JSONObject handleMoveJoinRequest(JSONObject request) {
+    public synchronized JSONObject handleMoveJoinServerRequest(JSONObject request) {
         String clientId = (String) request.get(CLIENT_ID);
         String roomId = (String) request.get(ROOM_ID);
         String senderId = (String) request.get(SENDER_ID);
@@ -318,7 +323,7 @@ public class LeaderState extends ServerState {
     @Override
     public JSONObject respondToNewIdentity(JSONObject request){
 //        log.debug(request.toString());
-        JSONObject response = handleCreateClientRequest(ServerServerMessage.getCreateClientRequest(
+        JSONObject response = handleCreateClientServerRequest(ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
                 this.server.getServerId()
@@ -333,7 +338,7 @@ public class LeaderState extends ServerState {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
-        JSONObject response = handleDeleteChatroomRequest(ServerServerMessage.getDeleteRoomRequest(
+        JSONObject response = handleDeleteChatroomServerRequest(ServerServerMessage.getDeleteRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 this.server.getServerId(),
@@ -355,7 +360,7 @@ public class LeaderState extends ServerState {
         String clientId = (String) request.get(IDENTITY);
         String former = (String) request.get(FORMER);
         String roomId = (String) request.get(ROOM_ID);
-        JSONObject response = handleChangeRoomRequest(ServerServerMessage.getChangeRoomRequest(
+        JSONObject response = handleChangeRoomServerRequest(ServerServerMessage.getChangeRoomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 former,
@@ -378,7 +383,7 @@ public class LeaderState extends ServerState {
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
         ArrayList<JSONObject> jsonObjects = new ArrayList<>();
-        JSONObject response = handleCreateChatroomRequest(ServerServerMessage.getCreateChatroomRequest(
+        JSONObject response = handleCreateChatroomServerRequest(ServerServerMessage.getCreateChatroomRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 roomId,
@@ -398,7 +403,7 @@ public class LeaderState extends ServerState {
 
     @Override
     protected JSONObject respondToMoveJoin(JSONObject request) {
-        JSONObject response = handleMoveJoinRequest(ServerServerMessage.getMoveJoinRequest(
+        JSONObject response = handleMoveJoinServerRequest(ServerServerMessage.getMoveJoinRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
                 (String) request.get(FORMER),
@@ -415,7 +420,7 @@ public class LeaderState extends ServerState {
         log.debug("Client request:{}", request);
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
-        JSONObject response = handleDeleteClientRequest(ServerServerMessage.getDeleteClientRequest(
+        JSONObject response = handleDeleteClientServerRequest(ServerServerMessage.getDeleteClientRequest(
                 this.server.getCurrentTerm(),
                 clientId,
                 this.server.getServerId()

@@ -154,7 +154,7 @@ public class SystemState {
     }
 
     public synchronized static ChatroomLog getChatroomFromName(String chatroomName) {
-        return chatroomLists.getOrDefault(chatroomName, null);
+        return chatroomLists.get(chatroomName);
     }
     public synchronized static Boolean isOwner(String clientId) {
         String chatroomId = clientLists.get(clientId).getChatroomName();

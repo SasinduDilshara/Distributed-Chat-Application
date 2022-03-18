@@ -27,19 +27,19 @@ public abstract class ServerState {
             case APPEND_ENTRIES:
                 return handleRequestAppendEntries(request);
             case CREATE_CLIENT:
-                return handleCreateClientRequest(request);
+                return handleCreateClientServerRequest(request);
             case DELETE_CLIENT:
-                return handleDeleteClientRequest(request);
+                return handleDeleteClientServerRequest(request);
             case CREATE_CHAT_ROOM:
-                return handleCreateChatroomRequest(request);
+                return handleCreateChatroomServerRequest(request);
             case DELETE_CHAT_ROOM:
-                return handleDeleteChatroomRequest(request);
+                return handleDeleteChatroomServerRequest(request);
             case CHANGE_ROOM:
-                return handleChangeRoomRequest(request);
+                return handleChangeRoomServerRequest(request);
             case SERVER_INIT:
-                return handleServerInitRequest(request);
+                return handleServerInitServerRequest(request);
             case MOVE_JOIN:
-                return handleMoveJoinRequest(request);
+                return handleMoveJoinServerRequest(request);
         }
 
         //TODO: return null cause and error
@@ -79,37 +79,37 @@ public abstract class ServerState {
 
     public abstract JSONObject handleRequestAppendEntries(JSONObject request);
 
-    public JSONObject handleCreateClientRequest(JSONObject request) {
+    public JSONObject handleCreateClientServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
 
-    public JSONObject handleDeleteClientRequest(JSONObject request) {
+    public JSONObject handleDeleteClientServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
 
-    public JSONObject handleCreateChatroomRequest(JSONObject request) {
+    public JSONObject handleCreateChatroomServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
 
-    public JSONObject handleDeleteChatroomRequest(JSONObject request) {
+    public JSONObject handleDeleteChatroomServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
 
-    public JSONObject handleChangeRoomRequest(JSONObject request) {
+    public JSONObject handleChangeRoomServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
 
-    public JSONObject handleServerInitRequest(JSONObject request) {
+    public JSONObject handleServerInitServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
 
-    public JSONObject handleMoveJoinRequest(JSONObject request) {
+    public JSONObject handleMoveJoinServerRequest(JSONObject request) {
         //TODO: Return Error
         return null;
     }
