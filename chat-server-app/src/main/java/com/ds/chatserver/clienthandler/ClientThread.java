@@ -106,6 +106,8 @@ public class ClientThread implements Runnable {
                         } catch (ClientAlreadyInChatRoomException e) {
                             e.printStackTrace();
                         }
+                    } else {
+                        this.stop();
                     }
 //                    String identity = (String) jsonObject.get("identity");
 //                    this.id = identity;
