@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
@@ -178,8 +179,10 @@ public class ClientThread implements Runnable {
                     JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
                     handleClientRequest(jsonObject);
                 }
+            } catch (SocketException e) {
+                logger.debug("Abruptly closed in");
+                manageClientClosure();
             } catch (IOException e) {
-                stop();
                 e.printStackTrace();
             }
         }
