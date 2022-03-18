@@ -280,11 +280,7 @@ public class ClientThread implements Runnable {
     }
 
     private void handleQuitRequest(JSONObject message, boolean clientActive) {
-        // TODO: if the room owner
-        //       run deleteroom
-        //      (but special case. ie: owner should get a room change message w/ empty roomid value instead of
-        //      mainhall id)
-        // if not the room owner
+        boolean isOwner = this.equals(this.currentChatRoom.getOwner());
         JSONObject clientResponse = null;
         message.put(IDENTITY, this.id);
         message.put(ROOM_ID, this.currentChatRoom.getRoomId());
@@ -295,11 +291,19 @@ public class ClientThread implements Runnable {
         logger.info("Quit request - clientId: {} , response: {} approved: true",
                 this.id, clientResponse);
         if(clientActive) {
+            logger.debug("Sending quit response to client");
             this.sendResponse(clientResponse);
         }
         try {
-            this.currentChatRoom.removeClient(this, "");
-        } catch (ClientNotInChatRoomException e) {
+            // is owner
+            if(isOwner) {
+                ChatRoomHandler.getInstance(server.getServerId()).deleteRoom(this, true, !clientActive);
+            } else {
+                logger.debug("removing client from the room");
+                this.currentChatRoom.removeClient(this, "");
+            }
+        } catch (ClientNotInChatRoomException | ChatroomDoesntExistsException
+                | ClientNotOwnerException | ClientAlreadyInChatRoomException e) {
             e.printStackTrace();
         }
         this.stop();
