@@ -120,7 +120,7 @@ public class ChatRoom {
     public void removeClient(ClientThread client) throws ClientNotInChatRoomException {
         if(!isAClient(client.getId())) {
             String errorMsg = ClientNotInChatRoomException.generateClientNotInChatRoomMessage(
-                    this.roomId, client.getId());
+                    client.getId(), this.roomId);
             throw new ClientNotInChatRoomException(errorMsg);
         }
         this.clients.remove(client);

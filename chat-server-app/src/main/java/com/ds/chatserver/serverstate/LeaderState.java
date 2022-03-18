@@ -133,7 +133,8 @@ public class LeaderState extends ServerState {
 
     @Override
     public synchronized JSONObject handleDeleteClientRequest(JSONObject request) {
-        String clientId = request.get(IDENTITY).toString();
+        log.debug("Delete client started in leader. request:{}", request);
+        String clientId = request.get(CLIENT_ID).toString();
         Boolean success = false;
         if (SystemState.isClientExist(clientId)) {
             server.getRaftLog().insert(Event.builder()
@@ -394,6 +395,7 @@ public class LeaderState extends ServerState {
 
     @Override
     protected JSONObject respondToQuit(JSONObject request) {
+        log.debug("Client request:{}", request);
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
         JSONObject response = handleDeleteClientRequest(ServerServerMessage.getDeleteClientRequest(
