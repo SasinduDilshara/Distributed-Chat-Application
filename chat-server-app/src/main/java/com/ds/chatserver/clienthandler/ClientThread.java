@@ -137,6 +137,19 @@ public class ClientThread implements Runnable {
                     logger.info("Move Join request - clientId: {} approved: {}",
                             request.get(IDENTITY).toString(),
                             clientResponse.get(APPROVED));
+                    if ((Boolean) clientResponse.get(SUCCESS)) {
+                        try {
+                            String prevRoom = (String) request.get(ROOM_ID);
+                            this.currentChatRoom = chatRoomHandler.getChatroomFromName(prevRoom);
+                            try {
+                                this.currentChatRoom.addClient(this, prevRoom);
+                            } catch (ClientAlreadyInChatRoomException e) {
+                                e.printStackTrace();
+                            }
+                        } catch (ChatroomDoesntExistsException e) {
+                            e.printStackTrace();
+                        }
+                    }
 //                    chatRoomHandler.moveJoinRoom(roomId, this, former);
 //                    //TODO: serverId
 //                    sendResponse(ServerMessage.getServerChangeResponse("serverId"));
@@ -319,6 +332,7 @@ public class ClientThread implements Runnable {
             } catch (ClientNotInChatRoomException e) {
                 e.printStackTrace();
             }
+            //TODO: close this thread.
         } else {
             logger.info("Joinroom - roomchange response - clientId: {} approved: false", this.id);
         }
