@@ -161,7 +161,7 @@ public class FollowerState extends ServerState {
 
     @Override
     public JSONObject respondToNewIdentity(JSONObject request){
-        log.info(request.toString());
+//        log.debug(request.toString());
         JSONObject requestToLeader = ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
@@ -182,7 +182,7 @@ public class FollowerState extends ServerState {
             log.debug("Response from leader: {}", response.toString());
 
             if ((Boolean) response.get(ERROR)) {
-                return ServerMessage.getNewIdentityResponse(false);
+                return null;
             } else {
                 return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
             }
@@ -215,6 +215,9 @@ public class FollowerState extends ServerState {
 
         try {
             JSONObject response = queue.take();
+            if ((Boolean) response.get(ERROR)) {
+                return null;
+            }
 
             if ((Boolean) response.get(SUCCESS)) {
                 jsonObjects.add(ServerMessage.getDeleteRoomResponse(
@@ -230,6 +233,7 @@ public class FollowerState extends ServerState {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+            return null;
         }
         jsonObjects.add(ServerMessage.getDeleteRoomResponse(
                 roomId,
@@ -261,6 +265,9 @@ public class FollowerState extends ServerState {
 
         try {
             JSONObject response = queue.take();
+            if ((Boolean) response.get(ERROR)) {
+                return null;
+            }
             Boolean success = (Boolean) response.get(SUCCESS);
             String newServerId = response.get(SERVER_ID).toString();
             if (success && !newServerId.equals(this.server.getServerId())) {
@@ -298,7 +305,9 @@ public class FollowerState extends ServerState {
 
         try {
             JSONObject response = queue.take();
-
+            if ((Boolean) response.get(ERROR)) {
+                return null;
+            }
             if ((Boolean) response.get(SUCCESS)) {
                 jsonObjects.add(ServerMessage.getCreateRoomResponse(
                         roomId,
@@ -312,6 +321,7 @@ public class FollowerState extends ServerState {
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+            return null;
         }
         jsonObjects.add(ServerMessage.getCreateRoomResponse(
                 roomId,
@@ -342,7 +352,7 @@ public class FollowerState extends ServerState {
             log.debug("Response from leader: {}", response);
 
             if ((Boolean) response.get(ERROR)) {
-                return ServerMessage.getServerChangeResponse(false, this.server.getServerId());
+                return null;
             } else {
                 JSONObject clientResponse = ServerMessage.getServerChangeResponse(
                         (Boolean) response.get(SUCCESS), this.server.getServerId());
@@ -377,6 +387,9 @@ public class FollowerState extends ServerState {
         try {
             JSONObject response = queue.take();
             log.debug("response recieved: {}", response);
+            if ((Boolean) response.get(ERROR)) {
+                return null;
+            }
             if ((Boolean) response.get(SUCCESS)) {
                 return ServerMessage.getRoomChangeResponse(
                         clientId,

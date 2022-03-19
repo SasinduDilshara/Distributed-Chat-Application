@@ -127,9 +127,7 @@ public class CandidateState extends ServerState {
     public synchronized JSONObject respondToNewIdentity(JSONObject request){
         try {
             wait();
-        } catch (InterruptedException e) {
-//            e.printStackTrace();
-        }
+        } catch (InterruptedException e) {}
         return null;
     }
 
@@ -159,11 +157,17 @@ public class CandidateState extends ServerState {
 
     @Override
     protected JSONObject respondToMoveJoin(JSONObject request) {
+        try {
+            wait();
+        } catch (InterruptedException e) {}
         return null;
     }
 
     @Override
     protected JSONObject respondToQuit(JSONObject request) {
+        try {
+            wait();
+        } catch (InterruptedException e) {}
         return null;
     }
 }
