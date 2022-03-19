@@ -14,12 +14,10 @@ public class ClientRequestHandler {
 
     private Integer socketPort;
     private ServerSocket serverSocket;
-    private ChatRoomHandler chatRoomHandler;
     private Server server;
     private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
-    public ClientRequestHandler (ChatRoomHandler chatRoomHandler, Server server) throws IOException {
-        this.chatRoomHandler = chatRoomHandler;
+    public ClientRequestHandler (Server server) throws IOException {
         this.server = server;
         this.socketPort = ServerConfigurations.getServerDetails(server.getServerId()).getClientPort();
         serverSocket = new ServerSocket(socketPort);
@@ -37,7 +35,7 @@ public class ClientRequestHandler {
     public void start() {
         while(true) {
             try {
-                Thread thread = new Thread(new ClientThread(serverSocket.accept(), chatRoomHandler, this.server));
+                Thread thread = new Thread(new ClientThread(serverSocket.accept(), this.server));
                 thread.start();
             } catch (IOException e) {
                 e.printStackTrace();
