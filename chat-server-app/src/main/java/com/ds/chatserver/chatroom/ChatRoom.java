@@ -5,9 +5,11 @@ import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
 import com.ds.chatserver.exceptions.ClientNotInChatRoomException;
 import com.ds.chatserver.utils.ServerMessage;
 import com.ds.chatserver.utils.Util;
+import lombok.Getter;
 
 import java.util.ArrayList;
 
+@Getter
 public class ChatRoom {
     private final ArrayList<ClientThread> clients;
     private final String roomId;
@@ -128,15 +130,4 @@ public class ChatRoom {
         }
     }
 
-    public ArrayList<ClientThread> getClients() {
-        return clients;
-    }
-
-    public String getRoomId() {
-        return roomId;
-    }
-
-    public ClientThread getOwner() {
-        return owner;
-    }
 }
