@@ -93,7 +93,6 @@ public class ClientThread implements Runnable {
                     logger.info("New client request - clientId: {},", clientId);
                     while(clientResponse == null){
                         clientResponse = this.server.getState().respondToClientRequest(request);
-//                        logger.debug(clientResponse.toString());
                     }
                     logger.info("New client request - clientId: {} approved: {}",
                             clientId,
@@ -109,25 +108,6 @@ public class ClientThread implements Runnable {
                     } else {
                         this.stop();
                     }
-//                    String identity = (String) jsonObject.get("identity");
-//                    this.id = identity;
-//                    JSONObject serverResponse = this.server.handleClientRequest(jsonObject);
-//                    if (Validation.validateClientID(identity)) {
-//                        try {
-//                            this.sendResponse(ServerMessage.getNewIdentityResponse(true));
-//                            chatRoomHandler.joinRoom(
-//                                    chatRoomHandler.getMainHall().getRoomId(), this, null);
-//                            logger.info("New Client with id {} joined", identity);
-//                        } catch (ChatroomDoesntExistsException | ClientAlreadyInChatRoomException |
-//                                ClientNotInChatRoomException e) {
-//                            e.printStackTrace();
-//                        }
-//                    } else {
-//                        this.sendResponse(ServerMessage.getNewIdentityResponse(false));
-//                        logger.info("New Client join request with id {} failed", identity);
-//                        // TODO: check if directly stopping the thread is okay
-//                        this.stop();
-//                    }
                 }
                 case MOVE_JOIN -> {
                     this.setId((String) request.get(IDENTITY));
@@ -155,7 +135,6 @@ public class ClientThread implements Runnable {
                             } catch (ClientAlreadyInChatRoomException e) {
                                 e.printStackTrace();
                             }
-//                                clientResponse.remove(ROOM_ID);
                         } catch (ChatroomDoesntExistsException e) {
                             e.printStackTrace();
                         }
@@ -350,7 +329,6 @@ public class ClientThread implements Runnable {
             } catch (ClientNotInChatRoomException e) {
                 e.printStackTrace();
             }
-            //TODO: close this thread.
         } else {
             logger.info("Joinroom - roomchange response - clientId: {} approved: false", this.id);
         }
