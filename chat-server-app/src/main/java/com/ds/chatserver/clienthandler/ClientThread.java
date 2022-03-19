@@ -88,7 +88,7 @@ public class ClientThread implements Runnable {
             logger.debug(jsonString);
 
             switch (type) {
-                case "newidentity" -> {
+                case NEW_IDENTITY -> {
                     String clientId = request.get(IDENTITY).toString();
                     logger.info("New client request - clientId: {},", clientId);
                     while(clientResponse == null){

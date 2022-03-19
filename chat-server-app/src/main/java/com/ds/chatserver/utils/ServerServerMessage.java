@@ -4,7 +4,6 @@ import com.ds.chatserver.log.Event;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.MOVE_JOIN;

@@ -1,6 +1,5 @@
 package com.ds.chatserver.serverhandler;
 
-import com.ds.chatserver.chatroom.ChatRoom;
 import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.log.RaftLog;

@@ -1,11 +1,8 @@
 package com.ds.chatserver.serverhandler;
 
-import com.ds.chatserver.clienthandler.ClientRequestHandler;
 import com.ds.chatserver.utils.JsonParser;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;

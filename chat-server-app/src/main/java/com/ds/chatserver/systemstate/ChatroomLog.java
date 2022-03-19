@@ -1,11 +1,8 @@
 package com.ds.chatserver.systemstate;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 @Getter

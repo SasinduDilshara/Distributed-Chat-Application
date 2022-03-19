@@ -2,7 +2,6 @@ package com.ds.chatserver.serverhandler.heartbeatcomponent;
 
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.serverhandler.ServerRequestSender;
-import com.ds.chatserver.serverstate.CandidateState;
 import com.ds.chatserver.serverstate.FollowerState;
 import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +9,6 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.ArrayBlockingQueue;
 
