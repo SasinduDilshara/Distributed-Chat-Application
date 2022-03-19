@@ -1,6 +1,8 @@
 package com.ds.chatserver.clienthandler;
 
 import com.ds.chatserver.chatroom.ChatRoomHandler;
+import com.ds.chatserver.config.ServerConfigurations;
+import com.ds.chatserver.serverhandler.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,13 +14,12 @@ public class ClientRequestHandler {
 
     private Integer socketPort;
     private ServerSocket serverSocket;
-    private ChatRoomHandler chatRoomHandler;
+    private Server server;
     private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
-    public ClientRequestHandler (ChatRoomHandler chatRoomHandler) throws IOException {
-        logger.info("Initialize the Client Request Handler...");
-        this.chatRoomHandler = chatRoomHandler;
-        this.socketPort = 6666;
+    public ClientRequestHandler (Server server) throws IOException {
+        this.server = server;
+        this.socketPort = ServerConfigurations.getServerDetails(server.getServerId()).getClientPort();
         serverSocket = new ServerSocket(socketPort);
         this.start();
     }
@@ -34,14 +35,7 @@ public class ClientRequestHandler {
     public void start() {
         while(true) {
             try {
-                logger.info("Waiting for new Client Connection ... ");
-                Thread thread = new Thread(new ClientThread(serverSocket.accept(), chatRoomHandler));
-//                Thread thread = new Thread (
-//                        ClientThread.builder()
-//                                .socket(serverSocket.accept())
-//                                .chatRoomHandler(chatRoomHandler)
-//                                .build()
-//                );
+                Thread thread = new Thread(new ClientThread(serverSocket.accept(), this.server));
                 thread.start();
             } catch (IOException e) {
                 e.printStackTrace();

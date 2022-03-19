@@ -3,11 +3,13 @@ package com.ds.chatserver.chatroom;
 import com.ds.chatserver.clienthandler.ClientThread;
 import com.ds.chatserver.exceptions.ClientAlreadyInChatRoomException;
 import com.ds.chatserver.exceptions.ClientNotInChatRoomException;
-import com.ds.chatserver.exceptions.ClientNotOwnerException;
 import com.ds.chatserver.utils.ServerMessage;
+import com.ds.chatserver.utils.Util;
+import lombok.Getter;
 
 import java.util.ArrayList;
 
+@Getter
 public class ChatRoom {
     private final ArrayList<ClientThread> clients;
     private final String roomId;
@@ -30,14 +32,12 @@ public class ChatRoom {
 
     // create chatroom by a user
     public static ChatRoom createChatRoom(String roomId, ClientThread owner) {
-        // TODO: if roomId already exists send user approved: false.
         return new ChatRoom(roomId, owner);
     }
 
     // create a mainhall at the server initiation
-    public static ChatRoom createMainHall() {
-        // TODO: Get the server id and append to the mainhall name. eg- MainHall-s1
-        return new ChatRoom("MainHall-s1");
+    public static ChatRoom createMainHall(String serverId) {
+        return new ChatRoom(Util.getMainhall(serverId));
     }
 
     // check if given id belongs to a client in the room
@@ -60,7 +60,7 @@ public class ChatRoom {
     }
 
     // add a new client to the room
-    public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
+    public void addClientAndNotify(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
         if(isAClient(client.getId())) {
             String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
                     this.roomId, client.getId());
@@ -70,7 +70,18 @@ public class ChatRoom {
         for(ClientThread existingClient: clients) {
             existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
         }
+    }
 
+    public void addClient(ClientThread client, String prevRoomName) throws ClientAlreadyInChatRoomException {
+        if(isAClient(client.getId())) {
+            String errorMsg = ClientAlreadyInChatRoomException.generateClientAlreadyInChatRoomMessage(
+                    this.roomId, client.getId());
+            throw new ClientAlreadyInChatRoomException(errorMsg);
+        }
+        for(ClientThread existingClient: clients) {
+            existingClient.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), prevRoomName, roomId));
+        }
+        this.clients.add(client);
     }
 
     // add a set of new clients to the room
@@ -93,7 +104,7 @@ public class ChatRoom {
     public void removeClient(ClientThread client, String nextRoomName) throws ClientNotInChatRoomException {
         if(!isAClient(client.getId())) {
             String errorMsg = ClientNotInChatRoomException.generateClientNotInChatRoomMessage(
-                    this.roomId, client.getId());
+                    client.getId(), this.roomId);
             throw new ClientNotInChatRoomException(errorMsg);
         }
         this.clients.remove(client);
@@ -102,41 +113,21 @@ public class ChatRoom {
         }
     }
 
-    // send a message to all the members of a room
-    public void sendMessage(String message, String senderId) throws ClientNotInChatRoomException {
-        if(!isAClient(senderId)) {
-            String errorMsg = ClientNotInChatRoomException.generateClientNotInChatRoomMessage(senderId, this.roomId);
+    public void removeClient(ClientThread client) throws ClientNotInChatRoomException {
+        if(!isAClient(client.getId())) {
+            String errorMsg = ClientNotInChatRoomException.generateClientNotInChatRoomMessage(
+                    client.getId(), this.roomId);
             throw new ClientNotInChatRoomException(errorMsg);
         }
+        this.clients.remove(client);
+    }
+
+    public void sendMessage(String message, ClientThread sender) throws ClientNotInChatRoomException {
         for(ClientThread client: clients) {
-            if(!client.getId().equals(senderId)) {
-                client.sendResponse(ServerMessage.getMessageResponse(senderId, message));
+            if(!client.equals(sender)) {
+                client.sendResponse(ServerMessage.getMessageResponse(sender.getId(), message));
             }
         }
     }
 
-    // inform all the members of the room about the deletion of the room
-    public void deleteRoom(String clientId, String mainHallId) throws ClientNotOwnerException {
-        if(this.owner == null || !clientId.equals(this.owner.getId())) {
-            String errorMsg = ClientNotOwnerException.generateClientNotOwnerMessage(clientId, roomId);
-            throw new ClientNotOwnerException(errorMsg);
-        }
-        for(ClientThread client: clients) {
-            if(!clientId.equals(this.owner.getId())) {
-                client.sendResponse(ServerMessage.getRoomChangeResponse(client.getId(), roomId, mainHallId));
-            }
-        }
-    }
-
-    public ArrayList<ClientThread> getClients() {
-        return clients;
-    }
-
-    public String getRoomId() {
-        return roomId;
-    }
-
-    public ClientThread getOwner() {
-        return owner;
-    }
 }
