@@ -157,6 +157,11 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
+        if(success){
+            log.info("Leader: Delete identity success: {}", clientId);
+        } else{
+            log.info("Leader: Delete identity failed: {}", clientId);
+        }
         return ServerServerMessage.getDeleteClientResponse(server.getCurrentTerm(), success);
     }
 
@@ -164,6 +169,7 @@ public class LeaderState extends ServerState {
     public synchronized JSONObject handleCreateChatroomServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
+        String former = SystemState.getCurrentChatroomOfClient(clientId);
         Boolean success = false;
         if (!(SystemState.isChatroomExist(roomId)) && Validation.validateRoomID(roomId, server.getServerId())
                 && !SystemState.isOwner(clientId)) {
@@ -183,7 +189,12 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
-        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), success);
+        if(success){
+            log.info("Leader: Create room success: {}", roomId);
+        } else{
+            log.info("Leader: Create room failed: {}", roomId);
+        }
+        return ServerServerMessage.getCreateChatroomResponse(server.getCurrentTerm(), former, success);
     }
 
     @Override
@@ -208,6 +219,11 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
+        if(success){
+            log.info("Leader: Delete room success: {}", roomId);
+        } else{
+            log.info("Leader: Delete room failed: {}", roomId);
+        }
         return ServerServerMessage.getDeleteRoomResponse(server.getCurrentTerm(), success);
     }
 
@@ -219,17 +235,16 @@ public class LeaderState extends ServerState {
         String newRoomId = request.get(ROOM_ID).toString();
         boolean success = false;
         String newServerId = "";
-        log.info("Handle changeroom method!!!");
-        log.info("{}", SystemState.isClientExist(clientId));
-        log.info("{}", SystemState.isChatroomExist(formerRoomId));
-        log.info("{}", SystemState.isChatroomExist(newRoomId));
-        log.info("{}", !SystemState.isOwner(clientId));
+
         if (SystemState.isClientExist(clientId) && SystemState.isChatroomExist(formerRoomId)
-                && SystemState.isChatroomExist(newRoomId) && !SystemState.isOwner(clientId)) {
-            // client exists
-            // former chatroom exists
-            // new chatroom exists
-            // client not the owner of former chatroom
+                && SystemState.isChatroomExist(newRoomId) && !SystemState.isOwner(clientId)
+                && SystemState.isMemberOfChatroom(clientId, formerRoomId)) {
+            /** client exists
+            former chatroom exists
+            new chatroom exists
+            client not the owner of a chatroom
+            client is a member of the prev room
+             */
             newServerId = SystemState.getChatroomFromName(newRoomId).getServerId();
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
@@ -247,6 +262,11 @@ public class LeaderState extends ServerState {
                 SystemState.commit(this.server);
             }
         }
+        if(success){
+            log.info("Leader: Changeroom success from: {} to: {}", formerRoomId, newRoomId);
+        } else{
+            log.info("Leader: Changeroom failed from: {} to: {}", formerRoomId, newRoomId);
+        }
         return ServerServerMessage.getChangeRoomResponse(server.getCurrentTerm(), success, newServerId);
     }
 
@@ -256,17 +276,14 @@ public class LeaderState extends ServerState {
         String roomId = (String) request.get(ROOM_ID);
         String senderId = (String) request.get(SENDER_ID);
         Boolean success = false;
-        log.info("{}, {}, {}, {}", SystemState.isChatroomExist(roomId),
-                SystemState.isChatroomExist(roomId),
-                senderId.equals(SystemState.getChatroomServer(roomId))
-        );
+
         if (SystemState.isClientExist(clientId)) {
             if(!(SystemState.isChatroomExist(roomId) && senderId.equals(SystemState.getChatroomServer(roomId)))) {
                 roomId = Util.getMainhall(senderId);
             }
             server.getRaftLog().insert(Event.builder()
                     .clientId(clientId)
-                    .serverId(request.get(SENDER_ID).toString())
+                    .serverId(senderId)
                     .type(EventType.ROUTE)
                     .logIndex(server.getRaftLog().getNextLogIndex())
                     .logTerm(server.getCurrentTerm())
@@ -281,7 +298,11 @@ public class LeaderState extends ServerState {
                         this.server.getRaftLog().getCommitIndex()));
                 SystemState.commit(this.server);
             }
-
+        }
+        if(success){
+            log.info("Leader: Movejoin success to: {}", roomId);
+        } else{
+            log.info("Leader: Movejoin failed to: {}", roomId);
         }
         return ServerServerMessage.getMoveJoinResponse(server.getCurrentTerm(), roomId, success);
     }
@@ -322,13 +343,11 @@ public class LeaderState extends ServerState {
 
     @Override
     public JSONObject respondToNewIdentity(JSONObject request){
-//        log.debug(request.toString());
         JSONObject response = handleCreateClientServerRequest(ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
                 this.server.getServerId()
         ));
-//        log.debug(ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS)).toString());
 
         return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
     }
@@ -395,7 +414,8 @@ public class LeaderState extends ServerState {
         ));
         if ((Boolean) response.get(SUCCESS)) {
             jsonObjects.add(ServerMessage.getRoomChangeResponse(
-                    clientId, Util.getMainhall(this.server.getServerId()),
+                    clientId,
+                    (String) response.get(FORMER),
                     roomId));
         }
         return ServerMessage.getJsonResponses(jsonObjects);
@@ -417,7 +437,6 @@ public class LeaderState extends ServerState {
 
     @Override
     protected JSONObject respondToQuit(JSONObject request) {
-        log.debug("Client request:{}", request);
         String clientId = (String) request.get(IDENTITY);
         String roomId = (String) request.get(ROOM_ID);
         JSONObject response = handleDeleteClientServerRequest(ServerServerMessage.getDeleteClientRequest(

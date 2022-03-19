@@ -181,4 +181,18 @@ public class SystemState {
         ChatroomLog chatroom = chatroomLists.get(chatroomId);
         return chatroom.getServerId();
     }
+
+    public synchronized static Boolean isMemberOfChatroom(String clientId, String chatroomId) {
+        if(!chatroomLists.containsKey(chatroomId)) {
+            return false;
+        }
+        return chatroomLists.get(chatroomId).getParticipants().contains(clientId);
+    }
+
+    public synchronized static String getCurrentChatroomOfClient(String clientId) {
+        if(!clientLists.containsKey(clientId)) {
+            return "";
+        }
+        return clientLists.get(clientId).getChatroomName();
+    }
 }

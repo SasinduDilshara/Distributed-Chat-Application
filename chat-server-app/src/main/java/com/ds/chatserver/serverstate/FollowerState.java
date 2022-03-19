@@ -306,7 +306,7 @@ public class FollowerState extends ServerState {
                 ));
                 jsonObjects.add(ServerMessage.getRoomChangeResponse(
                         clientId,
-                        Util.getMainhall(this.server.getServerId()),
+                        (String) response.get(FORMER),
                         roomId));
                 return ServerMessage.getJsonResponses(jsonObjects);
             }

@@ -125,10 +125,11 @@ public class ServerServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getCreateChatroomResponse(int term, boolean success) {
+    public static JSONObject getCreateChatroomResponse(int term, String former, boolean success) {
         JSONObject createRoom = new JSONObject();
         createRoom.put(TYPE, CREATE_CHAT_ROOM);
         createRoom.put(TERM, String.valueOf(term));
+        createRoom.put(FORMER, former);
         createRoom.put(SUCCESS, success);
         return createRoom;
     }
