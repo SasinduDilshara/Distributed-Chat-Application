@@ -146,8 +146,8 @@ public class SystemState {
 
     private static void commitServerInit(Event event){
         String initiatedServerId = event.getServerId();
-        Set<String> clientIds = clientLists.keySet();
-        Set<String> roomIds = chatroomLists.keySet();
+        ArrayList<String> clientIds = new ArrayList<>(clientLists.keySet());
+        ArrayList<String> roomIds = new ArrayList<>(chatroomLists.keySet());
 
         for(String client : clientIds){
             if(clientLists.get(client).getServerId().equals(initiatedServerId)){
