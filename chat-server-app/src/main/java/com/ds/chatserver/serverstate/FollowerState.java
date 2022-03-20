@@ -17,7 +17,6 @@ import org.json.simple.JSONObject;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
@@ -395,6 +394,32 @@ public class FollowerState extends ServerState {
                         clientId,
                         roomId,
                         "");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public JSONObject serverInit(JSONObject request) {
+        ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
+        Thread thread = null;
+        try {
+            thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), request, queue));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thread.start();
+
+        try {
+            JSONObject response = queue.take();
+
+            if ((Boolean) response.get(ERROR)) {
+                return null;
+            }
+            if ((Boolean) response.get(SUCCESS)) {
+                return response;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

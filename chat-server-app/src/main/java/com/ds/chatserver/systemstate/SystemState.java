@@ -37,10 +37,13 @@ public class SystemState {
                 case ROUTE:
                     commitRoute(event);
                     break;
+                case SERVER_INIT:
+                    commitServerInit(event);
+                    break;
             }
             System.out.println(event);
-            System.out.println(chatroomLists);
-            System.out.println(clientLists);
+//            System.out.println(chatroomLists);
+//            System.out.println(clientLists);
             server.getRaftLog().incrementLastApplied();
         }
     }
@@ -139,6 +142,27 @@ public class SystemState {
         clientLists.get(clientId).setServerId(event.getServerId());
 
         chatroomLists.get(chatroomId).addParticipant(clientId);
+    }
+
+    private static void commitServerInit(Event event){
+        String initiatedServerId = event.getServerId();
+        Set<String> clientIds = clientLists.keySet();
+        Set<String> roomIds = chatroomLists.keySet();
+
+        for(String client : clientIds){
+            if(clientLists.get(client).getServerId().equals(initiatedServerId)){
+                clientLists.remove(client);
+            }
+        }
+
+        for(String roomId: roomIds){
+            if(roomId.equals(Util.getMainhall(chatroomLists.get(roomId).getServerId()))){
+                continue;
+            }
+            if(chatroomLists.get(roomId).getServerId().equals(initiatedServerId)){
+                chatroomLists.remove(roomId);
+            }
+        }
     }
 
     public synchronized static void addChatroom(ChatroomLog chatroomLog){

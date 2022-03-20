@@ -6,5 +6,6 @@ public enum EventType {
     JOIN_ROOM,
     DELETE_ROOM,
     QUIT,
-    ROUTE
+    ROUTE,
+    SERVER_INIT
 }
