@@ -5,4 +5,3 @@ public class ChatroomDoesntExistsException extends Exception {
         super("Chatroom " + chatroomName + " doesn't exists!");
     }
 }
-

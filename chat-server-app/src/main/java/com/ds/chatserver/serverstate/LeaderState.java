@@ -36,15 +36,14 @@ public class LeaderState extends ServerState {
 
     public synchronized void initState() {
         this.server.setLeaderId(this.server.getServerId());
-        int serverCount = ServerConfigurations.getNumberOfServers();
         Set<String> serverIds = ServerConfigurations.getServerIds();
 
-        for(String id: serverIds){
-            nextIndex.put(id, this.server.getRaftLog().getLastLogIndex()+1);
+        for (String id : serverIds) {
+            nextIndex.put(id, this.server.getRaftLog().getLastLogIndex() + 1);
             matchIndex.put(id, -1);
         }
 
-        for (String id: serverIds) {
+        for (String id : serverIds) {
             if (id.equals(this.server.getServerId())) {
                 continue;
             }
@@ -56,11 +55,12 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public void heartBeatAndLeaderElect() throws IOException {}
+    public void heartBeatAndLeaderElect() throws IOException {
+    }
 
     @Override
     public JSONObject handleRequestVote(JSONObject request) {
-        if (this.server.getCurrentTerm() < Integer.parseInt((String)request.get(TERM))) {
+        if (this.server.getCurrentTerm() < Integer.parseInt((String) request.get(TERM))) {
             this.server.setState(new FollowerState(this.server, null));
             return this.server.getState().handleRequestVote(request);
         }
@@ -68,14 +68,14 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public void stop(){
+    public void stop() {
         for (HeartBeatSenderThread thread : hbSenderThreads) {
             thread.stopThread();
         }
     }
 
     public JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
-        int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
+        int requestTerm = Integer.parseInt((String) jsonObject.get(TERM));
         String leaderId = (String) jsonObject.get(LEADER_ID);
         Boolean success = false;
 
@@ -85,7 +85,7 @@ public class LeaderState extends ServerState {
             this.server.setState(new FollowerState(this.server, leaderId));
             return this.server.getState().handleRequestAppendEntries(jsonObject);
         }
-            JSONObject response = ServerServerMessage.getAppendEntriesResponse(
+        JSONObject response = ServerServerMessage.getAppendEntriesResponse(
                 this.server.getCurrentTerm(),
                 success
         );
@@ -96,7 +96,7 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleCreateClientServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
-        log.info("Leader: [{}] [{}] NEWIDENTITY",(String)request.get(SENDER_ID), clientId);
+        log.info("Leader: [{}] [{}] NEWIDENTITY", (String) request.get(SENDER_ID), clientId);
         Boolean success = false;
         if ((!(SystemState.isClientExist(clientId)) && Validation.validateClientID(clientId))) {
             server.getRaftLog().insert(Event.builder()
@@ -110,7 +110,6 @@ public class LeaderState extends ServerState {
             int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
             success = replicateLogs();
             if (success) {
-                //Commit client
                 this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit,
                         this.server.getRaftLog().getCommitIndex()));
                 SystemState.commit(this.server);
@@ -123,7 +122,7 @@ public class LeaderState extends ServerState {
     @Override
     public synchronized JSONObject handleDeleteClientServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
-        log.info("Leader: [{}] [{}] DELETECLIENT", (String)request.get(SENDER_ID), clientId);
+        log.info("Leader: [{}] [{}] DELETECLIENT", (String) request.get(SENDER_ID), clientId);
         Boolean success = false;
         if (SystemState.isClientExist(clientId)) {
             server.getRaftLog().insert(Event.builder()
@@ -150,7 +149,7 @@ public class LeaderState extends ServerState {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
         String former = SystemState.getCurrentChatroomOfClient(clientId);
-        log.info("Leader: [{}] [{}] CREATEROOM - Room: {} - Former: {}",(String)request.get(SENDER_ID),
+        log.info("Leader: [{}] [{}] CREATEROOM - Room: {} - Former: {}", (String) request.get(SENDER_ID),
                 clientId, roomId, former);
         Boolean success = false;
         if (!(SystemState.isChatroomExist(roomId)) && Validation.validateRoomID(roomId, server.getServerId())
@@ -179,7 +178,7 @@ public class LeaderState extends ServerState {
     public synchronized JSONObject handleDeleteChatroomServerRequest(JSONObject request) {
         String clientId = request.get(CLIENT_ID).toString();
         String roomId = request.get(ROOM_ID).toString();
-        log.info("Leader: [{}] [{}] DELETEROOM - RoomId: {}",(String)request.get(SENDER_ID), clientId, roomId);
+        log.info("Leader: [{}] [{}] DELETEROOM - RoomId: {}", (String) request.get(SENDER_ID), clientId, roomId);
         Boolean success = false;
         if (SystemState.isChatroomExist(roomId) && SystemState.checkOwnerFromChatroom(roomId, clientId)) {
             server.getRaftLog().insert(Event.builder()
@@ -209,7 +208,7 @@ public class LeaderState extends ServerState {
         String formerRoomId = request.get(FORMER).toString();
         String newRoomId = request.get(ROOM_ID).toString();
 
-        log.info("Leader: [{}] [{}] JOINROOM - Room: {} - Former: {}",(String)request.get(SENDER_ID),
+        log.info("Leader: [{}] [{}] JOINROOM - Room: {} - Former: {}", (String) request.get(SENDER_ID),
                 clientId, newRoomId, formerRoomId);
         boolean success = false;
         String newServerId = "";
@@ -218,10 +217,10 @@ public class LeaderState extends ServerState {
                 && SystemState.isChatroomExist(newRoomId) && !SystemState.isOwner(clientId)
                 && SystemState.isMemberOfChatroom(clientId, formerRoomId)) {
             /** client exists
-            former chatroom exists
-            new chatroom exists
-            client not the owner of a chatroom
-            client is a member of the prev room
+             former chatroom exists
+             new chatroom exists
+             client not the owner of a chatroom
+             client is a member of the prev room
              */
             newServerId = SystemState.getChatroomFromName(newRoomId).getServerId();
             server.getRaftLog().insert(Event.builder()
@@ -251,9 +250,9 @@ public class LeaderState extends ServerState {
         String senderId = (String) request.get(SENDER_ID);
         Boolean success = false;
 
-        log.info("Leader: [{}] [{}] MOVEJOIN - Room: {}",senderId, clientId, roomId);
+        log.info("Leader: [{}] [{}] MOVEJOIN - Room: {}", senderId, clientId, roomId);
         if (SystemState.isClientExist(clientId)) {
-            if(!(SystemState.isChatroomExist(roomId) && senderId.equals(SystemState.getChatroomServer(roomId)))) {
+            if (!(SystemState.isChatroomExist(roomId) && senderId.equals(SystemState.getChatroomServer(roomId)))) {
                 roomId = Util.getMainhall(senderId);
             }
             server.getRaftLog().insert(Event.builder()
@@ -279,9 +278,9 @@ public class LeaderState extends ServerState {
     }
 
     @Override
-    public synchronized JSONObject handleServerInitServerRequest(JSONObject request){
+    public synchronized JSONObject handleServerInitServerRequest(JSONObject request) {
         String serverId = (String) request.get(SERVER_ID);
-        log.info("Leader: [{}] SERVER INIT",serverId);
+        log.info("Leader: [{}] SERVER INIT", serverId);
         Boolean success = false;
 
         server.getRaftLog().insert(Event.builder()
@@ -311,36 +310,36 @@ public class LeaderState extends ServerState {
         Set<String> matchedNodes = new HashSet<>();
         matchedNodes.add(this.server.getServerId());
 
-        for(HeartBeatSenderThread thread : hbSenderThreads){
+        for (HeartBeatSenderThread thread : hbSenderThreads) {
             thread.invokeImmediateSend();
         }
 
-        while(true){
-            for (String id: serverIds) {
-                if(this.matchIndex.get(id) >= logIndexToMatch){
+        while (true) {
+            for (String id : serverIds) {
+                if (this.matchIndex.get(id) >= logIndexToMatch) {
                     matchedNodes.add(id);
                 }
             }
 
-            if(matchedNodes.size() > serverCount/2){
+            if (matchedNodes.size() > serverCount / 2) {
                 return true;
             }
 
-            if(!this.server.getServerId().equals(this.server.getLeaderId())){
+            if (!this.server.getServerId().equals(this.server.getLeaderId())) {
                 return false;
             }
         }
     }
 
     @Override
-    public String printState(){
+    public String printState() {
         return "Leader State - Term: " + this.server.getCurrentTerm()
                 + " Leader: " + this.server.getLeaderId()
                 + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override
-    public JSONObject respondToNewIdentity(JSONObject request){
+    public JSONObject respondToNewIdentity(JSONObject request) {
         JSONObject response = handleCreateClientServerRequest(ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
@@ -392,7 +391,7 @@ public class LeaderState extends ServerState {
             String port = String.valueOf(sd.getClientPort());
             return ServerMessage.getRouteResponse(roomId, host, port);
         }
-        return ServerMessage.getRoomChangeResponse(clientId, former, success? roomId: former);
+        return ServerMessage.getRoomChangeResponse(clientId, former, success ? roomId : former);
     }
 
     @Override

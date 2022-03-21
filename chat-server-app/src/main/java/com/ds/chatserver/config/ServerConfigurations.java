@@ -4,7 +4,9 @@ import com.ds.chatserver.serverhandler.ServerDetails;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Set;
 
 import static com.ds.chatserver.constants.ServerConfigurationConstants.*;
 
@@ -19,7 +21,7 @@ public class ServerConfigurations {
         return serverDetails.keySet();
     }
 
-    public static int getNumberOfServers(){
+    public static int getNumberOfServers() {
         return serverDetails.size();
     }
 
@@ -32,7 +34,7 @@ public class ServerConfigurations {
         Scanner sc = new Scanner(file);
         serverDetails = new HashMap<String, ServerDetails>();
 
-        while (sc.hasNextLine()){
+        while (sc.hasNextLine()) {
             String[] tokens = sc.nextLine().split("\t");
 
             ServerDetails sd = ServerDetails.builder()

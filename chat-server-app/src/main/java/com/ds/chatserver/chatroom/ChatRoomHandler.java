@@ -55,7 +55,7 @@ public class ChatRoomHandler {
             ClientAlreadyInChatRoomException, ClientNotInChatRoomException {
         ChatRoom chatRoom = clientThread.getCurrentChatRoom();
         if (clientThread.equals(chatRoom.getOwner())) {
-            for(ClientThread client: chatRoom.getClients()) {
+            for (ClientThread client : chatRoom.getClients()) {
                 if (client.equals(chatRoom.getOwner())) {
                     if (isQuit) {
                         if (!isForceQuit) {
@@ -90,7 +90,7 @@ public class ChatRoomHandler {
     }
 
     public ChatRoom getChatroomFromName(String name) throws ChatroomDoesntExistsException {
-        for (ChatRoom chatRoom: chatrooms) {
+        for (ChatRoom chatRoom : chatrooms) {
             if (chatRoom.getRoomId().equals(name)) {
                 return chatRoom;
             }

@@ -16,7 +16,7 @@ import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants
 import static com.ds.chatserver.constants.ServerConfigurationConstants.HEART_BEAT_FREQUENCY;
 
 @Slf4j
-public class HeartBeatSenderThread extends Thread{
+public class HeartBeatSenderThread extends Thread {
 
     private Server server;
     private String receiverId;
@@ -30,7 +30,7 @@ public class HeartBeatSenderThread extends Thread{
                                  Hashtable<String, Integer> nextIndex, Hashtable<String, Integer> matchIndex) {
         this.server = server;
         this.receiverId = receiverId;
-        lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis() - 2* HEART_BEAT_FREQUENCY);
+        lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis() - 2 * HEART_BEAT_FREQUENCY);
         exit = false;
         this.nextIndex = nextIndex;
         this.matchIndex = matchIndex;
@@ -40,15 +40,15 @@ public class HeartBeatSenderThread extends Thread{
     @Override
     public void run() {
 
-        while(!exit){
+        while (!exit) {
             Timestamp expireTimestamp = new Timestamp(System.currentTimeMillis() - HEART_BEAT_FREQUENCY);
             ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(2);
 
-            if(this.immediateSend || expireTimestamp.after(lastHeartBeatTimestamp)){
+            if (this.immediateSend || expireTimestamp.after(lastHeartBeatTimestamp)) {
                 this.immediateSend = false;
                 this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
 
-                int previousLogIndex = nextIndex.get(receiverId)-1;
+                int previousLogIndex = nextIndex.get(receiverId) - 1;
                 int previousLogTerm = server.getRaftLog().getTermFromIndex(previousLogIndex);
                 int lastLogIndex = server.getRaftLog().getLastLogIndex();
 
@@ -62,26 +62,26 @@ public class HeartBeatSenderThread extends Thread{
                 );
 
                 try {
-                    Thread thread = new Thread(new ServerRequestSender( receiverId, request, queue, 1));
+                    Thread thread = new Thread(new ServerRequestSender(receiverId, request, queue, 1));
                     thread.start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 try {
-                    JSONObject response =  queue.take();
-                    if((Boolean) response.get(ERROR)) {
-                        if(exit)break;
+                    JSONObject response = queue.take();
+                    if ((Boolean) response.get(ERROR)) {
+                        if (exit) break;
                     } else {
                         int responseTerm = Integer.parseInt((String) response.get(TERM));
-                        if(responseTerm > this.server.getCurrentTerm()){
+                        if (responseTerm > this.server.getCurrentTerm()) {
                             this.server.setCurrentTerm(responseTerm);
                             this.server.setState(new FollowerState(this.server, null));
                             break;
                         }
 
                         if ((Boolean) response.get(SUCCESS)) {
-                            nextIndex.put(receiverId, lastLogIndex+1);
+                            nextIndex.put(receiverId, lastLogIndex + 1);
                             matchIndex.put(receiverId, lastLogIndex);
                         } else {
                             nextIndex.put(receiverId, previousLogIndex - 1);
@@ -95,11 +95,11 @@ public class HeartBeatSenderThread extends Thread{
 
     }
 
-    public void stopThread(){
+    public void stopThread() {
         exit = true;
     }
 
-    public void invokeImmediateSend(){
+    public void invokeImmediateSend() {
         this.immediateSend = true;
     }
 }

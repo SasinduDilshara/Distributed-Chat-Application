@@ -10,14 +10,14 @@ import java.util.ArrayList;
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 
 public class Util {
-    public static String getMainhall(String serverId){
+    public static String getMainhall(String serverId) {
         return "MainHall-" + serverId;
     }
 
-    public static ArrayList<Event> decodeJsonEventList(JSONArray jsonEntries){
+    public static ArrayList<Event> decodeJsonEventList(JSONArray jsonEntries) {
         ArrayList<Event> eventObjectList = new ArrayList<>();
 
-        for(Object jsonEntryObject : jsonEntries){
+        for (Object jsonEntryObject : jsonEntries) {
             JSONObject jsonEntry = (JSONObject) jsonEntryObject;
 
             String clientId = (String) jsonEntry.get(CLIENT_ID);

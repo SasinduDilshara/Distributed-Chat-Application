@@ -4,17 +4,17 @@ import com.ds.chatserver.serverhandler.Server;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DebugStateLog implements Runnable{
+public class DebugStateLog implements Runnable {
 
     private Server server;
 
-    public DebugStateLog(Server server){
+    public DebugStateLog(Server server) {
         this.server = server;
     }
 
     @Override
-    public void run(){
-        while(true){
+    public void run() {
+        while (true) {
             log.debug(this.server.getState().printState());
 
             try {

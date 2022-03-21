@@ -15,7 +15,7 @@ public class ServerServerMessage {
     @SuppressWarnings("unchecked")
     private static JSONArray convertEntriesToJson(List<Event> entries) {
         JSONArray jsonEntries = new JSONArray();
-        for(Event entry: entries) {
+        for (Event entry : entries) {
             JSONObject jsonEntry = new JSONObject();
             jsonEntry.put(TERM, String.valueOf(entry.getLogTerm()));
             jsonEntry.put(LOG_INDEX, String.valueOf(entry.getLogIndex()));

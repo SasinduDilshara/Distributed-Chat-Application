@@ -6,21 +6,23 @@ import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 @Slf4j
 public class SystemState {
     private static HashMap<String, ClientLog> clientLists = new HashMap<>();
     private static HashMap<String, ChatroomLog> chatroomLists = new HashMap<>();
 
-    public synchronized static void commit(Server server){
-        log.debug("Commiting.. commit index: {}",server.getRaftLog().getCommitIndex());
-        for(int i = server.getRaftLog().getLastApplied()+1; i <= server.getRaftLog().getCommitIndex(); i++){
+    public synchronized static void commit(Server server) {
+        log.debug("Commiting.. commit index: {}", server.getRaftLog().getCommitIndex());
+        for (int i = server.getRaftLog().getLastApplied() + 1; i <= server.getRaftLog().getCommitIndex(); i++) {
             Event event = server.getRaftLog().getIthEvent(i);
 
             EventType eventType = event.getType();
 
-            switch (eventType){
+            switch (eventType) {
                 case NEW_IDENTITY:
                     commitNewIdentity(event);
                     break;
@@ -48,7 +50,7 @@ public class SystemState {
         }
     }
 
-    private static void commitNewIdentity(Event event){
+    private static void commitNewIdentity(Event event) {
         String clientId = event.getClientId();
         String chatroomId = Util.getMainhall(event.getServerId());
         String serverId = event.getServerId();
@@ -58,7 +60,7 @@ public class SystemState {
         chatroomLists.get(chatroomId).addParticipant(clientId);
     }
 
-    private static void commitCreateRoom(Event event){
+    private static void commitCreateRoom(Event event) {
         String clientId = event.getClientId();
         String newChatroomId = event.getParameter();
         String previousChatroomId = clientLists.get(clientId).getChatroomName();
@@ -71,7 +73,7 @@ public class SystemState {
         chatroomLists.put(newChatroomId, chatroomLog);
     }
 
-    private static void commitJoinRoom(Event event){
+    private static void commitJoinRoom(Event event) {
         String clientId = event.getClientId();
         String newChatroomId = event.getParameter();
         String previousChatroomId = clientLists.get(clientId).getChatroomName();
@@ -80,11 +82,10 @@ public class SystemState {
         /*
          * Client is in the same server where the new chatroom exists
          */
-        if(newChatroomServerId.equals(clientLists.get(clientId).getServerId())){
+        if (newChatroomServerId.equals(clientLists.get(clientId).getServerId())) {
             clientLists.get(clientId).setChatroomName(newChatroomId);
             chatroomLists.get(newChatroomId).addParticipant(clientId);
-        }
-        else{
+        } else {
             clientLists.get(clientId).setChatroomName("");
             clientLists.get(clientId).setServerId("");
         }
@@ -93,12 +94,12 @@ public class SystemState {
 
     }
 
-    private static void commitDeleteRoom(Event event){
+    private static void commitDeleteRoom(Event event) {
         String chatroomId = event.getParameter();
         String mainHallId = Util.getMainhall(chatroomLists.get(chatroomId).getServerId());
         HashSet<String> participants = chatroomLists.get(chatroomId).getParticipants();
 
-        for(String participant : participants){
+        for (String participant : participants) {
             clientLists.get(participant).setChatroomName(mainHallId);
             chatroomLists.get(chatroomId).removeParticipant(participant);
             chatroomLists.get(mainHallId).addParticipant(participant);
@@ -107,18 +108,18 @@ public class SystemState {
         chatroomLists.remove(chatroomId);
     }
 
-    private static void commitQuit(Event event){
+    private static void commitQuit(Event event) {
         String clientId = event.getClientId();
         String chatroomId = clientLists.get(clientId).getChatroomName();
         String mainHallId = Util.getMainhall(chatroomLists.get(chatroomId).getServerId());
         /*
-        * client is the owner of that chat room
-        */
-        if(chatroomLists.get(chatroomId).getOwnerId().equals(clientId)){
+         * client is the owner of that chat room
+         */
+        if (chatroomLists.get(chatroomId).getOwnerId().equals(clientId)) {
             HashSet<String> participants = chatroomLists.get(chatroomId).getParticipants();
 
-            for(String participant : participants){
-                if(participant.equals(clientId)){
+            for (String participant : participants) {
+                if (participant.equals(clientId)) {
                     continue;
                 }
                 clientLists.get(participant).setChatroomName(mainHallId);
@@ -127,8 +128,7 @@ public class SystemState {
             }
 
             chatroomLists.remove(chatroomId);
-        }
-        else{
+        } else {
             chatroomLists.get(chatroomId).removeParticipant(clientId);
         }
         clientLists.remove(clientId);
@@ -144,28 +144,28 @@ public class SystemState {
         chatroomLists.get(chatroomId).addParticipant(clientId);
     }
 
-    private static void commitServerInit(Event event){
+    private static void commitServerInit(Event event) {
         String initiatedServerId = event.getServerId();
         ArrayList<String> clientIds = new ArrayList<>(clientLists.keySet());
         ArrayList<String> roomIds = new ArrayList<>(chatroomLists.keySet());
 
-        for(String client : clientIds){
-            if(clientLists.get(client).getServerId().equals(initiatedServerId)){
+        for (String client : clientIds) {
+            if (clientLists.get(client).getServerId().equals(initiatedServerId)) {
                 clientLists.remove(client);
             }
         }
 
-        for(String roomId: roomIds){
-            if(roomId.equals(Util.getMainhall(chatroomLists.get(roomId).getServerId()))){
+        for (String roomId : roomIds) {
+            if (roomId.equals(Util.getMainhall(chatroomLists.get(roomId).getServerId()))) {
                 continue;
             }
-            if(chatroomLists.get(roomId).getServerId().equals(initiatedServerId)){
+            if (chatroomLists.get(roomId).getServerId().equals(initiatedServerId)) {
                 chatroomLists.remove(roomId);
             }
         }
     }
 
-    public synchronized static void addChatroom(ChatroomLog chatroomLog){
+    public synchronized static void addChatroom(ChatroomLog chatroomLog) {
         chatroomLists.put(chatroomLog.getChatRoomName(), chatroomLog);
     }
 
@@ -180,6 +180,7 @@ public class SystemState {
     public synchronized static ChatroomLog getChatroomFromName(String chatroomName) {
         return chatroomLists.get(chatroomName);
     }
+
     public synchronized static Boolean isOwner(String clientId) {
         String chatroomId = clientLists.get(clientId).getChatroomName();
         return chatroomLists.get(chatroomId).getOwnerId().equals(clientId);
@@ -207,14 +208,14 @@ public class SystemState {
     }
 
     public synchronized static Boolean isMemberOfChatroom(String clientId, String chatroomId) {
-        if(!chatroomLists.containsKey(chatroomId)) {
+        if (!chatroomLists.containsKey(chatroomId)) {
             return false;
         }
         return chatroomLists.get(chatroomId).getParticipants().contains(clientId);
     }
 
     public synchronized static String getCurrentChatroomOfClient(String clientId) {
-        if(!clientLists.containsKey(clientId)) {
+        if (!clientLists.containsKey(clientId)) {
             return "";
         }
         return clientLists.get(clientId).getChatroomName();
