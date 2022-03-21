@@ -67,9 +67,7 @@ public class ServerRequestSender extends Thread {
         while (socket == null && numberOfReTrys < this.maxRetries) {
             try {
                 socket = new Socket(host, port);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException e) {}
 
             numberOfReTrys++;
             if (socket == null && numberOfReTrys < this.maxRetries) {
