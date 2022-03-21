@@ -170,6 +170,14 @@ public class CandidateState extends ServerState {
         } catch (InterruptedException e) {}
         return null;
     }
+
+    @Override
+    public JSONObject serverInit(JSONObject request) {
+//        try {
+//            wait();
+//        } catch (InterruptedException e) {}
+        return null;
+    }
 }
 
 

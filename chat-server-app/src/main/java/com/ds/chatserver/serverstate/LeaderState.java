@@ -306,6 +306,36 @@ public class LeaderState extends ServerState {
         }
         return ServerServerMessage.getMoveJoinResponse(server.getCurrentTerm(), roomId, success);
     }
+
+    @Override
+    public synchronized JSONObject handleServerInitServerRequest(JSONObject request){
+        String serverId = (String) request.get(SERVER_ID);
+        Boolean success = false;
+
+        server.getRaftLog().insert(Event.builder()
+                .serverId(serverId)
+                .type(EventType.SERVER_INIT)
+                .logIndex(server.getRaftLog().getNextLogIndex())
+                .logTerm(server.getCurrentTerm())
+                .build());
+
+        int lastLogIndexToCommit = this.server.getRaftLog().getLastLogIndex();
+        success = replicateLogs();
+        if (success) {
+            //Commit client
+            this.server.getRaftLog().setCommitIndex(Math.max(lastLogIndexToCommit,
+                    this.server.getRaftLog().getCommitIndex()));
+            SystemState.commit(this.server);
+        }
+
+        if(success){
+            log.info("Leader: Server Init success serverId: {}", serverId);
+        } else{
+            log.info("Leader: Server Init failed serverId: {}", serverId);
+        }
+        return ServerServerMessage.getServerInitResponse(server.getCurrentTerm(), success);
+    }
+
     private boolean replicateLogs() {
         int serverCount = ServerConfigurations.getNumberOfServers();
         Set<String> serverIds = ServerConfigurations.getServerIds();
@@ -451,5 +481,10 @@ public class LeaderState extends ServerState {
                     "");
         }
         return null;
+    }
+
+    @Override
+    public JSONObject serverInit(JSONObject request) {
+        return handleServerInitServerRequest(request);
     }
 }

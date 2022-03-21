@@ -125,4 +125,6 @@ public abstract class ServerState {
     protected abstract JSONObject respondToMoveJoin(JSONObject request);
 
     protected abstract JSONObject respondToQuit(JSONObject request);
+
+    public abstract JSONObject serverInit(JSONObject request);
 }

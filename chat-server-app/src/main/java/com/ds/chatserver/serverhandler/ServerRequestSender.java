@@ -106,7 +106,7 @@ public class ServerRequestSender extends Thread {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                 response = (JSONObject) this.parser.parse(bufferedReader.readLine());
             } catch (IOException | ParseException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             finally{
                 if(response == null){
