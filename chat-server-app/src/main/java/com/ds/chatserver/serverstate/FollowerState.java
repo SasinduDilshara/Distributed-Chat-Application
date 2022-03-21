@@ -31,7 +31,7 @@ public class FollowerState extends ServerState {
         this.server.setLeaderId(leaderId);
         lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
         this.initState();
-        log.info("Follower State: Term:{} leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
+        log.info("Follower State - Term:{} - leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
     }
 
 
@@ -84,9 +84,6 @@ public class FollowerState extends ServerState {
 
     @Override
     public synchronized JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
-//        moved to the else clause
-//        this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
-
         int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
         int prevLogIndex = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_INDEX));
         int prevLogTerm = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_TERM));

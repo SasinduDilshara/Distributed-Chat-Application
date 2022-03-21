@@ -53,9 +53,7 @@ public class ChatServerApplication {
         Thread heartBeatThread = new Thread(runnable);
         heartBeatThread.start();
 
-        log.info("Server init...");
         JSONObject serverInitResponse = null;
-//
         while(serverInitResponse == null ||
                 (serverInitResponse != null && !((Boolean) serverInitResponse.get(SUCCESS)))){
             serverInitResponse = server.getState()

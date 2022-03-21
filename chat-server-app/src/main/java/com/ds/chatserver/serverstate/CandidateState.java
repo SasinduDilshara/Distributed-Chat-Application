@@ -19,7 +19,7 @@ public class CandidateState extends ServerState {
     public CandidateState(Server server) {
         super(server);
         this.server.setLeaderId(null);
-        log.info("Candidate State : {}", this.server.getCurrentTerm());
+        log.info("Candidate State - Term : {}", this.server.getCurrentTerm());
     }
 
     @Override

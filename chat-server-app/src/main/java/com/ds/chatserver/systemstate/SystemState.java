@@ -4,15 +4,17 @@ import com.ds.chatserver.log.Event;
 import com.ds.chatserver.log.EventType;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.Util;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
+@Slf4j
 public class SystemState {
     private static HashMap<String, ClientLog> clientLists = new HashMap<>();
     private static HashMap<String, ChatroomLog> chatroomLists = new HashMap<>();
 
     public synchronized static void commit(Server server){
-        System.out.println("Commiting.. commit index: " + server.getRaftLog().getCommitIndex());
+        log.debug("Commiting.. commit index: {}",server.getRaftLog().getCommitIndex());
         for(int i = server.getRaftLog().getLastApplied()+1; i <= server.getRaftLog().getCommitIndex(); i++){
             Event event = server.getRaftLog().getIthEvent(i);
 
@@ -41,9 +43,7 @@ public class SystemState {
                     commitServerInit(event);
                     break;
             }
-            System.out.println(event);
-//            System.out.println(chatroomLists);
-//            System.out.println(clientLists);
+            log.debug(event.toString());
             server.getRaftLog().incrementLastApplied();
         }
     }
