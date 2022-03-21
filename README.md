@@ -37,15 +37,11 @@ CS4262_ChatClient](https://github.com/GayashanNA/CS4262_ChatClient) by Dr. Gayas
     // TODO: Jar file creating instructions
 
 3. Run the jar file with following parameters.
-   - `serverid` - server id specified in the configuration file
-   - `servers_conf` - path to the configuration file.
+   - `serverid` - `-i` - server id specified in the configuration file
+   - `servers_conf` - `p` - path to the configuration file.
    
-   Example jar file execution.
-   java -jar client.jar
-   
-    //TODO: add correct instruction
    ```shell
-    java -jar chat-server-app.jar s1 /path/to/config/file.txt
+    java -jar chat-server-app.jar -i serverid -p servers_conf
    ```
 ## Contribution
 
