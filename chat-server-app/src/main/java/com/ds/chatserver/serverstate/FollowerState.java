@@ -137,6 +137,9 @@ public class FollowerState extends ServerState {
 //        TODO chech codition
         if (requestTerm >= this.server.getCurrentTerm()) {
             this.server.setCurrentTerm(requestTerm);
+            if (!leaderId.equals(this.server.getLeaderId())) {
+                log.info("Leader Updated - LeaderId: {}", leaderId);
+            }
             this.server.setLeaderId(leaderId);
         }
 
