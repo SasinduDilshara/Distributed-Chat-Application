@@ -41,7 +41,9 @@ CS4262_ChatClient](https://github.com/GayashanNA/CS4262_ChatClient) by Dr. Gayas
    - `servers_conf` - path to the configuration file.
    
    Example jar file execution.
-    TODO: add correct instruction
+   java -jar client.jar
+   
+    //TODO: add correct instruction
    ```shell
     java -jar chat-server-app.jar s1 /path/to/config/file.txt
    ```
