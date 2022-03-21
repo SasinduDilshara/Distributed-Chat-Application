@@ -1,6 +1,5 @@
 package com.ds.chatserver;
 
-import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.clienthandler.ClientRequestHandler;
 import com.ds.chatserver.config.Configuration;
 import com.ds.chatserver.config.ServerConfigurations;
@@ -9,8 +8,6 @@ import com.ds.chatserver.utils.DebugStateLog;
 import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,8 +16,6 @@ import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants
 
 @Slf4j
 public class ChatServerApplication {
-
-//    private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
     public static void main(String[] args) throws FileNotFoundException {
         String serverId = args[0];
@@ -32,7 +27,7 @@ public class ChatServerApplication {
         ServerConfigurations.loadServerDetails(configFilePath);
 
         Server server = new Server(serverId);
-        Boolean success = server.init(serverId);
+        server.init(serverId);
 
         Thread debugLogThread = new Thread(new DebugStateLog(server));
         debugLogThread.start();
@@ -53,14 +48,12 @@ public class ChatServerApplication {
         Thread heartBeatThread = new Thread(runnable);
         heartBeatThread.start();
 
-        log.info("Server init...");
         JSONObject serverInitResponse = null;
-//
-        while(serverInitResponse == null ||
-                (serverInitResponse != null && !((Boolean) serverInitResponse.get(SUCCESS)))){
+        while (serverInitResponse == null ||
+                (serverInitResponse != null && !((Boolean) serverInitResponse.get(SUCCESS)))) {
             serverInitResponse = server.getState()
                     .serverInit(ServerServerMessage.getServerInitRequest(server.getCurrentTerm(),
-                    server.getServerId()));
+                            server.getServerId()));
         }
 
         log.info("Server init finished. serverid: {}", server.getServerId());

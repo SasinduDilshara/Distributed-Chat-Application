@@ -34,14 +34,13 @@ public class Server {
 
         createMainhall();
     }
-    private void createMainhall(){
+
+    private void createMainhall() {
         Set<String> serverIds = ServerConfigurations.getServerIds();
 
-        for (String id: serverIds) {
-            if(id.equals(this.getServerId())){
+        for (String id : serverIds) {
+            if (id.equals(this.getServerId())) {
                 try {
-//                   // TODO Consider owerner null case
-//                    ChatRoom.createMainHall(id);
                     ChatRoomHandler.getInstance(id).getMainHall();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -52,7 +51,7 @@ public class Server {
     }
 
     public void incrementTerm() {
-        this.currentTerm ++;
+        this.currentTerm++;
     }
 
     public Boolean init(String serverId) {
@@ -74,7 +73,7 @@ public class Server {
         return this.getState().respondToServerRequest(jsonObject);
     }
 
-    public void setState(ServerState state){
+    public void setState(ServerState state) {
         this.state.stop();
         this.state = state;
     }

@@ -21,7 +21,7 @@ public class RaftLog {
 
     public int getLastLogIndex() {
         if (!logEntries.isEmpty()) {
-            return logEntries.get(logEntries.size()-1).getLogIndex();
+            return logEntries.get(logEntries.size() - 1).getLogIndex();
         }
 
         return -1;
@@ -29,28 +29,28 @@ public class RaftLog {
 
     public int getLastLogTerm() {
         if (!logEntries.isEmpty()) {
-            return logEntries.get(logEntries.size()-1).getLogTerm();
+            return logEntries.get(logEntries.size() - 1).getLogTerm();
         }
 
         return -1;
     }
 
     public int getTermFromIndex(int index) {
-        if(index < 0 || index >= logEntries.size()){
+        if (index < 0 || index >= logEntries.size()) {
             return -1;
         }
         return logEntries.get(index).getLogTerm();
     }
 
-    public void incrementLastApplied(){
+    public void incrementLastApplied() {
         this.lastApplied++;
     }
 
     public List<Event> getLogEntriesFromIndex(int index) {
-        if(index < 0){
+        if (index < 0) {
             return logEntries;
         }
-        if(index > logEntries.size()){
+        if (index > logEntries.size()) {
             return new ArrayList<>();
         }
         return logEntries.subList(index, logEntries.size());
@@ -63,7 +63,7 @@ public class RaftLog {
     public int appendLogEntries(List<Event> entries) {
         List<Event> newEntries = new ArrayList<>();
         int[] checkResult;
-        for (Event event: entries) {
+        for (Event event : entries) {
             checkResult = checkLogIndexWithTerm(event.getLogIndex(), event.getLogTerm());
             if (checkResult[0] == LogEntryStatus.NOT_FOUND) {
                 newEntries.add(event);
@@ -78,7 +78,7 @@ public class RaftLog {
     }
 
     public void deleteEntriesFromIndex(int logIndex) {
-        for (int i = logEntries.size() - 1; i >=0 ; i--) {
+        for (int i = logEntries.size() - 1; i >= 0; i--) {
             if (i < logIndex) {
                 return;
             }
@@ -87,7 +87,7 @@ public class RaftLog {
     }
 
     public int[] checkLogIndexWithTerm(int logIndex, int logTerm) {
-        if(logIndex < 0){
+        if (logIndex < 0) {
             return new int[]{LogEntryStatus.FOUND, logIndex};
         }
 
@@ -99,16 +99,15 @@ public class RaftLog {
                 return new int[]{LogEntryStatus.FOUND, logIndex};
             } else if (logEntry.getLogIndex() == logIndex && logEntry.getLogTerm() != logTerm) {
                 return new int[]{LogEntryStatus.CONFLICT, logIndex};
-            }
-            else{
+            } else {
                 return new int[]{LogEntryStatus.NOT_FOUND, 0};
             }
         }
         return new int[]{LogEntryStatus.NOT_FOUND, 0};
     }
 
-    public Event getIthEvent(int index){
-        if(index >= this.logEntries.size()){
+    public Event getIthEvent(int index) {
+        if (index >= this.logEntries.size()) {
             return null;
         }
         return this.logEntries.get(index);

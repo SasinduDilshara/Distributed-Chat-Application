@@ -10,7 +10,7 @@ import org.json.simple.JSONObject;
 import java.io.IOException;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
-import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
+import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.TYPE;
 import static com.ds.chatserver.constants.RequestTypeConstants.*;
 
 @Setter
@@ -41,13 +41,10 @@ public abstract class ServerState {
             case MOVE_JOIN:
                 return handleMoveJoinServerRequest(request);
         }
-
-        //TODO: return null cause and error
         return null;
     }
 
     public JSONObject respondToClientRequest(JSONObject request) {
-//        log.debug("Client Req: {}", request.toString());
         switch ((String) request.get(TYPE)) {
             case NEW_IDENTITY:
                 return respondToNewIdentity(request);
@@ -67,8 +64,7 @@ public abstract class ServerState {
 
     public abstract void initState();
 
-    public void stop(){
-
+    public void stop() {
     }
 
     public abstract String printState();
@@ -80,37 +76,30 @@ public abstract class ServerState {
     public abstract JSONObject handleRequestAppendEntries(JSONObject request);
 
     public JSONObject handleCreateClientServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 
     public JSONObject handleDeleteClientServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 
     public JSONObject handleCreateChatroomServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 
     public JSONObject handleDeleteChatroomServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 
     public JSONObject handleChangeRoomServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 
     public JSONObject handleServerInitServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 
     public JSONObject handleMoveJoinServerRequest(JSONObject request) {
-        //TODO: Return Error
         return null;
     }
 

@@ -4,8 +4,6 @@ import com.ds.chatserver.config.ServerConfigurations;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -25,7 +23,6 @@ public class ServerRequestSender extends Thread {
     private String serverId;
     private ArrayBlockingQueue<JSONObject> responseQueue;
     private int maxRetries;
-    private static final Logger logger = LoggerFactory.getLogger(ServerRequestSender.class);
 
     public ServerRequestSender(String serverId, JSONObject jsonMessage, ArrayBlockingQueue<JSONObject> responseQueue) throws IOException {
         this.jsonMessage = jsonMessage;
@@ -44,7 +41,7 @@ public class ServerRequestSender extends Thread {
     }
 
     @Override
-    public void run()  {
+    public void run() {
 
         JSONObject response = null;
         DataOutputStream dataOutputStream;
@@ -67,15 +64,11 @@ public class ServerRequestSender extends Thread {
         String host = ServerConfigurations.getServerDetails(serverId).getIpAddress();
         Socket socket = null;
 
-        while(socket == null && numberOfReTrys < this.maxRetries) {
+        while (socket == null && numberOfReTrys < this.maxRetries) {
             try {
                 socket = new Socket(host, port);
-
             } catch (IOException e) {
-//                logger.error(
-//                        "Initializing Socket Connection Failed, receiverId : {}, Number of retry {}",
-//                        serverId,
-//                        numberOfReTrys);
+                e.printStackTrace();
             }
 
             numberOfReTrys++;
@@ -87,7 +80,7 @@ public class ServerRequestSender extends Thread {
                 }
             }
 
-            timeout = timeout*2;
+            timeout = timeout * 2;
         }
         if (socket == null) {
             try {
@@ -107,9 +100,8 @@ public class ServerRequestSender extends Thread {
                 response = (JSONObject) this.parser.parse(bufferedReader.readLine());
             } catch (IOException | ParseException e) {
 //                e.printStackTrace();
-            }
-            finally{
-                if(response == null){
+            } finally {
+                if (response == null) {
                     response = new JSONObject();
                 }
                 response.put(RECEIVER_ID, serverId);

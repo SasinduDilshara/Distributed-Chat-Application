@@ -24,11 +24,11 @@ public class ChatroomLog {
         return (HashSet<String>) participants.clone();
     }
 
-    public void addParticipant(String participant){
+    public void addParticipant(String participant) {
         this.participants.add(participant);
     }
 
-    public void removeParticipant(String participant){
+    public void removeParticipant(String participant) {
         this.participants.remove(participant);
     }
 

@@ -1,6 +1,5 @@
 package com.ds.chatserver.clienthandler;
 
-import com.ds.chatserver.chatroom.ChatRoomHandler;
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.serverhandler.Server;
 import org.slf4j.Logger;
@@ -17,7 +16,7 @@ public class ClientRequestHandler {
     private Server server;
     private static final Logger logger = LoggerFactory.getLogger(ClientRequestHandler.class);
 
-    public ClientRequestHandler (Server server) throws IOException {
+    public ClientRequestHandler(Server server) throws IOException {
         this.server = server;
         this.socketPort = ServerConfigurations.getServerDetails(server.getServerId()).getClientPort();
         serverSocket = new ServerSocket(socketPort);
@@ -33,7 +32,7 @@ public class ClientRequestHandler {
     }
 
     public void start() {
-        while(true) {
+        while (true) {
             try {
                 Thread thread = new Thread(new ClientThread(serverSocket.accept(), this.server));
                 thread.start();
@@ -46,7 +45,6 @@ public class ClientRequestHandler {
     public void destroy() {
         // Destroy all the resources
     }
-
 
 
 }

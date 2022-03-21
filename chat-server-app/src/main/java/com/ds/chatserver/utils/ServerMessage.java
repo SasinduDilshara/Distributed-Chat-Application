@@ -2,6 +2,7 @@ package com.ds.chatserver.utils;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 
 import static com.ds.chatserver.constants.ClientRequestTypeConstants.*;
@@ -69,7 +70,7 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getServerChangeResponse(Boolean approved ,String serverId) {
+    public static JSONObject getServerChangeResponse(Boolean approved, String serverId) {
         JSONObject serverchange = new JSONObject();
         serverchange.put(TYPE, SERVER_CHANGE);
         serverchange.put(APPROVED, approved.toString());

@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class ServerIncomingRequestHandler implements Runnable{
+public class ServerIncomingRequestHandler implements Runnable {
     private final Socket socket;
     private final PrintWriter printWriter;
     private final BufferedReader bufferedReader;
@@ -25,7 +25,6 @@ public class ServerIncomingRequestHandler implements Runnable{
     @Override
     public void run() {
         String jsonString = null;
-//        logger.info("New Connection Started with {}", socket.getPort());
         DataOutputStream dout = null;
         try {
             dout = new DataOutputStream(this.socket.getOutputStream());
@@ -39,13 +38,6 @@ public class ServerIncomingRequestHandler implements Runnable{
                 this.stop();
             } else {
                 JSONObject jsonObject = JsonParser.stringToJSONObject(jsonString);
-//                log.info(jsonString);
-//                    String type = (String)jsonObject.get("type");
-//                    JSONObject response = new JSONObject();
-//                    response.put("type", type);
-//                    response.put("reply", "Hello There!");
-//                    dout.write((response.toJSONString() + "\n").getBytes("UTF-8"));
-//                    dout.flush();
                 JSONObject response = this.server.handleServerRequest(jsonObject);
                 dout.write((response.toJSONString() + "\n").getBytes(StandardCharsets.UTF_8));
                 dout.flush();

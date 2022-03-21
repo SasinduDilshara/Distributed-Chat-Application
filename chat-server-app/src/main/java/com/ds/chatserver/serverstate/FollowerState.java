@@ -31,14 +31,14 @@ public class FollowerState extends ServerState {
         this.server.setLeaderId(leaderId);
         lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
         this.initState();
-        log.info("Follower State: Term:{} leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
+        log.info("Follower State - Term:{} - leader:{}", this.server.getCurrentTerm(), this.server.getLeaderId());
     }
 
 
     @Override
     public void heartBeatAndLeaderElect() {
         Timestamp expireTimestamp = new Timestamp(System.currentTimeMillis() - ELECTION_TIMEOUT);
-        if(expireTimestamp.after(lastHeartBeatTimestamp)){
+        if (expireTimestamp.after(lastHeartBeatTimestamp)) {
             log.info("HB Timeout Last:{} Current:{} Expire: {}", lastHeartBeatTimestamp, new Timestamp(System.currentTimeMillis()), expireTimestamp);
             this.server.setState(new CandidateState(this.server));
         }
@@ -84,13 +84,10 @@ public class FollowerState extends ServerState {
 
     @Override
     public synchronized JSONObject handleRequestAppendEntries(JSONObject jsonObject) {
-//        moved to the else clause
-//        this.lastHeartBeatTimestamp = new Timestamp(System.currentTimeMillis());
-
-        int requestTerm = Integer.parseInt((String)jsonObject.get(TERM));
-        int prevLogIndex = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_INDEX));
-        int prevLogTerm = Integer.parseInt((String)jsonObject.get(PREVIOUS_LOG_TERM));
-        int leaderCommit = Integer.parseInt((String)jsonObject.get(LEADER_COMMIT));
+        int requestTerm = Integer.parseInt((String) jsonObject.get(TERM));
+        int prevLogIndex = Integer.parseInt((String) jsonObject.get(PREVIOUS_LOG_INDEX));
+        int prevLogTerm = Integer.parseInt((String) jsonObject.get(PREVIOUS_LOG_TERM));
+        int leaderCommit = Integer.parseInt((String) jsonObject.get(LEADER_COMMIT));
         String leaderId = (String) jsonObject.get(LEADER_ID);
 
         ArrayList<Event> logEntries = Util.decodeJsonEventList((JSONArray) jsonObject.get(ENTRIES));
@@ -140,6 +137,9 @@ public class FollowerState extends ServerState {
 //        TODO chech codition
         if (requestTerm >= this.server.getCurrentTerm()) {
             this.server.setCurrentTerm(requestTerm);
+            if (!leaderId.equals(this.server.getLeaderId())) {
+                log.info("Leader Updated - LeaderId: {}", leaderId);
+            }
             this.server.setLeaderId(leaderId);
         }
 
@@ -152,15 +152,14 @@ public class FollowerState extends ServerState {
     }
 
     @Override
-    public String printState(){
+    public String printState() {
         return "Follower State - Term: " + this.server.getCurrentTerm()
                 + " Leader: " + this.server.getLeaderId()
                 + " LastLogIndex: " + this.server.getRaftLog().getLastLogIndex();
     }
 
     @Override
-    public JSONObject respondToNewIdentity(JSONObject request){
-//        log.debug(request.toString());
+    public JSONObject respondToNewIdentity(JSONObject request) {
         JSONObject requestToLeader = ServerServerMessage.getCreateClientRequest(
                 this.server.getCurrentTerm(),
                 (String) request.get(IDENTITY),
@@ -170,7 +169,7 @@ public class FollowerState extends ServerState {
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<JSONObject>(1);
         Thread thread = null;
         try {
-            thread = new Thread(new ServerRequestSender( this.server.getLeaderId(), requestToLeader, queue));
+            thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -227,7 +226,7 @@ public class FollowerState extends ServerState {
                         clientId,
                         roomId,
                         Util.getMainhall(this.server.getServerId())
-                        )));
+                )));
                 return ServerMessage.getJsonResponses(jsonObjects);
             }
         } catch (InterruptedException e) {
@@ -275,7 +274,7 @@ public class FollowerState extends ServerState {
                 String port = String.valueOf(sd.getClientPort());
                 return ServerMessage.getRouteResponse(roomId, host, port);
             }
-            return ServerMessage.getRoomChangeResponse(clientId, former, success? roomId: former);
+            return ServerMessage.getRoomChangeResponse(clientId, former, success ? roomId : former);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -340,7 +339,7 @@ public class FollowerState extends ServerState {
         ArrayBlockingQueue<JSONObject> queue = new ArrayBlockingQueue<>(1);
         Thread thread = null;
         try {
-            thread = new Thread(new ServerRequestSender( this.server.getLeaderId(), requestToLeader, queue));
+            thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
             e.printStackTrace();
         }
