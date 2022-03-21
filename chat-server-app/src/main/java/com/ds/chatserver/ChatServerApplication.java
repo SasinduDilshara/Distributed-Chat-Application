@@ -4,10 +4,13 @@ import com.ds.chatserver.clienthandler.ClientRequestHandler;
 import com.ds.chatserver.config.Configuration;
 import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.serverhandler.Server;
+import com.ds.chatserver.utils.CmdLineValues;
 import com.ds.chatserver.utils.DebugStateLog;
 import com.ds.chatserver.utils.ServerServerMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,10 +20,13 @@ import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants
 @Slf4j
 public class ChatServerApplication {
 
-    public static void main(String[] args) throws FileNotFoundException {
-        String serverId = args[0];
-        String configFilePath = args[1];
+    public static void main(String[] args) throws FileNotFoundException, CmdLineException {
+        CmdLineValues values = new CmdLineValues();
+        CmdLineParser parser = new CmdLineParser(values);
 
+        parser.parseArgument(args);
+        String serverId = values.getServerId();
+        String configFilePath = values.getConfigFilePath();
         log.debug("Server Id : {}", serverId);
 
         new Configuration();
