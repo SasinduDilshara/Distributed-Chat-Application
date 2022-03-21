@@ -7,6 +7,7 @@ import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.CmdLineValues;
 import com.ds.chatserver.utils.DebugStateLog;
 import com.ds.chatserver.utils.ServerServerMessage;
+import com.ds.chatserver.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.kohsuke.args4j.CmdLineException;
@@ -27,6 +28,7 @@ public class ChatServerApplication {
         parser.parseArgument(args);
         String serverId = values.getServerId();
         String configFilePath = values.getConfigFilePath();
+        Util.bannerPrinter();
         log.debug("Server Id : {}", serverId);
 
         new Configuration();
