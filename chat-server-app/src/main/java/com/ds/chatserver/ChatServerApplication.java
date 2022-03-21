@@ -6,6 +6,7 @@ import com.ds.chatserver.config.ServerConfigurations;
 import com.ds.chatserver.serverhandler.Server;
 import com.ds.chatserver.utils.DebugStateLog;
 import com.ds.chatserver.utils.ServerServerMessage;
+import com.ds.chatserver.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 
@@ -20,6 +21,7 @@ public class ChatServerApplication {
     public static void main(String[] args) throws FileNotFoundException {
         String serverId = args[0];
         String configFilePath = args[1];
+        Util.bannerPrinter();
 
         log.debug("Server Id : {}", serverId);
 

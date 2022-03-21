@@ -5,7 +5,10 @@ import com.ds.chatserver.log.EventType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import static com.ds.chatserver.constants.CommunicationProtocolKeyWordsConstants.*;
 
@@ -44,5 +47,21 @@ public class Util {
 
     public static boolean isAlphaNumeric(String name) {
         return name != null && name.matches("^[a-zA-Z0-9]*$");
+    }
+
+    public static void bannerPrinter() {
+        try {
+            File file = new File("src/main/resources/banner.txt");
+            Scanner reader = new Scanner(file);
+            while(reader.hasNextLine()) {
+                String line = reader.nextLine();
+                System.out.println(line);
+            }
+            System.out.println("====================================================================");
+            System.out.println("");
+            reader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
