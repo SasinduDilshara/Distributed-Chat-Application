@@ -28,10 +28,15 @@ public class ChatServerApplication {
         parser.parseArgument(args);
         String serverId = values.getServerId();
         String configFilePath = values.getConfigFilePath();
-        Util.bannerPrinter();
-        log.debug("Server Id : {}", serverId);
 
-        new Configuration();
+
+        Configuration configuration = new Configuration();
+        try {
+            configuration.bannerPrinter();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.debug("Server Id : {}", serverId);
         ServerConfigurations.loadServerDetails(configFilePath);
 
         Server server = new Server(serverId);
