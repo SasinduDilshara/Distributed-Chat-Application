@@ -29,7 +29,6 @@ public class ServerIncomingRequestHandler implements Runnable {
         try {
             dout = new DataOutputStream(this.socket.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
             this.stop();
         }
 
@@ -43,7 +42,6 @@ public class ServerIncomingRequestHandler implements Runnable {
                 dout.flush();
             }
         } catch (IOException e) {
-            e.printStackTrace();
         }
         this.stop();
     }
@@ -52,7 +50,6 @@ public class ServerIncomingRequestHandler implements Runnable {
         try {
             this.socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

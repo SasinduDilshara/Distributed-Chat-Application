@@ -26,7 +26,6 @@ public class ServerIncomingRequestListener implements Runnable {
                 Thread thread = new Thread(new ServerIncomingRequestHandler(serverSocket.accept(), this.server));
                 thread.start();
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }

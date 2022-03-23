@@ -74,7 +74,6 @@ public class ServerRequestSender extends Thread {
                 try {
                     Thread.sleep(timeout);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
 
@@ -87,7 +86,6 @@ public class ServerRequestSender extends Thread {
                 response.put(RECEIVER_ID, serverId);
                 responseQueue.put(response);
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         } else {
             try {
@@ -97,7 +95,6 @@ public class ServerRequestSender extends Thread {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                 response = (JSONObject) this.parser.parse(bufferedReader.readLine());
             } catch (IOException | ParseException e) {
-//                e.printStackTrace();
             } finally {
                 if (response == null) {
                     response = new JSONObject();
@@ -108,7 +105,6 @@ public class ServerRequestSender extends Thread {
             try {
                 responseQueue.put(response);
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
     }

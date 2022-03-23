@@ -64,7 +64,6 @@ public class ClientThread implements Runnable {
         try {
             this.socket.close();
         } catch (IOException e) {
-//            e.printStackTrace();
         }
         this.exit = true;
     }
@@ -89,7 +88,6 @@ public class ClientThread implements Runnable {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
             this.stop();
         }
 
@@ -107,7 +105,6 @@ public class ClientThread implements Runnable {
                 log.debug("Abruptly closed in");
                 manageClientClosure();
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -149,7 +146,6 @@ public class ClientThread implements Runnable {
             dout.write((returnMessage.toJSONString() + "\n").getBytes("UTF-8"));
             dout.flush();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -178,7 +174,6 @@ public class ClientThread implements Runnable {
             }
         } catch (ClientNotInChatRoomException | ChatroomDoesntExistsException
                 | ClientNotOwnerException | ClientAlreadyInChatRoomException e) {
-            e.printStackTrace();
         }
         this.stop();
     }
@@ -198,7 +193,6 @@ public class ClientThread implements Runnable {
                 this.currentChatRoom.addClient(this, (String) clientResponse.get(FORMER));
             } catch (ClientNotInChatRoomException | ClientAlreadyInChatRoomException
                     | ChatroomDoesntExistsException e) {
-                e.printStackTrace();
             }
             log.info("[{}] JOINROOM - Room: {} - Former: {} - Approved: {}", this.id, clientResponse.get(ROOM_ID),
                     clientResponse.get(FORMER), true);
@@ -213,7 +207,6 @@ public class ClientThread implements Runnable {
                 this.currentChatRoom.removeClient(this, roomId);
                 reroute = true;
             } catch (ClientNotInChatRoomException e) {
-                e.printStackTrace();
             }
         } else {
             log.info("[{}] JOINROOM - Room: {} - Approved: {}", this.id, clientResponse.get(ROOM_ID), false);
@@ -253,7 +246,6 @@ public class ClientThread implements Runnable {
                 this.setId(clientId);
                 this.chatRoomHandler.getMainHall().addClientAndNotify(this, "");
             } catch (ClientAlreadyInChatRoomException e) {
-                e.printStackTrace();
             }
         } else {
             stop();
@@ -284,10 +276,8 @@ public class ClientThread implements Runnable {
                 try {
                     this.currentChatRoom.addClientAndNotify(this, prevRoomId);
                 } catch (ClientAlreadyInChatRoomException e) {
-                    e.printStackTrace();
                 }
             } catch (ChatroomDoesntExistsException e) {
-                e.printStackTrace();
             }
         } else {
             log.info("[{}] MOVEJOIN - Approved: {}", request.get(IDENTITY).toString(), false);
@@ -316,7 +306,6 @@ public class ClientThread implements Runnable {
         try {
             currentChatRoom.sendMessage(content, this);
         } catch (ClientNotInChatRoomException e) {
-            e.printStackTrace();
         }
     }
 
@@ -339,7 +328,6 @@ public class ClientThread implements Runnable {
                     this.chatRoomHandler.deleteRoom(this);
                 } catch (ChatroomDoesntExistsException | ClientNotOwnerException | ClientAlreadyInChatRoomException
                         | ClientNotInChatRoomException e) {
-                    e.printStackTrace();
                 }
             } else {
                 log.info("[{}] DELETEROOM - RoomId: {} - Approved: {}", this.id, response.get(ROOM_ID),
@@ -367,7 +355,6 @@ public class ClientThread implements Runnable {
                 try {
                     this.chatRoomHandler.createChatRoom(message.get(ROOM_ID).toString(), this);
                 } catch (ClientNotInChatRoomException e) {
-                    e.printStackTrace();
                 }
             } else {
                 log.info("[{}] CREATEROOM - RoomId: {} - Approved: {}", this.id, response.get(ROOM_ID), response.get(APPROVED));
