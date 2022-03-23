@@ -32,9 +32,8 @@ CS4262_ChatClient](https://github.com/GayashanNA/CS4262_ChatClient) by Dr. Gayas
     s2	localhost	4445	5556
     s3	localhost	4446	5557
     ```
-2. Generate a jar file using the following instructions.
 
-    // TODO: Jar file creating instructions
+2. Download `chat-server-app.jar` from the [release v1.0.0](https://github.com/SasinduDilshara/Distributed-Chat-Application/releases/tag/v1.0.0).
 
 3. Run the jar file with following parameters.
    - `serverid` - `-i` - server id specified in the configuration file
