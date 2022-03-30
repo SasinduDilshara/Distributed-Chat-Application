@@ -12,7 +12,7 @@ public class JsonParser {
         try {
             jsonObject = (JSONObject) parser.parse(jsonString);
         } catch (ParseException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return jsonObject;
     }

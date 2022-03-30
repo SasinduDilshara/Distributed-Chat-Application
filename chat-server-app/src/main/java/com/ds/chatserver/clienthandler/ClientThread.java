@@ -101,10 +101,9 @@ public class ClientThread implements Runnable {
                     log.info(formatLogString(request));
                     handleClientRequest(request);
                 }
-            } catch (SocketException e) {
+            } catch (Exception e) {
                 log.debug("Abruptly closed in");
                 manageClientClosure();
-            } catch (IOException e) {
             }
         }
     }

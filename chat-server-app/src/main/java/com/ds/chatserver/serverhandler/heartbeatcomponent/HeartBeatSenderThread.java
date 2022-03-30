@@ -65,7 +65,7 @@ public class HeartBeatSenderThread extends Thread {
                     Thread thread = new Thread(new ServerRequestSender(receiverId, request, queue, 1));
                     thread.start();
                 } catch (IOException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
 
                 try {
@@ -88,7 +88,6 @@ public class HeartBeatSenderThread extends Thread {
                         }
                     }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
         }

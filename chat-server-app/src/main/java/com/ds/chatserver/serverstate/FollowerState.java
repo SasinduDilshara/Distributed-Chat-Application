@@ -171,7 +171,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -185,7 +185,7 @@ public class FollowerState extends ServerState {
                 return ServerMessage.getNewIdentityResponse((Boolean) response.get(SUCCESS));
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         return null;
@@ -207,7 +207,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -230,7 +230,7 @@ public class FollowerState extends ServerState {
                 return ServerMessage.getJsonResponses(jsonObjects);
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return null;
         }
         jsonObjects.add(ServerMessage.getDeleteRoomResponse(
@@ -257,7 +257,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -276,7 +276,7 @@ public class FollowerState extends ServerState {
             }
             return ServerMessage.getRoomChangeResponse(clientId, former, success ? roomId : former);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return null;
     }
@@ -297,7 +297,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -318,7 +318,7 @@ public class FollowerState extends ServerState {
                 return ServerMessage.getJsonResponses(jsonObjects);
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return null;
         }
         jsonObjects.add(ServerMessage.getCreateRoomResponse(
@@ -341,7 +341,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -358,7 +358,7 @@ public class FollowerState extends ServerState {
                 return clientResponse;
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return null;
     }
@@ -378,7 +378,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), requestToLeader, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -395,7 +395,7 @@ public class FollowerState extends ServerState {
                         "");
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return null;
     }
@@ -407,7 +407,7 @@ public class FollowerState extends ServerState {
         try {
             thread = new Thread(new ServerRequestSender(this.server.getLeaderId(), request, queue));
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         thread.start();
 
@@ -421,7 +421,7 @@ public class FollowerState extends ServerState {
                 return response;
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return null;
     }

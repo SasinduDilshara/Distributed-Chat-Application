@@ -80,7 +80,7 @@ public class CandidateState extends ServerState {
                     break;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }

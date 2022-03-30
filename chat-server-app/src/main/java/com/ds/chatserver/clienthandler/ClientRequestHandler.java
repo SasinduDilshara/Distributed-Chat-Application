@@ -37,7 +37,7 @@ public class ClientRequestHandler {
                 Thread thread = new Thread(new ClientThread(serverSocket.accept(), this.server));
                 thread.start();
             } catch (IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }

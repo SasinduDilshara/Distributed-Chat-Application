@@ -34,7 +34,7 @@ public class ChatServerApplication {
         try {
             configuration.bannerPrinter();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         log.debug("Server Id : {}", serverId);
         ServerConfigurations.loadServerDetails(configFilePath);
@@ -52,7 +52,7 @@ public class ChatServerApplication {
                     try {
                         server.getState().heartBeatAndLeaderElect();
                     } catch (IOException e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                 }
             }
@@ -75,7 +75,7 @@ public class ChatServerApplication {
             ClientRequestHandler clientRequestHandler = new ClientRequestHandler(server);
             clientRequestHandler.start();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 }

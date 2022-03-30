@@ -43,7 +43,7 @@ public class Server {
                 try {
                     ChatRoomHandler.getInstance(id).getMainHall();
                 } catch (Exception e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
             }
             SystemState.addChatroom(new ChatroomLog(Util.getMainhall(id), "", id));

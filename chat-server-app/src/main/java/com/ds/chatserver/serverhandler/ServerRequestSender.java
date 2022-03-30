@@ -56,7 +56,7 @@ public class ServerRequestSender extends Thread {
                 responseQueue.put(response);
                 return;
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
 
